@@ -566,7 +566,7 @@ export default async function AdminDashboardPage() {
           MAIN CONTENT
       ========================================================== */}
 
-      <section className="mx-auto max-w-375 sm:px-6 sm:py-8 lg:px-8">
+      <section className="mx-auto max-w-375 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* =======================================================
             HERO / OVERVIEW
         ======================================================== */}
