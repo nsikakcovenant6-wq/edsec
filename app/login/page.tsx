@@ -1,7 +1,69 @@
+"use client";
+
 /* eslint-disable @next/next/no-img-element */
+
 import Link from "next/link";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email,
+          password,
+          remember,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(
+          data?.message || "Unable to sign in. Please check your details."
+        );
+        return;
+      }
+
+      // The API should create the authentication cookie.
+      // We then send the user to the correct dashboard.
+      if (data?.user?.role === "ADMIN") {
+        router.push("/admin");
+      } else {
+        router.push("/student/dashboard");
+      }
+
+      router.refresh();
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(
+        "Something went wrong while signing in. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-50">
       <section className="grid min-h-screen lg:grid-cols-2">
@@ -39,7 +101,8 @@ export default function LoginPage() {
 
               <p className="mt-6 text-lg leading-8 text-slate-400">
                 Sign in to access your courses, track your progress, take
-                assessments, and continue building practical technology skills.
+                assessments, and continue building practical technology
+                skills.
               </p>
 
               <div className="mt-10 grid grid-cols-2 gap-3">
@@ -109,7 +172,17 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <form className="mt-8 space-y-5">
+              {/* ERROR MESSAGE */}
+              {error && (
+                <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
+                  {error}
+                </div>
+              )}
+
+              <form
+                onSubmit={handleSubmit}
+                className="mt-8 space-y-5"
+              >
                 {/* EMAIL */}
                 <div>
                   <label
@@ -125,6 +198,8 @@ export default function LoginPage() {
                     type="email"
                     autoComplete="email"
                     required
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
                     placeholder="you@example.com"
                     className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                   />
@@ -154,6 +229,10 @@ export default function LoginPage() {
                     type="password"
                     autoComplete="current-password"
                     required
+                    value={password}
+                    onChange={(event) =>
+                      setPassword(event.target.value)
+                    }
                     placeholder="Enter your password"
                     className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                   />
@@ -164,6 +243,10 @@ export default function LoginPage() {
                   <input
                     type="checkbox"
                     name="remember"
+                    checked={remember}
+                    onChange={(event) =>
+                      setRemember(event.target.checked)
+                    }
                     className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
 
@@ -175,9 +258,10 @@ export default function LoginPage() {
                 {/* SUBMIT */}
                 <button
                   type="submit"
-                  className="w-full rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-700"
+                  disabled={loading}
+                  className="w-full rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Sign In
+                  {loading ? "Signing in..." : "Sign In"}
                 </button>
               </form>
 

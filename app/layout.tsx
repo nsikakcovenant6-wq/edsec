@@ -7,8 +7,8 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 
 export const metadata: Metadata = {
   title: {
-    default: "EDSEC Computer Training",
-    template: "%s | EDSEC Computer Training",
+    default: "EDSEC ICT INSTITUTE",
+    template: "%s | EDSEC ICT INSTITUTE",
   },
   description:
     "EDSEC — Educational Services Consultancy. Practical technology education, digital skills and technology solutions.",

@@ -87,9 +87,12 @@ const courses = [
 export default function CoursesPage() {
   return (
     <main className="min-h-screen bg-white text-slate-900">
-      {/* Hero */}
-      <section className="bg-slate-950 px-6 py-24 text-white">
-        <div className="mx-auto max-w-7xl">
+      {/* HERO */}
+      <section className="relative overflow-hidden bg-slate-950 px-6 py-24 text-white">
+        <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
+
+        <div className="relative mx-auto max-w-7xl">
           <div className="max-w-3xl">
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
               EDSEC Computer Training
@@ -124,7 +127,7 @@ export default function CoursesPage() {
         </div>
       </section>
 
-      {/* Courses */}
+      {/* COURSES */}
       <section id="courses" className="px-6 py-20">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12">
@@ -146,25 +149,39 @@ export default function CoursesPage() {
             {courses.map((course) => (
               <article
                 key={course.slug}
-                className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+                className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:border-cyan-200 hover:shadow-2xl hover:shadow-cyan-100/40"
               >
                 <Link href={`/courses/${course.slug}`}>
-                  <div className="relative aspect-video overflow-hidden bg-slate-100">
+                  {/* COURSE IMAGE */}
+                  <div className="relative aspect-16/10 overflow-hidden bg-slate-100">
                     <Image
                       src={course.image}
-                      alt={course.title}
+                      alt={`${course.title} course`}
                       fill
+                      priority={course.slug === "full-stack-web-development"}
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover transition duration-500 group-hover:scale-105"
+                      className="object-cover transition duration-700 group-hover:scale-110"
                     />
+
+                    {/* IMAGE OVERLAY */}
+                    <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 via-transparent to-transparent opacity-70" />
+
+                    {/* CATEGORY */}
+                    <div className="absolute left-4 top-4">
+                      <span className="rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-900 shadow-sm">
+                        {course.category}
+                      </span>
+                    </div>
+
+                    {/* VIEW */}
+                    <div className="absolute bottom-4 right-4 translate-y-2 rounded-full bg-cyan-500 px-4 py-2 text-xs font-bold text-white opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      View Course →
+                    </div>
                   </div>
 
+                  {/* CONTENT */}
                   <div className="p-6">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-cyan-600">
-                      {course.category}
-                    </span>
-
-                    <h3 className="mt-2 text-xl font-bold">
+                    <h3 className="text-xl font-bold text-slate-950 transition group-hover:text-cyan-600">
                       {course.title}
                     </h3>
 
@@ -172,13 +189,37 @@ export default function CoursesPage() {
                       {course.description}
                     </p>
 
-                    <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-5 text-sm text-slate-500">
-                      <span>{course.duration}</span>
-                      <span>{course.level}</span>
+                    {/* COURSE DETAILS */}
+                    <div className="mt-6 grid grid-cols-2 gap-3 border-t border-slate-100 pt-5">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                          Duration
+                        </p>
+
+                        <p className="mt-1 text-sm font-semibold text-slate-800">
+                          {course.duration}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                          Level
+                        </p>
+
+                        <p className="mt-1 text-sm font-semibold text-slate-800">
+                          {course.level}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="mt-5 font-semibold text-cyan-600">
-                      View course →
+                    <div className="mt-5 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-cyan-600">
+                        Explore program
+                      </span>
+
+                      <span className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-slate-700 transition group-hover:bg-cyan-500 group-hover:text-white">
+                        →
+                      </span>
                     </div>
                   </div>
                 </Link>
@@ -188,10 +229,39 @@ export default function CoursesPage() {
         </div>
       </section>
 
+      {/* WHY EDSEC */}
+      <section className="bg-slate-50 px-6 py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-8 lg:grid-cols-3">
+            <Feature
+              number="01"
+              title="Practical Training"
+              description="Learn through practical exercises and real-world projects instead of theory alone."
+            />
+
+            <Feature
+              number="02"
+              title="Career-Focused"
+              description="Develop skills that can be applied to employment, freelancing, business, and further education."
+            />
+
+            <Feature
+              number="03"
+              title="Project-Based"
+              description="Build projects that demonstrate your abilities and give you practical experience."
+            />
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
-      <section className="px-6 pb-20">
+      <section className="px-6 pb-20 pt-20">
         <div className="mx-auto max-w-7xl overflow-hidden rounded-3xl bg-slate-950 px-8 py-14 text-center text-white sm:px-12">
-          <h2 className="text-3xl font-bold sm:text-4xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
+            Start Today
+          </p>
+
+          <h2 className="mt-4 text-3xl font-bold sm:text-4xl">
             Ready to start learning?
           </h2>
 
@@ -200,14 +270,47 @@ export default function CoursesPage() {
             business, and your future career.
           </p>
 
-          <Link
-            href="/apply"
-            className="mt-8 inline-block rounded-full bg-cyan-500 px-7 py-3 font-semibold transition hover:bg-cyan-400"
-          >
-            Apply to EDSEC
-          </Link>
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <Link
+              href="/apply"
+              className="rounded-full bg-cyan-500 px-7 py-3 font-semibold transition hover:bg-cyan-400"
+            >
+              Apply to EDSEC
+            </Link>
+
+            <Link
+              href="/"
+              className="rounded-full border border-white/15 px-7 py-3 font-semibold transition hover:bg-white/10"
+            >
+              Back to Home
+            </Link>
+          </div>
         </div>
       </section>
     </main>
+  );
+}
+
+function Feature({
+  number,
+  title,
+  description,
+}: {
+  number: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-white p-7">
+      <p className="text-sm font-black text-cyan-600">{number}</p>
+
+      <h3 className="mt-4 text-xl font-bold text-slate-950">
+        {title}
+      </h3>
+
+      <p className="mt-3 text-sm leading-7 text-slate-600">
+        {description}
+      </p>
+    </div>
   );
 }

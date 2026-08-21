@@ -15,7 +15,7 @@ export default function Footer() {
               <div>
                 <p className="font-bold">EDSEC</p>
                 <p className="text-[10px] uppercase tracking-[0.15em] text-slate-500">
-                  Computer Training
+                  ICT INSTITUTE
                 </p>
               </div>
             </Link>

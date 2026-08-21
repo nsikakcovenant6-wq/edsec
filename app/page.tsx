@@ -1,32 +1,33 @@
 /* eslint-disable @next/next/no-img-element */
+
 import Link from "next/link";
 
-const courses = [
+const featuredPrograms = [
   {
     title: "Full-Stack Web Development",
     description:
-      "Build modern websites and full-stack applications from frontend to backend.",
+      "Learn to design, build, deploy, and maintain modern websites and full-stack web applications.",
     icon: "⌘",
     href: "/courses/full-stack-web-development",
   },
   {
     title: "Cybersecurity",
     description:
-      "Learn practical security fundamentals, networking, threats, and defensive skills.",
+      "Develop practical knowledge of cybersecurity, networking, threats, security tools, and defensive practices.",
     icon: "◈",
     href: "/courses/cybersecurity",
   },
   {
     title: "UI/UX Design",
     description:
-      "Turn ideas into intuitive digital experiences using modern design principles.",
+      "Learn how to transform ideas into intuitive, accessible, and engaging digital experiences.",
     icon: "✦",
     href: "/courses/ui-ux-design",
   },
   {
     title: "IT Support & Networking",
     description:
-      "Develop hands-on skills in computer support, networks, systems, and troubleshooting.",
+      "Build practical skills in computer systems, networking, troubleshooting, maintenance, and technical support.",
     icon: "⌁",
     href: "/courses/it-support-networking",
   },
@@ -34,41 +35,20 @@ const courses = [
 
 const stats = [
   {
+    value: "8+",
+    label: "ICT Programs",
+  },
+  {
+    value: "100%",
+    label: "Practical Learning",
+  },
+  {
     value: "20+",
     label: "Training Systems",
   },
   {
-    value: "8",
-    label: "Core Programs",
-  },
-  {
-    value: "100%",
-    label: "Practical Focus",
-  },
-  {
     value: "1",
     label: "Growing Community",
-  },
-];
-
-const services = [
-  {
-    title: "Professional Training",
-    text: "Practical technology programs designed for students and professionals.",
-    href: "/services",
-    icon: "01",
-  },
-  {
-    title: "Corporate Training",
-    text: "Technology and digital-skills training for organizations and teams.",
-    href: "/corporate-training",
-    icon: "02",
-  },
-  {
-    title: "Student Projects",
-    text: "Explore practical projects created by EDSEC learners.",
-    href: "/projects",
-    icon: "03",
   },
 ];
 
@@ -83,212 +63,70 @@ const learningAreas = [
   "IT Support & Networking",
 ];
 
+const services = [
+  {
+    number: "01",
+    title: "ICT & Professional Training",
+    description:
+      "Practical technology and digital-skills programs designed for students, professionals, entrepreneurs, and career changers.",
+    href: "/services",
+  },
+  {
+    number: "02",
+    title: "Corporate ICT Training",
+    description:
+      "Customized ICT and digital-skills training designed to help organizations build stronger and more productive teams.",
+    href: "/corporate-training",
+  },
+  {
+    number: "03",
+    title: "Technology Projects",
+    description:
+      "Learn by building practical projects that demonstrate real-world technology skills and strengthen your portfolio.",
+    href: "/projects",
+  },
+];
+
 export default function HomePage() {
   return (
-    <div className="min-h-screen overflow-hidden bg-white text-slate-950">
-
-      {/* =====================================================
-          PUBLIC NAVIGATION
-      ===================================================== */}
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
-
-          {/* LOGO */}
-          <Link href="/" className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white">
-              <img
-                src="/edsec-logo.png"
-                alt="EDSEC Computer Training"
-                className="h-9 w-auto object-contain"
-              />
-            </div>
-
-            <div className="hidden sm:block">
-              <p className="font-bold tracking-tight text-slate-950">
-                EDSEC
-              </p>
-
-              <p className="text-[11px] text-slate-500">
-                Computer Training
-              </p>
-            </div>
-          </Link>
-
-          {/* DESKTOP NAV */}
-          <nav className="hidden items-center gap-7 lg:flex">
-            <Link
-              href="/"
-              className="text-sm font-medium text-blue-600"
-            >
-              Home
-            </Link>
-
-            <Link
-              href="/about"
-              className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-            >
-              About
-            </Link>
-
-            <Link
-              href="/courses"
-              className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-            >
-              Courses
-            </Link>
-
-            <Link
-              href="/projects"
-              className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-            >
-              Projects
-            </Link>
-
-            <Link
-              href="/gallery"
-              className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-            >
-              Gallery
-            </Link>
-
-            <Link
-              href="/services"
-              className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-            >
-              Services
-            </Link>
-
-            <Link
-              href="/blog"
-              className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-            >
-              Blog
-            </Link>
-
-            <Link
-              href="/corporate-training"
-              className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-            >
-              Corporate
-            </Link>
-
-            <Link
-              href="/contact"
-              className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-            >
-              Contact
-            </Link>
-          </nav>
-
-          {/* ACTIONS */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/login"
-              className="hidden rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 sm:block"
-            >
-              Login
-            </Link>
-
-            <Link
-              href="/apply"
-              className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 sm:px-5"
-            >
-              Apply Now
-            </Link>
-          </div>
-        </div>
-
-        {/* MOBILE NAV */}
-        <div className="border-t border-slate-100 lg:hidden">
-          <div className="mx-auto flex max-w-7xl gap-5 overflow-x-auto px-5 py-3 text-sm">
-            <Link
-              href="/"
-              className="whitespace-nowrap font-semibold text-blue-600"
-            >
-              Home
-            </Link>
-
-            <Link
-              href="/about"
-              className="whitespace-nowrap text-slate-600"
-            >
-              About
-            </Link>
-
-            <Link
-              href="/courses"
-              className="whitespace-nowrap text-slate-600"
-            >
-              Courses
-            </Link>
-
-            <Link
-              href="/projects"
-              className="whitespace-nowrap text-slate-600"
-            >
-              Projects
-            </Link>
-
-            <Link
-              href="/gallery"
-              className="whitespace-nowrap text-slate-600"
-            >
-              Gallery
-            </Link>
-
-            <Link
-              href="/services"
-              className="whitespace-nowrap text-slate-600"
-            >
-              Services
-            </Link>
-
-            <Link
-              href="/blog"
-              className="whitespace-nowrap text-slate-600"
-            >
-              Blog
-            </Link>
-
-            <Link
-              href="/corporate-training"
-              className="whitespace-nowrap text-slate-600"
-            >
-              Corporate
-            </Link>
-
-            <Link
-              href="/contact"
-              className="whitespace-nowrap text-slate-600"
-            >
-              Contact
-            </Link>
-
-            <Link
-              href="/login"
-              className="whitespace-nowrap font-semibold text-blue-600"
-            >
-              Login
-            </Link>
-          </div>
-        </div>
-      </header>
-
+    <main className="min-h-screen overflow-hidden bg-white text-slate-950">
       {/* =====================================================
           HERO
       ===================================================== */}
       <section className="relative border-b border-slate-200 bg-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(37,99,235,0.10),transparent_32%),radial-gradient(circle_at_15%_80%,rgba(14,165,233,0.08),transparent_28%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(37,99,235,0.12),transparent_32%),radial-gradient(circle_at_10%_85%,rgba(14,165,233,0.08),transparent_30%)]" />
 
-        <div className="relative mx-auto grid min-h-170 max-w-7xl items-center gap-12 px-5 py-20 lg:grid-cols-[1.05fr_.95fr] lg:px-8">
-
+        <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 py-20 sm:py-24 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:py-28">
+          {/* HERO CONTENT */}
           <div>
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700">
-              <span className="h-2 w-2 rounded-full bg-blue-600" />
-              Practical technology education
+            {/* BRAND */}
+            <div className="mb-8 flex items-center gap-4">
+              <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl border border-slate-200 bg-white p-2 shadow-lg shadow-slate-200/60">
+                <img
+                  src="/edsec-logo.png"
+                  alt="EDSEC ICT INSTITUTE Logo"
+                  className="h-16 w-auto object-contain"
+                />
+              </div>
+
+              <div>
+                <p className="text-xl font-extrabold tracking-tight text-slate-950 sm:text-2xl">
+                  EDSEC ICT INSTITUTE
+                </p>
+
+                <p className="mt-1 text-sm font-semibold text-blue-600">
+                  INNOVATE. EDUCATE. ELEVATE.
+                </p>
+              </div>
             </div>
 
-            <h1 className="max-w-4xl text-5xl font-bold tracking-[-0.04em] text-slate-950 sm:text-6xl lg:text-7xl">
+            {/* BADGE */}
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+              <span className="h-2 w-2 rounded-full bg-blue-600" />
+              Practical ICT education
+            </div>
+
+            <h1 className="max-w-4xl text-5xl font-bold tracking-[-0.045em] text-slate-950 sm:text-6xl lg:text-7xl">
               Learn technology.
               <span className="block text-blue-600">
                 Build the future.
@@ -296,17 +134,17 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
-              EDSEC Computer Training helps students and professionals develop
-              practical digital skills through project-based learning, modern
-              technology, and career-focused training.
+              EDSEC ICT INSTITUTE provides practical technology education,
+              digital-skills training, professional development, and
+              project-based learning for students and professionals.
             </p>
 
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/courses"
                 className="rounded-xl bg-blue-600 px-6 py-3.5 text-center font-semibold text-white transition hover:bg-blue-700"
               >
-                Explore Courses
+                Explore Programs
               </Link>
 
               <Link
@@ -320,33 +158,43 @@ export default function HomePage() {
                 href="/login"
                 className="rounded-xl border border-blue-200 bg-blue-50 px-6 py-3.5 text-center font-semibold text-blue-700 transition hover:bg-blue-100"
               >
-                Student Login
+                Student Portal
               </Link>
             </div>
 
             <div className="mt-9 flex flex-wrap gap-x-7 gap-y-3 text-sm text-slate-500">
+              <span>✓ Practical ICT training</span>
               <span>✓ Project-based learning</span>
               <span>✓ Career-focused skills</span>
-              <span>✓ Modern training environment</span>
             </div>
           </div>
 
           {/* HERO VISUAL */}
           <div className="relative">
-            <div className="absolute -inset-5 rounded-4xl bg-blue-100/60 blur-3xl" />
+            <div className="absolute -inset-8 rounded-[3rem] bg-blue-100/70 blur-3xl" />
 
-            <div className="relative overflow-hidden rounded-4xl border border-slate-200 bg-slate-950 p-4 shadow-2xl">
-              <div className="rounded-3xl bg-slate-900 p-6">
-
+            <div className="relative overflow-hidden rounded-4xlrder border-slate-200 bg-slate-950 p-3 shadow-2xl">
+              <div className="rounded-[1.6rem] bg-slate-900 p-6 sm:p-7">
+                {/* TOP */}
                 <div className="mb-8 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-[0.2em] text-blue-400">
-                      EDSEC LAB
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-12 w-12 place-items-center rounded-xl bg-white p-1.5">
+                      <img
+                        src="/edsec-logo.png"
+                        alt="EDSEC ICT INSTITUTE"
+                        className="h-10 w-auto object-contain"
+                      />
+                    </div>
 
-                    <p className="mt-1 text-lg font-semibold text-white">
-                      Build. Test. Learn.
-                    </p>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-400">
+                        EDSEC
+                      </p>
+
+                      <p className="mt-1 text-lg font-bold text-white">
+                        ICT INSTITUTE
+                      </p>
+                    </div>
                   </div>
 
                   <div className="flex gap-1.5">
@@ -356,19 +204,29 @@ export default function HomePage() {
                   </div>
                 </div>
 
+                {/* LAB TITLE */}
+                <div className="mb-5">
+                  <p className="text-xs font-medium uppercase tracking-[0.2em] text-blue-400">
+                    EDSEC ICT INSTITUTE
+                  </p>
+
+                  <p className="mt-1 text-xl font-semibold text-white">
+                    Learn. Build. Test. Grow.
+                  </p>
+                </div>
+
+                {/* STEPS */}
                 <div className="grid grid-cols-2 gap-4">
                   {[
                     ["01", "Learn the skill"],
                     ["02", "Build a project"],
                     ["03", "Test your knowledge"],
-                    ["04", "Grow your portfolio"],
+                    ["04", "Build your portfolio"],
                   ].map(([number, title], index) => (
                     <div
                       key={number}
                       className={`rounded-2xl p-5 ${
-                        index === 0
-                          ? "bg-blue-600"
-                          : "bg-white/10"
+                        index === 0 ? "bg-blue-600" : "bg-white/10"
                       }`}
                     >
                       <p className="text-3xl font-bold text-white">
@@ -376,7 +234,7 @@ export default function HomePage() {
                       </p>
 
                       <p
-                        className={`mt-2 text-sm ${
+                        className={`mt-2 text-sm leading-6 ${
                           index === 0
                             ? "text-blue-100"
                             : "text-slate-300"
@@ -388,33 +246,31 @@ export default function HomePage() {
                   ))}
                 </div>
 
+                {/* BRAND CARD */}
                 <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-5">
                   <div className="flex items-center gap-4">
-
-                    <div className="grid h-12 w-12 place-items-center rounded-xl bg-white">
+                    <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-white p-1.5">
                       <img
                         src="/edsec-logo.png"
-                        alt="EDSEC"
-                        className="h-9 w-auto object-contain"
+                        alt="EDSEC ICT INSTITUTE Logo"
+                        className="h-11 w-auto object-contain"
                       />
                     </div>
 
                     <div>
                       <p className="font-semibold text-white">
+                        EDSEC ICT INSTITUTE
+                      </p>
+
+                      <p className="mt-1 text-sm text-slate-400">
                         Innovate. Educate. Elevate.
                       </p>
-
-                      <p className="text-sm text-slate-400">
-                        Practical skills for the digital world.
-                      </p>
                     </div>
-
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
       </section>
 
@@ -426,9 +282,9 @@ export default function HomePage() {
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="px-4 py-8 sm:px-6"
+              className="px-4 py-8 sm:px-6 sm:py-10"
             >
-              <p className="text-3xl font-bold tracking-tight text-slate-950">
+              <p className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
                 {stat.value}
               </p>
 
@@ -441,98 +297,110 @@ export default function HomePage() {
       </section>
 
       {/* =====================================================
-          WHY EDSEC
+          ABOUT EDSEC ICT INSTITUTE
       ===================================================== */}
       <section className="bg-white py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-[.85fr_1.15fr] lg:items-center">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                About EDSEC ICT INSTITUTE
+              </p>
 
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-              Why EDSEC
-            </p>
+              <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
+                An ICT institute built around practical learning.
+              </h2>
 
-            <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
-              Education designed around doing.
-            </h2>
+              <p className="mt-5 text-lg leading-8 text-slate-600">
+                EDSEC ICT INSTITUTE is focused on helping learners develop
+                useful technology skills through practical training,
+                guided projects, assessments, and real-world problem solving.
+              </p>
 
-            <p className="mt-5 text-lg leading-8 text-slate-600">
-              We believe technology is best learned by building, experimenting,
-              solving problems, and applying knowledge to real situations.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            {[
-              [
-                "Practical learning",
-                "Less theory-only learning. More guided practice and real projects.",
-              ],
-              [
-                "Career-focused",
-                "Build skills and a portfolio that can support your next opportunity.",
-              ],
-              [
-                "Supportive community",
-                "Learn alongside people who are exploring technology and growing together.",
-              ],
-            ].map(([title, text], index) => (
-              <div
-                key={title}
-                className="rounded-2xl border border-slate-200 bg-white p-7 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50"
+              <Link
+                href="/about"
+                className="mt-7 inline-flex rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-700"
               >
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 font-bold text-blue-600">
-                  0{index + 1}
+                Learn About EDSEC
+              </Link>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-3">
+              {[
+                [
+                  "Practical Learning",
+                  "Learn by doing through guided exercises, projects, and real technology tasks.",
+                ],
+                [
+                  "Career Focus",
+                  "Develop skills and practical experience that can support your next career opportunity.",
+                ],
+                [
+                  "Supportive Community",
+                  "Learn alongside other people who are building their technology skills and careers.",
+                ],
+              ].map(([title, text], index) => (
+                <div
+                  key={title}
+                  className="rounded-2xl border border-slate-200 bg-white p-7 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50"
+                >
+                  <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 font-bold text-blue-600">
+                    0{index + 1}
+                  </div>
+
+                  <h3 className="mt-6 text-xl font-semibold text-slate-950">
+                    {title}
+                  </h3>
+
+                  <p className="mt-3 leading-7 text-slate-600">
+                    {text}
+                  </p>
                 </div>
-
-                <h3 className="mt-6 text-xl font-semibold text-slate-950">
-                  {title}
-                </h3>
-
-                <p className="mt-3 leading-7 text-slate-600">
-                  {text}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-
         </div>
       </section>
 
       {/* =====================================================
-          COURSES
+          FEATURED PROGRAMS
       ===================================================== */}
       <section className="bg-slate-50 py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-
           <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
             <div className="max-w-2xl">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-                Featured learning
+                Featured ICT Programs
               </p>
 
               <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
                 Skills that move you forward.
               </h2>
+
+              <p className="mt-5 text-lg leading-8 text-slate-600">
+                Explore practical programs designed to help you build useful
+                digital and technology skills.
+              </p>
             </div>
 
             <Link
               href="/courses"
-              className="font-semibold text-blue-600 hover:text-blue-700"
+              className="font-semibold text-blue-600 transition hover:text-blue-700"
             >
-              View all courses →
+              View all programs →
             </Link>
           </div>
 
           <div className="mt-12 grid gap-5 md:grid-cols-2">
-            {courses.map((course) => (
+            {featuredPrograms.map((program) => (
               <Link
-                href={course.href}
-                key={course.title}
+                href={program.href}
+                key={program.title}
                 className="group rounded-2xl border border-slate-200 bg-white p-7 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-100/50"
               >
                 <div className="flex items-start justify-between">
                   <div className="grid h-12 w-12 place-items-center rounded-xl bg-blue-50 text-xl font-bold text-blue-600">
-                    {course.icon}
+                    {program.icon}
                   </div>
 
                   <span className="text-slate-300 transition group-hover:text-blue-600">
@@ -541,30 +409,31 @@ export default function HomePage() {
                 </div>
 
                 <h3 className="mt-7 text-xl font-semibold text-slate-950">
-                  {course.title}
+                  {program.title}
                 </h3>
 
                 <p className="mt-3 leading-7 text-slate-600">
-                  {course.description}
+                  {program.description}
+                </p>
+
+                <p className="mt-6 font-semibold text-blue-600">
+                  View program →
                 </p>
               </Link>
             ))}
           </div>
-
         </div>
       </section>
 
       {/* =====================================================
-          LEARNING AREAS
+          ALL PROGRAMS
       ===================================================== */}
       <section className="bg-white py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-
           <div className="grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
-
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-                Our programs
+                EDSEC ICT INSTITUTE Programs
               </p>
 
               <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
@@ -572,16 +441,16 @@ export default function HomePage() {
               </h2>
 
               <p className="mt-5 text-lg leading-8 text-slate-600">
-                From foundational computer skills to advanced technology
-                programs, EDSEC provides practical learning pathways for
-                different stages of your journey.
+                From essential computer skills to advanced technology
+                programs, EDSEC ICT INSTITUTE provides learning pathways for
+                different stages of your technology journey.
               </p>
 
               <Link
                 href="/courses"
                 className="mt-7 inline-flex rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-700"
               >
-                Explore all programs
+                Explore All Programs
               </Link>
             </div>
 
@@ -602,7 +471,60 @@ export default function HomePage() {
                 </Link>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
 
+      {/* =====================================================
+          HOW WE TEACH
+      ===================================================== */}
+      <section className="bg-slate-950 py-24 text-white">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-400">
+              The EDSEC ICT INSTITUTE Method
+            </p>
+
+            <h2 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
+              Learn. Build. Test. Grow.
+            </h2>
+
+            <p className="mt-5 text-lg leading-8 text-slate-400">
+              Our approach combines learning, practical exercises, projects,
+              assessments, and portfolio development.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-4 md:grid-cols-4">
+            {[
+              ["01", "Learn", "Understand the concepts and technology."],
+              ["02", "Practice", "Apply what you learn through exercises."],
+              ["03", "Build", "Create practical projects and solutions."],
+              ["04", "Grow", "Test your knowledge and build your portfolio."],
+            ].map(([number, title, text], index) => (
+              <div
+                key={number}
+                className={`rounded-2xl border p-7 ${
+                  index === 0
+                    ? "border-blue-500/30 bg-blue-600"
+                    : "border-white/10 bg-white/5"
+                }`}
+              >
+                <p className="text-3xl font-bold">{number}</p>
+
+                <h3 className="mt-6 text-xl font-semibold">
+                  {title}
+                </h3>
+
+                <p
+                  className={`mt-3 leading-7 ${
+                    index === 0 ? "text-blue-100" : "text-slate-400"
+                  }`}
+                >
+                  {text}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -612,19 +534,19 @@ export default function HomePage() {
       ===================================================== */}
       <section className="bg-slate-50 py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-              What we do
+              What EDSEC ICT INSTITUTE Does
             </p>
 
             <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
-              More than a training centre.
+              More than an ICT classroom.
             </h2>
 
             <p className="mt-5 text-lg leading-8 text-slate-600">
-              EDSEC connects education, practical projects, professional
-              development, and organizational technology training.
+              EDSEC ICT INSTITUTE connects ICT education, professional
+              development, practical projects, and organizational technology
+              training.
             </p>
           </div>
 
@@ -636,7 +558,7 @@ export default function HomePage() {
                 className="group rounded-2xl border border-slate-200 bg-white p-7 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
               >
                 <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-600 text-sm font-bold text-white">
-                  {service.icon}
+                  {service.number}
                 </div>
 
                 <h3 className="mt-6 text-xl font-semibold text-slate-950">
@@ -644,7 +566,7 @@ export default function HomePage() {
                 </h3>
 
                 <p className="mt-3 leading-7 text-slate-600">
-                  {service.text}
+                  {service.description}
                 </p>
 
                 <p className="mt-6 font-semibold text-blue-600">
@@ -653,7 +575,6 @@ export default function HomePage() {
               </Link>
             ))}
           </div>
-
         </div>
       </section>
 
@@ -662,23 +583,37 @@ export default function HomePage() {
       ===================================================== */}
       <section className="bg-white py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-
           <div className="overflow-hidden rounded-4xl bg-slate-950 p-8 sm:p-12 lg:p-16">
             <div className="grid gap-12 lg:grid-cols-[1fr_.7fr] lg:items-center">
-
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-400">
-                  Student Portal
-                </p>
+                <div className="flex items-center gap-4">
+                  <div className="grid h-14 w-14 place-items-center rounded-xl bg-white p-1.5">
+                    <img
+                      src="/edsec-logo.png"
+                      alt="EDSEC ICT INSTITUTE Logo"
+                      className="h-11 w-auto object-contain"
+                    />
+                  </div>
 
-                <h2 className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-400">
+                      EDSEC ICT INSTITUTE
+                    </p>
+
+                    <p className="mt-1 font-semibold text-white">
+                      Student Portal
+                    </p>
+                  </div>
+                </div>
+
+                <h2 className="mt-7 text-4xl font-bold tracking-tight text-white sm:text-5xl">
                   Learn, track, test and grow.
                 </h2>
 
                 <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-400">
-                  Your EDSEC student account will give you one place to access
-                  your courses, monitor learning progress, take assessments,
-                  and manage your student profile.
+                  Your student account gives you one place to access your ICT
+                  programs, attend online classes, monitor your progress,
+                  complete lessons, take assessments, and manage your profile.
                 </p>
 
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -700,10 +635,10 @@ export default function HomePage() {
 
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  ["Courses", "Access your learning"],
+                  ["Courses", "Access your ICT programs"],
                   ["Progress", "Track your development"],
+                  ["Classes", "Join online learning"],
                   ["Tests", "Check your knowledge"],
-                  ["Profile", "Manage your account"],
                 ].map(([title, text]) => (
                   <div
                     key={title}
@@ -719,23 +654,112 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-
             </div>
           </div>
-
         </div>
       </section>
 
       {/* =====================================================
-          GALLERY / COMMUNITY
+          VIRTUAL CLASS
       ===================================================== */}
       <section className="bg-slate-50 py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="grid gap-10 rounded-4xl border border-slate-200 bg-white p-8 sm:p-12 lg:grid-cols-[1fr_.8fr] lg:items-center lg:p-14">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                Online Learning
+              </p>
 
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                Attend classes from wherever you are.
+              </h2>
+
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+                EDSEC ICT INSTITUTE is designed to support flexible learning.
+                Students can access scheduled online classes, learning
+                materials, and lessons directly from their student portal.
+              </p>
+
+              <div className="mt-7 flex flex-wrap gap-3 text-sm font-medium text-slate-600">
+                <span className="rounded-full bg-slate-100 px-4 py-2">
+                  Audio-friendly
+                </span>
+
+                <span className="rounded-full bg-slate-100 px-4 py-2">
+                  Low-bandwidth friendly
+                </span>
+
+                <span className="rounded-full bg-slate-100 px-4 py-2">
+                  Class materials
+                </span>
+
+                <span className="rounded-full bg-slate-100 px-4 py-2">
+                  Online access
+                </span>
+              </div>
+            </div>
+
+            <div className="rounded-3xl bg-slate-950 p-6">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-400">
+                      Upcoming Class
+                    </p>
+
+                    <p className="mt-2 text-xl font-semibold text-white">
+                      Full-Stack Web Development
+                    </p>
+                  </div>
+
+                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-blue-600 text-xl">
+                    🎥
+                  </div>
+                </div>
+
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-white/5 p-4">
+                    <p className="text-xs text-slate-500">
+                      Mode
+                    </p>
+
+                    <p className="mt-1 font-medium text-white">
+                      Online
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-white/5 p-4">
+                    <p className="text-xs text-slate-500">
+                      Access
+                    </p>
+
+                    <p className="mt-1 font-medium text-white">
+                      Student Portal
+                    </p>
+                  </div>
+                </div>
+
+                <Link
+                  href="/login"
+                  className="mt-5 block rounded-xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-500"
+                >
+                  Enter Student Portal
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          COMMUNITY
+      ===================================================== */}
+      <section className="bg-white py-24">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
             <div className="max-w-2xl">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-                EDSEC Community
+                EDSEC ICT INSTITUTE Community
               </p>
 
               <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
@@ -743,8 +767,8 @@ export default function HomePage() {
               </h2>
 
               <p className="mt-5 text-lg leading-8 text-slate-600">
-                Explore our training environment, student activities, projects,
-                and learning community.
+                Explore our ICT learning environment, student activities,
+                practical projects, and growing community.
               </p>
             </div>
 
@@ -757,13 +781,13 @@ export default function HomePage() {
           </div>
 
           <div className="mt-12 grid gap-4 md:grid-cols-3">
-
             <Link
               href="/gallery"
               className="group relative h-64 overflow-hidden rounded-3xl bg-linear-to-br from-blue-600 via-blue-500 to-cyan-400 p-7"
             >
               <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full border-25 border-white/10" />
-              <div className="absolute bottom-8 right-8 h-20 w-20 rounded-2xl border border-white/20 bg-white/10 rotate-12" />
+
+              <div className="absolute bottom-8 right-8 h-20 w-20 rotate-12 rounded-2xl border border-white/20 bg-white/10" />
 
               <div className="relative flex h-full flex-col justify-between">
                 <span className="text-sm font-semibold text-blue-100">
@@ -776,7 +800,7 @@ export default function HomePage() {
                   </h3>
 
                   <p className="mt-2 text-sm text-blue-100">
-                    Explore the EDSEC environment.
+                    Explore the EDSEC ICT INSTITUTE learning environment.
                   </p>
                 </div>
               </div>
@@ -812,7 +836,8 @@ export default function HomePage() {
               className="group relative h-64 overflow-hidden rounded-3xl bg-linear-to-br from-slate-100 to-blue-100 p-7"
             >
               <div className="absolute right-8 top-8 h-28 w-28 rounded-full border-18 border-blue-200/70" />
-              <div className="absolute bottom-8 right-10 h-14 w-14 rounded-xl bg-blue-600/20 rotate-12" />
+
+              <div className="absolute bottom-8 right-10 h-14 w-14 rotate-12 rounded-xl bg-blue-600/20" />
 
               <div className="relative flex h-full flex-col justify-between">
                 <span className="text-sm font-semibold text-blue-600">
@@ -830,24 +855,20 @@ export default function HomePage() {
                 </div>
               </div>
             </Link>
-
           </div>
-
         </div>
       </section>
 
       {/* =====================================================
           CORPORATE TRAINING
       ===================================================== */}
-      <section className="bg-white py-24">
+      <section className="bg-slate-50 py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-
-          <div className="rounded-4xl border border-slate-200 bg-slate-50 p-8 sm:p-12">
+          <div className="rounded-4xl border border-slate-200 bg-white p-8 sm:p-12">
             <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center">
-
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-                  For organizations
+                  For Organizations
                 </p>
 
                 <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
@@ -855,9 +876,9 @@ export default function HomePage() {
                 </h2>
 
                 <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-                  EDSEC provides customized technology and digital-skills
-                  training for businesses, schools, hospitals, churches,
-                  hotels, banks, and other organizations.
+                  EDSEC ICT INSTITUTE provides customized ICT and
+                  digital-skills training for businesses, schools, hospitals,
+                  churches, hotels, banks, and other organizations.
                 </p>
               </div>
 
@@ -867,10 +888,8 @@ export default function HomePage() {
               >
                 Corporate Training →
               </Link>
-
             </div>
           </div>
-
         </div>
       </section>
 
@@ -879,9 +898,16 @@ export default function HomePage() {
       ===================================================== */}
       <section className="bg-slate-950 py-24">
         <div className="mx-auto max-w-5xl px-5 text-center lg:px-8">
+          <div className="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-white p-2 shadow-xl">
+            <img
+              src="/edsec-logo.png"
+              alt="EDSEC ICT INSTITUTE Logo"
+              className="h-16 w-auto object-contain"
+            />
+          </div>
 
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-400">
-            Start your journey
+          <p className="mt-7 text-sm font-semibold uppercase tracking-[0.18em] text-blue-400">
+            Start Your ICT Journey
           </p>
 
           <h2 className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl">
@@ -889,185 +915,35 @@ export default function HomePage() {
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-400">
-            Explore our programs, speak with EDSEC, or submit an application
-            and take the first step toward practical technology skills.
+            Explore our ICT programs, join the student community, or submit
+            an application and take the next step toward practical technology
+            skills with EDSEC ICT INSTITUTE.
           </p>
 
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-
             <Link
               href="/apply"
               className="rounded-xl bg-blue-600 px-7 py-3.5 font-semibold text-white transition hover:bg-blue-500"
             >
-              Apply to EDSEC
+              Apply to EDSEC ICT INSTITUTE
+            </Link>
+
+            <Link
+              href="/courses"
+              className="rounded-xl border border-slate-700 px-7 py-3.5 font-semibold text-white transition hover:bg-white/5"
+            >
+              Explore Programs
             </Link>
 
             <Link
               href="/login"
               className="rounded-xl border border-slate-700 px-7 py-3.5 font-semibold text-white transition hover:bg-white/5"
             >
-              Student Login
+              Student Portal
             </Link>
-
-            <Link
-              href="/contact"
-              className="rounded-xl border border-slate-700 px-7 py-3.5 font-semibold text-white transition hover:bg-white/5"
-            >
-              Contact Us
-            </Link>
-
           </div>
         </div>
       </section>
-
-      {/* =====================================================
-          FOOTER
-      ===================================================== */}
-      <footer className="border-t border-white/10 bg-slate-950 text-slate-400">
-
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
-
-          {/* BRAND */}
-          <div>
-            <Link href="/" className="flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-white">
-                <img
-                  src="/edsec-logo.png"
-                  alt="EDSEC"
-                  className="h-9 w-auto object-contain"
-                />
-              </div>
-
-              <div>
-                <p className="font-bold text-white">
-                  EDSEC
-                </p>
-
-                <p className="text-xs text-slate-500">
-                  Computer Training
-                </p>
-              </div>
-            </Link>
-
-            <p className="mt-5 max-w-xs text-sm leading-6 text-slate-500">
-              Practical technology education designed to help students and
-              professionals build useful digital skills.
-            </p>
-
-            <p className="mt-5 text-sm font-medium text-blue-400">
-              Innovate. Educate. Elevate.
-            </p>
-          </div>
-
-          {/* PLATFORM */}
-          <div>
-            <h3 className="font-semibold text-white">
-              Platform
-            </h3>
-
-            <div className="mt-5 space-y-3 text-sm">
-              <Link href="/courses" className="block hover:text-white">
-                Courses
-              </Link>
-
-              <Link href="/projects" className="block hover:text-white">
-                Student Projects
-              </Link>
-
-              <Link href="/gallery" className="block hover:text-white">
-                Gallery
-              </Link>
-
-              <Link href="/blog" className="block hover:text-white">
-                Blog
-              </Link>
-
-              <Link href="/login" className="block hover:text-white">
-                Student Login
-              </Link>
-
-              <Link href="/register" className="block hover:text-white">
-                Create Account
-              </Link>
-            </div>
-          </div>
-
-          {/* COMPANY */}
-          <div>
-            <h3 className="font-semibold text-white">
-              Company
-            </h3>
-
-            <div className="mt-5 space-y-3 text-sm">
-              <Link href="/about" className="block hover:text-white">
-                About EDSEC
-              </Link>
-
-              <Link href="/services" className="block hover:text-white">
-                Services
-              </Link>
-
-              <Link
-                href="/corporate-training"
-                className="block hover:text-white"
-              >
-                Corporate Training
-              </Link>
-
-              <Link href="/contact" className="block hover:text-white">
-                Contact
-              </Link>
-
-              <Link href="/apply" className="block hover:text-white">
-                Apply
-              </Link>
-            </div>
-          </div>
-
-          {/* CONTACT */}
-          <div>
-            <h3 className="font-semibold text-white">
-              Contact
-            </h3>
-
-            <div className="mt-5 space-y-3 text-sm">
-              <a
-                href="tel:+2348142137101"
-                className="block hover:text-white"
-              >
-                +234 814 213 7101
-              </a>
-
-              <a
-                href="mailto:mmekanudoh@gmail.com"
-                className="block hover:text-white"
-              >
-                mmekanudoh@gmail.com
-              </a>
-
-              <p>
-                Port Harcourt, Rivers State,
-                <br />
-                Nigeria
-              </p>
-            </div>
-          </div>
-
-        </div>
-
-        <div className="border-t border-white/10">
-          <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 px-5 py-6 text-xs text-slate-600 sm:flex-row lg:px-8">
-            <p>
-              © {new Date().getFullYear()} EDSEC Computer Training. All rights reserved.
-            </p>
-
-            <p>
-              Educational Services Consultancy
-            </p>
-          </div>
-        </div>
-
-      </footer>
-    </div>
+    </main>
   );
 }

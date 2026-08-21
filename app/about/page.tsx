@@ -72,7 +72,7 @@ export default function AboutPage() {
             </h1>
 
             <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-400 sm:text-xl">
-              EDSEC Computer Training is focused on practical technology
+              EDSEC ICT INSTITUTE is focused on practical technology
               education that helps students develop useful digital skills,
               build projects, and prepare for the opportunities of a
               technology-driven world.

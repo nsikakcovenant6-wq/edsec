@@ -20,7 +20,7 @@ export default function Navbar() {
               EDSEC
             </p>
             <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-slate-500">
-              Computer Training
+              ICT INSTITUTE
             </p>
           </div>
         </Link>
