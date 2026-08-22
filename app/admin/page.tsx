@@ -494,7 +494,6 @@ export default async function AdminDashboardPage() {
     `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
     "Administrator";
 
-  const firstName = user.firstName?.trim() || "Administrator";
 
   const todayLabel = now.toLocaleDateString("en-NG", {
     weekday: "long",
@@ -523,7 +522,7 @@ export default async function AdminDashboardPage() {
 
               <div className="mt-3 flex flex-wrap items-end gap-x-4 gap-y-1">
                 <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                  {greeting}, {firstName}
+                  {greeting}, MR.MMEKAN
                 </h1>
 
                 <span className="mb-1 hidden text-sm text-slate-400 sm:block">

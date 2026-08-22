@@ -6,6 +6,11 @@ import {
   updateBlogPostStatus,
 } from "./actions";
 
+// Admin pages use live database data and must not be statically
+// prerendered during the production build.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function formatDate(date: Date | null) {
   if (!date) {
     return "Not published";
@@ -20,8 +25,10 @@ function statusClass(status: string) {
   switch (status) {
     case "PUBLISHED":
       return "bg-green-100 text-green-700";
+
     case "ARCHIVED":
       return "bg-gray-100 text-gray-700";
+
     default:
       return "bg-yellow-100 text-yellow-700";
   }
@@ -35,12 +42,15 @@ export default async function AdminBlogPage() {
   });
 
   const totalCount = posts.length;
+
   const publishedCount = posts.filter(
     (post) => post.status === "PUBLISHED",
   ).length;
+
   const draftCount = posts.filter(
     (post) => post.status === "DRAFT",
   ).length;
+
   const archivedCount = posts.filter(
     (post) => post.status === "ARCHIVED",
   ).length;
@@ -48,6 +58,7 @@ export default async function AdminBlogPage() {
   return (
     <main className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-8">
+        {/* HEADER */}
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <p className="text-sm font-medium text-orange-600">
@@ -72,9 +83,11 @@ export default async function AdminBlogPage() {
           </Link>
         </div>
 
+        {/* STATISTICS */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">Total Posts</p>
+
             <p className="mt-2 text-3xl font-bold text-gray-900">
               {totalCount}
             </p>
@@ -82,6 +95,7 @@ export default async function AdminBlogPage() {
 
           <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">Published</p>
+
             <p className="mt-2 text-3xl font-bold text-green-600">
               {publishedCount}
             </p>
@@ -89,6 +103,7 @@ export default async function AdminBlogPage() {
 
           <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">Drafts</p>
+
             <p className="mt-2 text-3xl font-bold text-yellow-600">
               {draftCount}
             </p>
@@ -96,12 +111,14 @@ export default async function AdminBlogPage() {
 
           <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">Archived</p>
+
             <p className="mt-2 text-3xl font-bold text-gray-600">
               {archivedCount}
             </p>
           </div>
         </div>
 
+        {/* BLOG POSTS */}
         <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           <div className="border-b border-gray-200 px-6 py-5">
             <h2 className="font-semibold text-gray-900">
@@ -182,6 +199,7 @@ export default async function AdminBlogPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
+                    {/* EDIT */}
                     <Link
                       href={`/admin/blog/${post.id}`}
                       className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -189,6 +207,7 @@ export default async function AdminBlogPage() {
                       Edit
                     </Link>
 
+                    {/* PUBLISH / UNPUBLISH */}
                     {post.status === "PUBLISHED" ? (
                       <form action={updateBlogPostStatus}>
                         <input
@@ -233,6 +252,7 @@ export default async function AdminBlogPage() {
                       </form>
                     )}
 
+                    {/* DELETE */}
                     <form action={deleteBlogPost}>
                       <input
                         type="hidden"
