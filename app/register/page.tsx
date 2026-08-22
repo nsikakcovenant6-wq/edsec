@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-location-assign-relative-destination */
+ 
 "use client";
 
 import Image from "next/image";
@@ -53,10 +53,12 @@ export default function RegisterPage() {
         return;
       }
 
-      window.location.href = "/student";
+      // Registration successful.
+      // The student dashboard is located at /student/dashboard.
+      window.location.href = data.redirectTo || "/student/dashboard";
     } catch {
       setMessage(
-        "Unable to connect to EDSEC right now. Please try again."
+        "Unable to connect to EDSEC right now. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -66,7 +68,6 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="grid min-h-screen lg:grid-cols-2">
-
         {/* BRAND PANEL */}
         <section className="hidden bg-slate-950 lg:flex lg:flex-col lg:justify-between">
           <div className="p-10">
@@ -83,9 +84,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <p className="text-lg font-bold text-white">
-                  EDSEC
-                </p>
+                <p className="text-lg font-bold text-white">EDSEC</p>
                 <p className="text-xs text-slate-400">
                   Computer Training
                 </p>
@@ -119,9 +118,7 @@ export default function RegisterPage() {
                     ✓
                   </span>
 
-                  <span className="text-slate-300">
-                    {item}
-                  </span>
+                  <span className="text-slate-300">{item}</span>
                 </div>
               ))}
             </div>
@@ -137,7 +134,6 @@ export default function RegisterPage() {
         {/* REGISTER PANEL */}
         <section className="flex items-center justify-center px-5 py-10 sm:px-8">
           <div className="w-full max-w-md">
-
             {/* MOBILE LOGO */}
             <div className="mb-8 flex justify-center lg:hidden">
               <Link href="/" className="flex items-center gap-3">
@@ -165,7 +161,6 @@ export default function RegisterPage() {
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-xl shadow-slate-200/50 sm:p-9">
-
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
                   Create account
@@ -184,7 +179,6 @@ export default function RegisterPage() {
                 onSubmit={handleSubmit}
                 className="mt-7 space-y-4"
               >
-
                 {/* FULL NAME */}
                 <div>
                   <label
@@ -324,7 +318,7 @@ export default function RegisterPage() {
                       type="button"
                       onClick={() =>
                         setShowConfirmPassword(
-                          (current) => !current
+                          (current) => !current,
                         )
                       }
                       className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900"
