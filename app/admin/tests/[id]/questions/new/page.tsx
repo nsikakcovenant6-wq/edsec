@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
 import { prisma } from "@/app/lib/prisma";
 import { requireRole } from "@/app/lib/auth";
+
 import { createQuestion } from "../../actions";
 
 type PageProps = {
@@ -40,11 +42,12 @@ export default async function NewQuestionPage({
   return (
     <main className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-3xl">
-        {/* Header */}
+
+        {/* HEADER */}
         <div className="mb-6">
           <Link
             href={`/admin/tests/${test.id}`}
-            className="mb-3 inline-flex text-sm font-medium text-slate-500 hover:text-slate-900"
+            className="mb-3 inline-flex text-sm font-medium text-slate-500 transition hover:text-slate-900"
           >
             ← Back to Test
           </Link>
@@ -61,7 +64,7 @@ export default async function NewQuestionPage({
           </p>
         </div>
 
-        {/* Question Form */}
+        {/* QUESTION FORM */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <form
             action={async (formData: FormData): Promise<void> => {
@@ -69,14 +72,13 @@ export default async function NewQuestionPage({
             }}
             className="space-y-6"
           >
-            {/* Test ID */}
             <input
               type="hidden"
               name="testId"
               value={test.id}
             />
 
-            {/* Question */}
+            {/* QUESTION */}
             <div>
               <label
                 htmlFor="question"
@@ -95,7 +97,7 @@ export default async function NewQuestionPage({
               />
             </div>
 
-            {/* Question Type */}
+            {/* TYPE */}
             <div>
               <label
                 htmlFor="type"
@@ -117,122 +119,87 @@ export default async function NewQuestionPage({
                 <option value="TRUE_FALSE">
                   True / False
                 </option>
-
-                <option value="SHORT_ANSWER">
-                  Short Answer
-                </option>
               </select>
             </div>
 
-            {/* Options */}
+            {/* OPTIONS */}
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
               <h2 className="font-semibold text-slate-900">
                 Answer Options
               </h2>
 
               <p className="mt-1 text-xs text-slate-500">
-                For multiple-choice questions, provide the available
+                For multiple-choice questions, enter the available
                 answers and select the correct one.
               </p>
 
               <div className="mt-5 space-y-4">
-                {/* Option A */}
-                <div>
-                  <label
-                    htmlFor="optionA"
-                    className="mb-2 block text-sm font-medium text-slate-700"
+                {[0, 1, 2, 3].map((index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col gap-2 sm:flex-row sm:items-center"
                   >
-                    Option A
-                  </label>
+                    <div className="flex-1">
+                      <label
+                        htmlFor={`option-${index}`}
+                        className="mb-2 block text-sm font-medium text-slate-700"
+                      >
+                        Option{" "}
+                        {String.fromCharCode(65 + index)}
+                      </label>
 
-                  <input
-                    id="optionA"
-                    name="optionA"
-                    type="text"
-                    placeholder="Enter option A"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-slate-900"
-                  />
-                </div>
+                      <input
+                        id={`option-${index}`}
+                        name="optionText"
+                        type="text"
+                        placeholder={`Enter option ${String.fromCharCode(
+                          65 + index
+                        )}`}
+                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-slate-900"
+                      />
+                    </div>
 
-                {/* Option B */}
-                <div>
-                  <label
-                    htmlFor="optionB"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
-                    Option B
-                  </label>
+                    <label className="flex items-center gap-2 text-sm font-medium text-slate-600 sm:mt-7">
+                      <input
+                        type="radio"
+                        name="correctOption"
+                        value={index}
+                        defaultChecked={index === 0}
+                      />
 
-                  <input
-                    id="optionB"
-                    name="optionB"
-                    type="text"
-                    placeholder="Enter option B"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-slate-900"
-                  />
-                </div>
-
-                {/* Option C */}
-                <div>
-                  <label
-                    htmlFor="optionC"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
-                    Option C
-                  </label>
-
-                  <input
-                    id="optionC"
-                    name="optionC"
-                    type="text"
-                    placeholder="Enter option C"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-slate-900"
-                  />
-                </div>
-
-                {/* Option D */}
-                <div>
-                  <label
-                    htmlFor="optionD"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
-                    Option D
-                  </label>
-
-                  <input
-                    id="optionD"
-                    name="optionD"
-                    type="text"
-                    placeholder="Enter option D"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-slate-900"
-                  />
-                </div>
+                      Correct
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Correct Answer */}
-            <div>
-              <label
-                htmlFor="correctAnswer"
-                className="mb-2 block text-sm font-semibold text-slate-700"
-              >
-                Correct Answer
-              </label>
+            {/* TRUE/FALSE */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+              <h2 className="font-semibold text-slate-900">
+                True / False Answer
+              </h2>
+
+              <p className="mt-1 text-xs text-slate-500">
+                Only used when the question type is True / False.
+              </p>
 
               <select
-                id="correctAnswer"
                 name="correctAnswer"
-                defaultValue="A"
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
+                defaultValue="TRUE"
+                className="mt-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-slate-900"
               >
-                <option value="A">Option A</option>
-                <option value="B">Option B</option>
-                <option value="C">Option C</option>
-                <option value="D">Option D</option>
+                <option value="TRUE">
+                  True
+                </option>
+
+                <option value="FALSE">
+                  False
+                </option>
               </select>
             </div>
 
-            {/* Points */}
+            {/* POINTS */}
             <div>
               <label
                 htmlFor="points"
@@ -252,29 +219,30 @@ export default async function NewQuestionPage({
               />
             </div>
 
-            {/* Explanation */}
+            {/* DISPLAY ORDER */}
             <div>
               <label
-                htmlFor="explanation"
+                htmlFor="displayOrder"
                 className="mb-2 block text-sm font-semibold text-slate-700"
               >
-                Explanation
+                Display Order
               </label>
 
-              <textarea
-                id="explanation"
-                name="explanation"
-                rows={4}
-                placeholder="Optional explanation for the correct answer..."
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
+              <input
+                id="displayOrder"
+                name="displayOrder"
+                type="number"
+                min="0"
+                defaultValue="0"
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
               />
             </div>
 
-            {/* Actions */}
+            {/* ACTIONS */}
             <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
               <Link
                 href={`/admin/tests/${test.id}`}
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Cancel
               </Link>

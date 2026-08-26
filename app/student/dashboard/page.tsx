@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -21,6 +22,7 @@ export default async function StudentDashboardPage() {
     attempts,
     announcements,
     projectRecords,
+    liveClasses,
   ] = await Promise.all([
     prisma.studentProfile.findUnique({
       where: {
@@ -58,6 +60,7 @@ export default async function StudentDashboardPage() {
             },
           },
         },
+
         lessonProgress: {
           where: {
             completed: true,
@@ -96,10 +99,6 @@ export default async function StudentDashboardPage() {
       take: 5,
     }),
 
-    /*
-     * StudentProjectRecord is the model that actually contains
-     * studentId in the Prisma schema.
-     */
     prisma.studentProjectRecord.findMany({
       where: {
         studentId: user.id,
@@ -110,6 +109,51 @@ export default async function StudentDashboardPage() {
       take: 5,
       include: {
         project: true,
+      },
+    }),
+
+    /*
+     * ============================================================
+     * LIVE CLASSES
+     * ============================================================
+     *
+     * Only show classes:
+     * - belonging to a course the student is actively enrolled in
+     * - published by the admin
+     * - scheduled or currently live
+     */
+    prisma.liveClass.findMany({
+      where: {
+        isPublished: true,
+
+        status: {
+          in: ["SCHEDULED", "LIVE"],
+        },
+
+        course: {
+          enrollments: {
+            some: {
+              studentId: user.id,
+              status: "ACTIVE",
+            },
+          },
+        },
+      },
+
+      orderBy: {
+        scheduledAt: "asc",
+      },
+
+      take: 10,
+
+      include: {
+        course: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+          },
+        },
       },
     }),
   ]);
@@ -214,6 +258,18 @@ export default async function StudentDashboardPage() {
   const studentNumber =
     profile?.studentNumber || "Student";
 
+  /* ============================================================
+     LIVE CLASS HELPERS
+     ============================================================ */
+
+  const liveNowClasses = liveClasses.filter(
+    (liveClass) => liveClass.status === "LIVE"
+  );
+
+  const upcomingClasses = liveClasses.filter(
+    (liveClass) => liveClass.status === "SCHEDULED"
+  );
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
       {/* ========================================================
@@ -271,9 +327,10 @@ export default async function StudentDashboardPage() {
               </h2>
 
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400">
-                Continue your courses, complete lessons, take
-                assessments, submit projects, monitor your progress,
-                and manage your student profile from one place.
+                Continue your courses, attend live classes, complete
+                lessons, take assessments, submit projects, monitor
+                your progress, and manage your student profile from
+                one place.
               </p>
 
               <div className="mt-7 flex flex-wrap gap-3">
@@ -294,6 +351,13 @@ export default async function StudentDashboardPage() {
                 )}
 
                 <Link
+                  href="/student/live-classes"
+                  className="rounded-xl border border-slate-700 px-5 py-3 font-semibold text-white transition hover:bg-white/5"
+                >
+                  Live Classes
+                </Link>
+
+                <Link
                   href="/student/tests"
                   className="rounded-xl border border-slate-700 px-5 py-3 font-semibold text-white transition hover:bg-white/5"
                 >
@@ -307,6 +371,7 @@ export default async function StudentDashboardPage() {
                 <p className="text-3xl font-bold">
                   {activeEnrollments.length}
                 </p>
+
                 <p className="mt-1 text-sm text-slate-400">
                   Active Courses
                 </p>
@@ -316,6 +381,7 @@ export default async function StudentDashboardPage() {
                 <p className="text-3xl font-bold">
                   {completedCourses.length}
                 </p>
+
                 <p className="mt-1 text-sm text-slate-400">
                   Completed
                 </p>
@@ -325,6 +391,7 @@ export default async function StudentDashboardPage() {
                 <p className="text-3xl font-bold">
                   {completedTests.length}
                 </p>
+
                 <p className="mt-1 text-sm text-slate-400">
                   Tests Taken
                 </p>
@@ -332,15 +399,235 @@ export default async function StudentDashboardPage() {
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
                 <p className="text-3xl font-bold">
-                  {averageScore}%
+                  {liveClasses.length}
                 </p>
+
                 <p className="mt-1 text-sm text-slate-400">
-                  Average Score
+                  Live Classes
                 </p>
               </div>
             </div>
           </div>
         </section>
+
+        {/* ======================================================
+            LIVE CLASSES
+        ====================================================== */}
+
+        <section className="mt-10">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">
+                Live Learning
+              </p>
+
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                Upcoming live classes.
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                Join your scheduled EDSEC virtual classes directly
+                from your student dashboard.
+              </p>
+            </div>
+
+            <Link
+              href="/student/live-classes"
+              className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+            >
+              View all live classes →
+            </Link>
+          </div>
+
+          {liveClasses.length > 0 ? (
+            <div className="mt-5 grid gap-5 lg:grid-cols-2">
+              {liveClasses.slice(0, 4).map((liveClass) => {
+                const date = new Date(liveClass.scheduledAt);
+
+                const dateText = date.toLocaleDateString(
+                  undefined,
+                  {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  }
+                );
+
+                const timeText = date.toLocaleTimeString(
+                  undefined,
+                  {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }
+                );
+
+                const isLive =
+                  liveClass.status === "LIVE";
+
+                return (
+                  <div
+                    key={liveClass.id}
+                    className={`overflow-hidden rounded-3xl border bg-white transition hover:shadow-lg ${
+                      isLive
+                        ? "border-red-200"
+                        : "border-slate-200"
+                    }`}
+                  >
+                    <div
+                      className={`p-6 ${
+                        isLive
+                          ? "bg-red-50"
+                          : "bg-blue-50"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {isLive ? (
+                              <span className="inline-flex items-center gap-2 rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                                <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
+                                Live Now
+                              </span>
+                            ) : (
+                              <span className="rounded-full bg-blue-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                                Upcoming
+                              </span>
+                            )}
+                          </div>
+
+                          <h3 className="mt-4 text-xl font-bold text-slate-950">
+                            {liveClass.title}
+                          </h3>
+
+                          <p className="mt-2 text-sm font-medium text-slate-600">
+                            {liveClass.course.title}
+                          </p>
+                        </div>
+
+                        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-xl shadow-sm">
+                          🎥
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6">
+                      {liveClass.description && (
+                        <p className="line-clamp-2 text-sm leading-6 text-slate-500">
+                          {liveClass.description}
+                        </p>
+                      )}
+
+                      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-2xl bg-slate-50 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                            Date
+                          </p>
+
+                          <p className="mt-1 text-sm font-semibold text-slate-800">
+                            {dateText}
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl bg-slate-50 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                            Time
+                          </p>
+
+                          <p className="mt-1 text-sm font-semibold text-slate-800">
+                            {timeText}
+                          </p>
+                        </div>
+                      </div>
+
+                      {liveClass.duration && (
+                        <p className="mt-4 text-xs text-slate-400">
+                          Duration: {liveClass.duration} minutes
+                        </p>
+                      )}
+
+                      <a
+                        href={liveClass.meetingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`mt-5 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-white transition ${
+                          isLive
+                            ? "bg-red-600 hover:bg-red-700"
+                            : "bg-blue-600 hover:bg-blue-700"
+                        }`}
+                      >
+                        {isLive
+                          ? "Join Live Class →"
+                          : "Open Class Link →"}
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="mt-5 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-2xl">
+                🎥
+              </div>
+
+              <h3 className="mt-5 font-semibold">
+                No live classes scheduled
+              </h3>
+
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                Your upcoming virtual classes will appear here
+                when they are published by EDSEC.
+              </p>
+
+              <Link
+                href="/student/courses"
+                className="mt-5 inline-flex rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+              >
+                View My Courses
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {/* ======================================================
+            LIVE NOW ALERT
+        ====================================================== */}
+
+        {liveNowClasses.length > 0 && (
+          <section className="mt-6">
+            <div className="rounded-3xl border border-red-200 bg-red-50 p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-3 w-3 animate-pulse rounded-full bg-red-600" />
+
+                    <p className="text-sm font-bold uppercase tracking-wider text-red-700">
+                      Class is currently live
+                    </p>
+                  </div>
+
+                  <h3 className="mt-2 text-lg font-bold text-red-950">
+                    {liveNowClasses[0].title}
+                  </h3>
+
+                  <p className="mt-1 text-sm text-red-700">
+                    {liveNowClasses[0].course.title}
+                  </p>
+                </div>
+
+                <a
+                  href={liveNowClasses[0].meetingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex shrink-0 items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
+                >
+                  Join Now →
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ======================================================
             QUICK ACTIONS
@@ -357,15 +644,15 @@ export default async function StudentDashboardPage() {
               },
               {
                 number: "02",
-                title: "Assessments",
-                text: "Take tests and review results.",
-                href: "/student/tests",
+                title: "Live Classes",
+                text: "Join scheduled virtual classes.",
+                href: "/student/live-classes",
               },
               {
                 number: "03",
-                title: "My Progress",
-                text: "Track your course development.",
-                href: "/student/progress",
+                title: "Assessments",
+                text: "Take tests and review results.",
+                href: "/student/tests",
               },
               {
                 number: "04",
@@ -908,10 +1195,10 @@ export default async function StudentDashboardPage() {
               "Project Feedback",
               "Student Profile",
               "Announcements",
+              "Live Classes",
               "Certificates",
               "Learning History",
               "Course Completion",
-              "Practical Skills",
             ].map((feature) => (
               <div
                 key={feature}

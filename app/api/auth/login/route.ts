@@ -1,109 +1,99 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+
 import { prisma } from "@/app/lib/prisma";
-import { createToken } from "@/app/lib/jwt";
+import { createLoginSession } from "@/app/lib/auth";
 
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
+    const body = await request.json();
 
-    const email = String(body.email || "").trim().toLowerCase();
-    const password = String(body.password || "");
+    const email =
+      typeof body.email === "string"
+        ? body.email.trim().toLowerCase()
+        : "";
+
+    const password =
+      typeof body.password === "string"
+        ? body.password
+        : "";
 
     if (!email || !password) {
       return NextResponse.json(
         {
-          success: false,
-          message: "Email and password are required.",
+          message:
+            "Email address and password are required.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: {
+        email,
+      },
     });
 
     if (!user) {
       return NextResponse.json(
         {
-          success: false,
-          message: "Invalid email or password.",
+          message:
+            "Invalid email address or password.",
         },
-        { status: 401 }
-      );
-    }
-
-    const passwordValid = await bcrypt.compare(
-      password,
-      user.passwordHash
-    );
-
-    if (!passwordValid) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid email or password.",
-        },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     if (user.status !== "ACTIVE") {
       return NextResponse.json(
         {
-          success: false,
-          message: "Your account is not currently active.",
+          message:
+            user.status === "SUSPENDED"
+              ? "Your account has been suspended. Please contact EDSEC."
+              : "Your account is currently inactive.",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
-    const token = await createToken({
-      userId: user.id,
-      role: user.role,
-    });
+    const passwordValid =
+      await bcrypt.compare(
+        password,
+        user.passwordHash,
+      );
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        lastLoginAt: new Date(),
-      },
-    });
+    if (!passwordValid) {
+      return NextResponse.json(
+        {
+          message:
+            "Invalid email address or password.",
+        },
+        { status: 401 },
+      );
+    }
 
-    const response = NextResponse.json({
+    await createLoginSession(user.id);
+
+    return NextResponse.json({
       success: true,
       message: "Login successful.",
-      role: user.role,
       user: {
         id: user.id,
+        email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email,
         role: user.role,
       },
     });
-
-    response.cookies.set({
-      name: "edsec_token",
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
-
-    return response;
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("LOGIN_ERROR:", error);
 
     return NextResponse.json(
       {
-        success: false,
-        message: "Something went wrong while signing you in.",
+        message:
+          "Unable to sign in right now. Please try again.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

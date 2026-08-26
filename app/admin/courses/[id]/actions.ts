@@ -1,14 +1,12 @@
-/* eslint-disable @next/next/no-assign-module-variable */
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/app/lib/prisma";
 import { requireRole } from "@/app/lib/auth";
 
-export type CourseManagementResult = {
-  success: boolean;
-  message: string;
-};
+/* =========================================================
+   HELPERS
+========================================================= */
 
 function slugify(value: string) {
   return value
@@ -30,7 +28,7 @@ async function createUniqueLessonSlug(
   let counter = 2;
 
   while (true) {
-    const existing = await prisma.lesson.findFirst({
+    const existingLesson = await prisma.lesson.findFirst({
       where: {
         moduleId,
         slug,
@@ -47,7 +45,7 @@ async function createUniqueLessonSlug(
       },
     });
 
-    if (!existing) {
+    if (!existingLesson) {
       return slug;
     }
 
@@ -63,51 +61,39 @@ async function verifyCourse(courseId: string) {
     },
     select: {
       id: true,
-      title: true,
     },
   });
 }
 
+/* =========================================================
+   MODULES
+========================================================= */
+
 export async function createModule(
   courseId: string,
   formData: FormData
-): Promise<CourseManagementResult> {
+): Promise<void> {
   const admin = await requireRole("ADMIN");
 
-  if (!admin) {
-    return {
-      success: false,
-      message: "Unauthorized.",
-    };
-  }
-
-  if (!courseId) {
-    return {
-      success: false,
-      message: "Course ID is required.",
-    };
+  if (!admin || !courseId) {
+    return;
   }
 
   const title = String(formData.get("title") ?? "").trim();
+
   const description = String(
     formData.get("description") ?? ""
   ).trim();
 
   if (!title) {
-    return {
-      success: false,
-      message: "Module title is required.",
-    };
+    return;
   }
 
   try {
     const course = await verifyCourse(courseId);
 
     if (!course) {
-      return {
-        success: false,
-        message: "Course not found.",
-      };
+      return;
     }
 
     const lastModule = await prisma.courseModule.findFirst({
@@ -133,21 +119,8 @@ export async function createModule(
     });
 
     revalidatePath(`/admin/courses/${courseId}`);
-
-    return {
-      success: true,
-      message: "Module created successfully.",
-    };
   } catch (error) {
     console.error("CREATE MODULE ERROR:", error);
-
-    return {
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Unable to create module.",
-    };
   }
 }
 
@@ -155,30 +128,25 @@ export async function updateModule(
   courseId: string,
   moduleId: string,
   formData: FormData
-): Promise<CourseManagementResult> {
+): Promise<void> {
   const admin = await requireRole("ADMIN");
 
   if (!admin) {
-    return {
-      success: false,
-      message: "Unauthorized.",
-    };
+    return;
   }
 
   const title = String(formData.get("title") ?? "").trim();
+
   const description = String(
     formData.get("description") ?? ""
   ).trim();
 
   if (!title) {
-    return {
-      success: false,
-      message: "Module title is required.",
-    };
+    return;
   }
 
   try {
-    const module = await prisma.courseModule.findFirst({
+    const existingModule = await prisma.courseModule.findFirst({
       where: {
         id: moduleId,
         courseId,
@@ -188,11 +156,8 @@ export async function updateModule(
       },
     });
 
-    if (!module) {
-      return {
-        success: false,
-        message: "Module not found.",
-      };
+    if (!existingModule) {
+      return;
     }
 
     await prisma.courseModule.update({
@@ -206,36 +171,23 @@ export async function updateModule(
     });
 
     revalidatePath(`/admin/courses/${courseId}`);
-
-    return {
-      success: true,
-      message: "Module updated successfully.",
-    };
   } catch (error) {
     console.error("UPDATE MODULE ERROR:", error);
-
-    return {
-      success: false,
-      message: "Unable to update module.",
-    };
   }
 }
 
 export async function toggleModulePublished(
   courseId: string,
   moduleId: string
-): Promise<CourseManagementResult> {
+): Promise<void> {
   const admin = await requireRole("ADMIN");
 
   if (!admin) {
-    return {
-      success: false,
-      message: "Unauthorized.",
-    };
+    return;
   }
 
   try {
-    const module = await prisma.courseModule.findFirst({
+    const existingModule = await prisma.courseModule.findFirst({
       where: {
         id: moduleId,
         courseId,
@@ -246,11 +198,8 @@ export async function toggleModulePublished(
       },
     });
 
-    if (!module) {
-      return {
-        success: false,
-        message: "Module not found.",
-      };
+    if (!existingModule) {
+      return;
     }
 
     await prisma.courseModule.update({
@@ -258,43 +207,28 @@ export async function toggleModulePublished(
         id: moduleId,
       },
       data: {
-        isPublished: !module.isPublished,
+        isPublished: !existingModule.isPublished,
       },
     });
 
     revalidatePath(`/admin/courses/${courseId}`);
-
-    return {
-      success: true,
-      message: module.isPublished
-        ? "Module unpublished."
-        : "Module published.",
-    };
   } catch (error) {
     console.error("TOGGLE MODULE ERROR:", error);
-
-    return {
-      success: false,
-      message: "Unable to change module status.",
-    };
   }
 }
 
 export async function deleteModule(
   courseId: string,
   moduleId: string
-): Promise<CourseManagementResult> {
+): Promise<void> {
   const admin = await requireRole("ADMIN");
 
   if (!admin) {
-    return {
-      success: false,
-      message: "Unauthorized.",
-    };
+    return;
   }
 
   try {
-    const module = await prisma.courseModule.findFirst({
+    const existingModule = await prisma.courseModule.findFirst({
       where: {
         id: moduleId,
         courseId,
@@ -304,11 +238,8 @@ export async function deleteModule(
       },
     });
 
-    if (!module) {
-      return {
-        success: false,
-        message: "Module not found.",
-      };
+    if (!existingModule) {
+      return;
     }
 
     await prisma.courseModule.delete({
@@ -318,70 +249,213 @@ export async function deleteModule(
     });
 
     revalidatePath(`/admin/courses/${courseId}`);
-
-    return {
-      success: true,
-      message: "Module deleted successfully.",
-    };
   } catch (error) {
     console.error("DELETE MODULE ERROR:", error);
-
-    return {
-      success: false,
-      message:
-        "Unable to delete module. Make sure its related records allow deletion.",
-    };
   }
 }
+
+/* =========================================================
+   MODULE ORDERING
+========================================================= */
+
+export async function moveModuleUp(
+  courseId: string,
+  moduleId: string
+): Promise<void> {
+  const admin = await requireRole("ADMIN");
+
+  if (!admin) {
+    return;
+  }
+
+  try {
+    const currentModule = await prisma.courseModule.findFirst({
+      where: {
+        id: moduleId,
+        courseId,
+      },
+      select: {
+        id: true,
+        displayOrder: true,
+      },
+    });
+
+    if (!currentModule) {
+      return;
+    }
+
+    const previousModule = await prisma.courseModule.findFirst({
+      where: {
+        courseId,
+        displayOrder: {
+          lt: currentModule.displayOrder,
+        },
+      },
+      orderBy: {
+        displayOrder: "desc",
+      },
+      select: {
+        id: true,
+        displayOrder: true,
+      },
+    });
+
+    if (!previousModule) {
+      return;
+    }
+
+    await prisma.$transaction([
+      prisma.courseModule.update({
+        where: {
+          id: currentModule.id,
+        },
+        data: {
+          displayOrder: previousModule.displayOrder,
+        },
+      }),
+
+      prisma.courseModule.update({
+        where: {
+          id: previousModule.id,
+        },
+        data: {
+          displayOrder: currentModule.displayOrder,
+        },
+      }),
+    ]);
+
+    revalidatePath(`/admin/courses/${courseId}`);
+  } catch (error) {
+    console.error("MOVE MODULE UP ERROR:", error);
+  }
+}
+
+export async function moveModuleDown(
+  courseId: string,
+  moduleId: string
+): Promise<void> {
+  const admin = await requireRole("ADMIN");
+
+  if (!admin) {
+    return;
+  }
+
+  try {
+    const currentModule = await prisma.courseModule.findFirst({
+      where: {
+        id: moduleId,
+        courseId,
+      },
+      select: {
+        id: true,
+        displayOrder: true,
+      },
+    });
+
+    if (!currentModule) {
+      return;
+    }
+
+    const nextModule = await prisma.courseModule.findFirst({
+      where: {
+        courseId,
+        displayOrder: {
+          gt: currentModule.displayOrder,
+        },
+      },
+      orderBy: {
+        displayOrder: "asc",
+      },
+      select: {
+        id: true,
+        displayOrder: true,
+      },
+    });
+
+    if (!nextModule) {
+      return;
+    }
+
+    await prisma.$transaction([
+      prisma.courseModule.update({
+        where: {
+          id: currentModule.id,
+        },
+        data: {
+          displayOrder: nextModule.displayOrder,
+        },
+      }),
+
+      prisma.courseModule.update({
+        where: {
+          id: nextModule.id,
+        },
+        data: {
+          displayOrder: currentModule.displayOrder,
+        },
+      }),
+    ]);
+
+    revalidatePath(`/admin/courses/${courseId}`);
+  } catch (error) {
+    console.error("MOVE MODULE DOWN ERROR:", error);
+  }
+}
+
+/* =========================================================
+   LESSONS
+========================================================= */
 
 export async function createLesson(
   courseId: string,
   moduleId: string,
   formData: FormData
-): Promise<CourseManagementResult> {
+): Promise<void> {
   const admin = await requireRole("ADMIN");
 
   if (!admin) {
-    return {
-      success: false,
-      message: "Unauthorized.",
-    };
+    return;
   }
 
   const title = String(formData.get("title") ?? "").trim();
+
   const description = String(
     formData.get("description") ?? ""
   ).trim();
-  const content = String(formData.get("content") ?? "").trim();
-  const videoUrl = String(formData.get("videoUrl") ?? "").trim();
+
+  const content = String(
+    formData.get("content") ?? ""
+  ).trim();
+
+  const videoUrl = String(
+    formData.get("videoUrl") ?? ""
+  ).trim();
 
   const durationRaw = String(
     formData.get("duration") ?? ""
   ).trim();
 
-  const duration = durationRaw
-    ? Number.parseInt(durationRaw, 10)
+  const parsedDuration = durationRaw
+    ? Number(durationRaw)
     : null;
 
+  const duration =
+    parsedDuration !== null &&
+    Number.isInteger(parsedDuration) &&
+    parsedDuration >= 1
+      ? parsedDuration
+      : null;
+
   if (!title) {
-    return {
-      success: false,
-      message: "Lesson title is required.",
-    };
+    return;
   }
 
-  if (
-    duration !== null &&
-    (Number.isNaN(duration) || duration < 1)
-  ) {
-    return {
-      success: false,
-      message: "Lesson duration must be a valid positive number.",
-    };
+  if (durationRaw && duration === null) {
+    return;
   }
 
   try {
-    const module = await prisma.courseModule.findFirst({
+    const existingModule = await prisma.courseModule.findFirst({
       where: {
         id: moduleId,
         courseId,
@@ -391,11 +465,8 @@ export async function createLesson(
       },
     });
 
-    if (!module) {
-      return {
-        success: false,
-        message: "Module not found.",
-      };
+    if (!existingModule) {
+      return;
     }
 
     const lastLesson = await prisma.lesson.findFirst({
@@ -430,21 +501,8 @@ export async function createLesson(
     });
 
     revalidatePath(`/admin/courses/${courseId}`);
-
-    return {
-      success: true,
-      message: "Lesson created successfully.",
-    };
   } catch (error) {
     console.error("CREATE LESSON ERROR:", error);
-
-    return {
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Unable to create lesson.",
-    };
   }
 }
 
@@ -453,50 +511,52 @@ export async function updateLesson(
   moduleId: string,
   lessonId: string,
   formData: FormData
-): Promise<CourseManagementResult> {
+): Promise<void> {
   const admin = await requireRole("ADMIN");
 
   if (!admin) {
-    return {
-      success: false,
-      message: "Unauthorized.",
-    };
+    return;
   }
 
   const title = String(formData.get("title") ?? "").trim();
+
   const description = String(
     formData.get("description") ?? ""
   ).trim();
-  const content = String(formData.get("content") ?? "").trim();
-  const videoUrl = String(formData.get("videoUrl") ?? "").trim();
+
+  const content = String(
+    formData.get("content") ?? ""
+  ).trim();
+
+  const videoUrl = String(
+    formData.get("videoUrl") ?? ""
+  ).trim();
 
   const durationRaw = String(
     formData.get("duration") ?? ""
   ).trim();
 
-  const duration = durationRaw
-    ? Number.parseInt(durationRaw, 10)
+  const parsedDuration = durationRaw
+    ? Number(durationRaw)
     : null;
 
+  const duration =
+    parsedDuration !== null &&
+    Number.isInteger(parsedDuration) &&
+    parsedDuration >= 1
+      ? parsedDuration
+      : null;
+
   if (!title) {
-    return {
-      success: false,
-      message: "Lesson title is required.",
-    };
+    return;
   }
 
-  if (
-    duration !== null &&
-    (Number.isNaN(duration) || duration < 1)
-  ) {
-    return {
-      success: false,
-      message: "Lesson duration must be a valid positive number.",
-    };
+  if (durationRaw && duration === null) {
+    return;
   }
 
   try {
-    const lesson = await prisma.lesson.findFirst({
+    const existingLesson = await prisma.lesson.findFirst({
       where: {
         id: lessonId,
         moduleId,
@@ -511,16 +571,14 @@ export async function updateLesson(
       },
     });
 
-    if (!lesson) {
-      return {
-        success: false,
-        message: "Lesson not found.",
-      };
+    if (!existingLesson) {
+      return;
     }
 
     const slug =
-      title.toLowerCase() === lesson.title.toLowerCase()
-        ? lesson.slug
+      title.toLowerCase() ===
+      existingLesson.title.toLowerCase()
+        ? existingLesson.slug
         : await createUniqueLessonSlug(
             moduleId,
             title,
@@ -542,18 +600,8 @@ export async function updateLesson(
     });
 
     revalidatePath(`/admin/courses/${courseId}`);
-
-    return {
-      success: true,
-      message: "Lesson updated successfully.",
-    };
   } catch (error) {
     console.error("UPDATE LESSON ERROR:", error);
-
-    return {
-      success: false,
-      message: "Unable to update lesson.",
-    };
   }
 }
 
@@ -561,18 +609,15 @@ export async function toggleLessonPublished(
   courseId: string,
   moduleId: string,
   lessonId: string
-): Promise<CourseManagementResult> {
+): Promise<void> {
   const admin = await requireRole("ADMIN");
 
   if (!admin) {
-    return {
-      success: false,
-      message: "Unauthorized.",
-    };
+    return;
   }
 
   try {
-    const lesson = await prisma.lesson.findFirst({
+    const existingLesson = await prisma.lesson.findFirst({
       where: {
         id: lessonId,
         moduleId,
@@ -586,11 +631,8 @@ export async function toggleLessonPublished(
       },
     });
 
-    if (!lesson) {
-      return {
-        success: false,
-        message: "Lesson not found.",
-      };
+    if (!existingLesson) {
+      return;
     }
 
     await prisma.lesson.update({
@@ -598,25 +640,13 @@ export async function toggleLessonPublished(
         id: lessonId,
       },
       data: {
-        isPublished: !lesson.isPublished,
+        isPublished: !existingLesson.isPublished,
       },
     });
 
     revalidatePath(`/admin/courses/${courseId}`);
-
-    return {
-      success: true,
-      message: lesson.isPublished
-        ? "Lesson unpublished."
-        : "Lesson published.",
-    };
   } catch (error) {
     console.error("TOGGLE LESSON ERROR:", error);
-
-    return {
-      success: false,
-      message: "Unable to change lesson status.",
-    };
   }
 }
 
@@ -624,18 +654,15 @@ export async function deleteLesson(
   courseId: string,
   moduleId: string,
   lessonId: string
-): Promise<CourseManagementResult> {
+): Promise<void> {
   const admin = await requireRole("ADMIN");
 
   if (!admin) {
-    return {
-      success: false,
-      message: "Unauthorized.",
-    };
+    return;
   }
 
   try {
-    const lesson = await prisma.lesson.findFirst({
+    const existingLesson = await prisma.lesson.findFirst({
       where: {
         id: lessonId,
         moduleId,
@@ -648,11 +675,8 @@ export async function deleteLesson(
       },
     });
 
-    if (!lesson) {
-      return {
-        success: false,
-        message: "Lesson not found.",
-      };
+    if (!existingLesson) {
+      return;
     }
 
     await prisma.lesson.delete({
@@ -662,18 +686,163 @@ export async function deleteLesson(
     });
 
     revalidatePath(`/admin/courses/${courseId}`);
-
-    return {
-      success: true,
-      message: "Lesson deleted successfully.",
-    };
   } catch (error) {
     console.error("DELETE LESSON ERROR:", error);
+  }
+}
 
-    return {
-      success: false,
-      message:
-        "Unable to delete lesson. It may have student progress records.",
-    };
+/* =========================================================
+   LESSON ORDERING
+========================================================= */
+
+export async function moveLessonUp(
+  courseId: string,
+  moduleId: string,
+  lessonId: string
+): Promise<void> {
+  const admin = await requireRole("ADMIN");
+
+  if (!admin) {
+    return;
+  }
+
+  try {
+    const currentLesson = await prisma.lesson.findFirst({
+      where: {
+        id: lessonId,
+        moduleId,
+        module: {
+          courseId,
+        },
+      },
+      select: {
+        id: true,
+        displayOrder: true,
+      },
+    });
+
+    if (!currentLesson) {
+      return;
+    }
+
+    const previousLesson = await prisma.lesson.findFirst({
+      where: {
+        moduleId,
+        displayOrder: {
+          lt: currentLesson.displayOrder,
+        },
+      },
+      orderBy: {
+        displayOrder: "desc",
+      },
+      select: {
+        id: true,
+        displayOrder: true,
+      },
+    });
+
+    if (!previousLesson) {
+      return;
+    }
+
+    await prisma.$transaction([
+      prisma.lesson.update({
+        where: {
+          id: currentLesson.id,
+        },
+        data: {
+          displayOrder: previousLesson.displayOrder,
+        },
+      }),
+
+      prisma.lesson.update({
+        where: {
+          id: previousLesson.id,
+        },
+        data: {
+          displayOrder: currentLesson.displayOrder,
+        },
+      }),
+    ]);
+
+    revalidatePath(`/admin/courses/${courseId}`);
+  } catch (error) {
+    console.error("MOVE LESSON UP ERROR:", error);
+  }
+}
+
+export async function moveLessonDown(
+  courseId: string,
+  moduleId: string,
+  lessonId: string
+): Promise<void> {
+  const admin = await requireRole("ADMIN");
+
+  if (!admin) {
+    return;
+  }
+
+  try {
+    const currentLesson = await prisma.lesson.findFirst({
+      where: {
+        id: lessonId,
+        moduleId,
+        module: {
+          courseId,
+        },
+      },
+      select: {
+        id: true,
+        displayOrder: true,
+      },
+    });
+
+    if (!currentLesson) {
+      return;
+    }
+
+    const nextLesson = await prisma.lesson.findFirst({
+      where: {
+        moduleId,
+        displayOrder: {
+          gt: currentLesson.displayOrder,
+        },
+      },
+      orderBy: {
+        displayOrder: "asc",
+      },
+      select: {
+        id: true,
+        displayOrder: true,
+      },
+    });
+
+    if (!nextLesson) {
+      return;
+    }
+
+    await prisma.$transaction([
+      prisma.lesson.update({
+        where: {
+          id: currentLesson.id,
+        },
+        data: {
+          displayOrder: nextLesson.displayOrder,
+        },
+      }),
+
+      prisma.lesson.update({
+        where: {
+          id: nextLesson.id,
+        },
+        data: {
+          displayOrder: currentLesson.displayOrder,
+        },
+      }),
+    ]);
+
+    revalidatePath(`/admin/courses/${courseId}`);
+  } catch (error) {
+    console.error("MOVE LESSON DOWN ERROR:", error);
   }
 }

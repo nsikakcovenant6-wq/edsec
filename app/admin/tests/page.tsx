@@ -1,6 +1,8 @@
 import Link from "next/link";
+
 import { prisma } from "@/app/lib/prisma";
 import { requireRole } from "@/app/lib/auth";
+
 import { createTest } from "./actions";
 
 export default async function AdminTestsPage() {
@@ -50,12 +52,12 @@ export default async function AdminTestsPage() {
   return (
     <main className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <Link
               href="/admin"
-              className="mb-2 inline-flex text-sm font-medium text-slate-500 hover:text-slate-900"
+              className="mb-2 inline-flex text-sm font-medium text-slate-500 transition hover:text-slate-900"
             >
               ← Admin Dashboard
             </Link>
@@ -75,7 +77,7 @@ export default async function AdminTestsPage() {
           </div>
         </div>
 
-        {/* Create Test */}
+        {/* CREATE TEST */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div>
             <h2 className="text-lg font-bold text-slate-900">
@@ -93,13 +95,11 @@ export default async function AdminTestsPage() {
             </div>
           ) : (
             <form
-              action={async (formData: FormData): Promise<void> => {
-                await createTest(formData);
-              }}
+              action={createTest}
               className="mt-6 space-y-5"
             >
               <div className="grid gap-5 md:grid-cols-2">
-                {/* Test Title */}
+                {/* TEST TITLE */}
                 <div>
                   <label
                     htmlFor="title"
@@ -118,7 +118,7 @@ export default async function AdminTestsPage() {
                   />
                 </div>
 
-                {/* Course */}
+                {/* COURSE */}
                 <div>
                   <label
                     htmlFor="courseId"
@@ -146,7 +146,7 @@ export default async function AdminTestsPage() {
                   </select>
                 </div>
 
-                {/* Duration */}
+                {/* DURATION */}
                 <div>
                   <label
                     htmlFor="duration"
@@ -172,7 +172,7 @@ export default async function AdminTestsPage() {
                 </div>
               </div>
 
-              {/* Description */}
+              {/* DESCRIPTION */}
               <div>
                 <label
                   htmlFor="description"
@@ -190,7 +190,7 @@ export default async function AdminTestsPage() {
                 />
               </div>
 
-              {/* Submit */}
+              {/* SUBMIT */}
               <button
                 type="submit"
                 className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
@@ -201,7 +201,7 @@ export default async function AdminTestsPage() {
           )}
         </section>
 
-        {/* Tests */}
+        {/* TESTS */}
         <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 p-6">
             <h2 className="text-lg font-bold text-slate-900">
@@ -276,7 +276,7 @@ export default async function AdminTestsPage() {
                   <div className="flex flex-wrap gap-2">
                     <Link
                       href={`/admin/tests/${test.id}`}
-                      className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
+                      className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
                     >
                       Manage Test
                     </Link>

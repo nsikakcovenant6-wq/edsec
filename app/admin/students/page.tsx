@@ -1,40 +1,82 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+
 import { prisma } from "@/app/lib/prisma";
-import { requireRole } from "@/app/lib/auth";
+import { getCurrentUser } from "@/app/lib/auth";
+
 import StudentStatusButton from "./student-status-button";
+import DeleteStudentButton from "./delete-student-button";
 
 type SearchParams = {
   search?: string;
   status?: string;
 };
 
+type StudentStatus =
+  | "ACTIVE"
+  | "INACTIVE"
+  | "SUSPENDED";
+
 export default async function AdminStudentsPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const admin = await requireRole("ADMIN");
+  /*
+   * ---------------------------------------------------------
+   * Authentication
+   * ---------------------------------------------------------
+   */
 
-  if (!admin) {
+  const user = await getCurrentUser();
+
+  if (!user) {
     redirect("/login");
   }
+
+  /*
+   * Never allow a student to access an admin page.
+   *
+   * Instead of throwing FORBIDDEN into the browser,
+   * redirect the student to their own dashboard.
+   */
+  if (user.role !== "ADMIN") {
+    redirect("/student/dashboard");
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * Search / filters
+   * ---------------------------------------------------------
+   */
 
   const params = await searchParams;
 
   const search = params.search?.trim() || "";
   const status = params.status || "ALL";
 
+  const validStatuses: StudentStatus[] = [
+    "ACTIVE",
+    "INACTIVE",
+    "SUSPENDED",
+  ];
+
+  /*
+   * ---------------------------------------------------------
+   * Students
+   * ---------------------------------------------------------
+   */
+
   const students = await prisma.user.findMany({
     where: {
       role: "STUDENT",
 
-      ...(status !== "ALL"
+      ...(status !== "ALL" &&
+      validStatuses.includes(
+        status as StudentStatus,
+      )
         ? {
-            status: status as
-              | "ACTIVE"
-              | "INACTIVE"
-              | "SUSPENDED",
+            status: status as StudentStatus,
           }
         : {}),
 
@@ -47,24 +89,28 @@ export default async function AdminStudentsPage({
                   mode: "insensitive",
                 },
               },
+
               {
                 lastName: {
                   contains: search,
                   mode: "insensitive",
                 },
               },
+
               {
                 email: {
                   contains: search,
                   mode: "insensitive",
                 },
               },
+
               {
                 phone: {
                   contains: search,
                   mode: "insensitive",
                 },
               },
+
               {
                 studentProfile: {
                   studentNumber: {
@@ -128,36 +174,50 @@ export default async function AdminStudentsPage({
     },
   });
 
-  const totalStudents = await prisma.user.count({
-    where: {
-      role: "STUDENT",
-    },
-  });
+  /*
+   * ---------------------------------------------------------
+   * Statistics
+   * ---------------------------------------------------------
+   */
 
-  const activeStudents = await prisma.user.count({
-    where: {
-      role: "STUDENT",
-      status: "ACTIVE",
-    },
-  });
+  const [
+    totalStudents,
+    activeStudents,
+    suspendedStudents,
+    inactiveStudents,
+  ] = await Promise.all([
+    prisma.user.count({
+      where: {
+        role: "STUDENT",
+      },
+    }),
 
-  const suspendedStudents = await prisma.user.count({
-    where: {
-      role: "STUDENT",
-      status: "SUSPENDED",
-    },
-  });
+    prisma.user.count({
+      where: {
+        role: "STUDENT",
+        status: "ACTIVE",
+      },
+    }),
 
-  const inactiveStudents = await prisma.user.count({
-    where: {
-      role: "STUDENT",
-      status: "INACTIVE",
-    },
-  });
+    prisma.user.count({
+      where: {
+        role: "STUDENT",
+        status: "SUSPENDED",
+      },
+    }),
+
+    prisma.user.count({
+      where: {
+        role: "STUDENT",
+        status: "INACTIVE",
+      },
+    }),
+  ]);
 
   return (
     <main className="min-h-screen bg-slate-50">
-      {/* Header */}
+      {/* HEADER */}
+
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-5 py-6 lg:px-8">
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
@@ -178,8 +238,9 @@ export default async function AdminStudentsPage({
               </h1>
 
               <p className="mt-2 max-w-2xl text-slate-600">
-                View and manage registered EDSEC students, their courses,
-                enrollment progress, and account status.
+                View and manage registered EDSEC
+                students, their courses, enrollment
+                progress, payments, and account status.
               </p>
             </div>
 
@@ -194,7 +255,8 @@ export default async function AdminStudentsPage({
       </header>
 
       <section className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
-        {/* Statistics */}
+        {/* STATISTICS */}
+
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             label="Total Students"
@@ -221,7 +283,8 @@ export default async function AdminStudentsPage({
           />
         </div>
 
-        {/* Filters */}
+        {/* FILTERS */}
+
         <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <form
             method="GET"
@@ -258,10 +321,21 @@ export default async function AdminStudentsPage({
                 defaultValue={status}
                 className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               >
-                <option value="ALL">All statuses</option>
-                <option value="ACTIVE">Active</option>
-                <option value="SUSPENDED">Suspended</option>
-                <option value="INACTIVE">Inactive</option>
+                <option value="ALL">
+                  All statuses
+                </option>
+
+                <option value="ACTIVE">
+                  Active
+                </option>
+
+                <option value="SUSPENDED">
+                  Suspended
+                </option>
+
+                <option value="INACTIVE">
+                  Inactive
+                </option>
               </select>
             </div>
 
@@ -276,7 +350,8 @@ export default async function AdminStudentsPage({
           </form>
         </section>
 
-        {/* Results */}
+        {/* RESULTS */}
+
         <section className="mt-8">
           <div className="mb-5 flex items-center justify-between">
             <div>
@@ -286,7 +361,10 @@ export default async function AdminStudentsPage({
 
               <h2 className="mt-1 text-xl font-bold text-slate-950">
                 {students.length} student
-                {students.length === 1 ? "" : "s"} found
+                {students.length === 1
+                  ? ""
+                  : "s"}{" "}
+                found
               </h2>
             </div>
           </div>
@@ -296,11 +374,14 @@ export default async function AdminStudentsPage({
           ) : (
             <div className="space-y-5">
               {students.map((student) => {
-                const activeEnrollments = student.enrollments.filter(
-                  (enrollment) => enrollment.status === "ACTIVE"
-                );
+                const activeEnrollments =
+                  student.enrollments.filter(
+                    (enrollment) =>
+                      enrollment.status === "ACTIVE",
+                  );
 
-                const latestPayment = student.payments[0];
+                const latestPayment =
+                  student.payments[0];
 
                 return (
                   <article
@@ -309,22 +390,28 @@ export default async function AdminStudentsPage({
                   >
                     <div className="p-6">
                       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                        {/* Student identity */}
+                        {/* STUDENT IDENTITY */}
+
                         <div className="flex gap-4">
                           <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-blue-50 text-xl font-bold text-blue-600">
                             {getInitials(
                               student.firstName,
-                              student.lastName
+                              student.lastName,
                             )}
                           </div>
 
                           <div>
                             <div className="flex flex-wrap items-center gap-3">
                               <h3 className="text-lg font-bold text-slate-950">
-                                {student.firstName} {student.lastName}
+                                {student.firstName}{" "}
+                                {student.lastName}
                               </h3>
 
-                              <StatusBadge status={student.status} />
+                              <StatusBadge
+                                status={
+                                  student.status
+                                }
+                              />
                             </div>
 
                             <p className="mt-1 text-sm text-slate-600">
@@ -341,31 +428,78 @@ export default async function AdminStudentsPage({
                               <InfoBadge
                                 label="Student No."
                                 value={
-                                  student.studentProfile
-                                    ?.studentNumber || "Not assigned"
+                                  student
+                                    .studentProfile
+                                    ?.studentNumber ||
+                                  "Not assigned"
                                 }
                               />
 
                               <InfoBadge
                                 label="Joined"
-                                value={formatDate(student.createdAt)}
+                                value={formatDate(
+                                  student.createdAt,
+                                )}
                               />
                             </div>
                           </div>
                         </div>
 
-                        {/* Actions */}
+                        {/* ACTIONS */}
+
                         <div className="flex flex-wrap gap-2">
-                          {student.status === "ACTIVE" ? (
+                          {student.status ===
+                            "ACTIVE" && (
+                            <>
+                              <StudentStatusButton
+                                studentId={
+                                  student.id
+                                }
+                                status="SUSPENDED"
+                                label="Suspend"
+                                variant="danger"
+                              />
+
+                              <StudentStatusButton
+                                studentId={
+                                  student.id
+                                }
+                                status="INACTIVE"
+                                label="Deactivate"
+                                variant="secondary"
+                              />
+                            </>
+                          )}
+
+                          {student.status ===
+                            "SUSPENDED" && (
+                            <>
+                              <StudentStatusButton
+                                studentId={
+                                  student.id
+                                }
+                                status="ACTIVE"
+                                label="Activate"
+                                variant="primary"
+                              />
+
+                              <StudentStatusButton
+                                studentId={
+                                  student.id
+                                }
+                                status="INACTIVE"
+                                label="Deactivate"
+                                variant="secondary"
+                              />
+                            </>
+                          )}
+
+                          {student.status ===
+                            "INACTIVE" && (
                             <StudentStatusButton
-                              studentId={student.id}
-                              status="SUSPENDED"
-                              label="Suspend"
-                              variant="danger"
-                            />
-                          ) : (
-                            <StudentStatusButton
-                              studentId={student.id}
+                              studentId={
+                                student.id
+                              }
                               status="ACTIVE"
                               label="Activate"
                               variant="primary"
@@ -378,10 +512,16 @@ export default async function AdminStudentsPage({
                           >
                             View Details
                           </Link>
+
+                          <DeleteStudentButton
+                            studentId={student.id}
+                            studentName={`${student.firstName} ${student.lastName}`}
+                          />
                         </div>
                       </div>
 
-                      {/* Student information */}
+                      {/* STUDENT INFORMATION */}
+
                       <div className="mt-6 grid gap-4 border-t border-slate-100 pt-6 md:grid-cols-3">
                         <div className="rounded-xl bg-slate-50 p-4">
                           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -389,12 +529,17 @@ export default async function AdminStudentsPage({
                           </p>
 
                           <p className="mt-2 text-xl font-bold text-slate-950">
-                            {activeEnrollments.length}
+                            {
+                              activeEnrollments.length
+                            }
                           </p>
 
                           <p className="mt-1 text-xs text-slate-500">
                             Active enrollment
-                            {activeEnrollments.length === 1 ? "" : "s"}
+                            {activeEnrollments.length ===
+                            1
+                              ? ""
+                              : "s"}
                           </p>
                         </div>
 
@@ -408,13 +553,13 @@ export default async function AdminStudentsPage({
                               <p className="mt-2 text-lg font-bold text-slate-950">
                                 ₦
                                 {latestPayment.amountPaid.toLocaleString(
-                                  "en-NG"
+                                  "en-NG",
                                 )}
                               </p>
 
                               <p className="mt-1 text-xs text-slate-500">
                                 {formatPaymentStatus(
-                                  latestPayment.status
+                                  latestPayment.status,
                                 )}
                               </p>
                             </>
@@ -437,7 +582,9 @@ export default async function AdminStudentsPage({
                           </p>
 
                           <p className="mt-2 font-semibold text-slate-950">
-                            {student.studentProfile?.educationalLevel ||
+                            {student
+                              .studentProfile
+                              ?.educationalLevel ||
                               "Not provided"}
                           </p>
 
@@ -447,7 +594,8 @@ export default async function AdminStudentsPage({
                         </div>
                       </div>
 
-                      {/* Enrollments */}
+                      {/* ENROLLMENTS */}
+
                       <div className="mt-6">
                         <div className="flex items-center justify-between">
                           <h4 className="font-semibold text-slate-950">
@@ -455,80 +603,102 @@ export default async function AdminStudentsPage({
                           </h4>
 
                           <span className="text-xs font-medium text-slate-500">
-                            {student.enrollments.length} total
+                            {
+                              student.enrollments
+                                .length
+                            }{" "}
+                            total
                           </span>
                         </div>
 
-                        {student.enrollments.length === 0 ? (
+                        {student.enrollments
+                          .length === 0 ? (
                           <div className="mt-3 rounded-xl border border-dashed border-slate-300 p-5 text-center">
                             <p className="text-sm font-medium text-slate-700">
-                              No course enrollment found.
+                              No course enrollment
+                              found.
                             </p>
 
                             <p className="mt-1 text-xs text-slate-500">
-                              This student has not been enrolled in a course
-                              yet.
+                              This student has not
+                              been enrolled in a
+                              course yet.
                             </p>
                           </div>
                         ) : (
                           <div className="mt-3 space-y-3">
-                            {student.enrollments.map((enrollment) => (
-                              <div
-                                key={enrollment.id}
-                                className="rounded-xl border border-slate-200 p-4"
-                              >
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                  <div>
-                                    <p className="font-semibold text-slate-950">
-                                      {enrollment.course.title}
-                                    </p>
+                            {student.enrollments.map(
+                              (enrollment) => (
+                                <div
+                                  key={
+                                    enrollment.id
+                                  }
+                                  className="rounded-xl border border-slate-200 p-4"
+                                >
+                                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                      <p className="font-semibold text-slate-950">
+                                        {
+                                          enrollment
+                                            .course
+                                            .title
+                                        }
+                                      </p>
 
-                                    <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-500">
-                                      <span>
-                                        Status:{" "}
-                                        {formatEnrollmentStatus(
-                                          enrollment.status
-                                        )}
-                                      </span>
-
-                                      {enrollment.cohort && (
+                                      <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-500">
                                         <span>
-                                          • Cohort:{" "}
-                                          {enrollment.cohort.name}
+                                          Status:{" "}
+                                          {formatEnrollmentStatus(
+                                            enrollment.status,
+                                          )}
                                         </span>
-                                      )}
+
+                                        {enrollment.cohort && (
+                                          <span>
+                                            • Cohort:{" "}
+                                            {
+                                              enrollment
+                                                .cohort
+                                                .name
+                                            }
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
 
-                                  <div className="w-full sm:w-48">
-                                    <div className="flex justify-between text-xs">
-                                      <span className="font-medium text-slate-600">
-                                        Progress
-                                      </span>
+                                    <div className="w-full sm:w-48">
+                                      <div className="flex justify-between text-xs">
+                                        <span className="font-medium text-slate-600">
+                                          Progress
+                                        </span>
 
-                                      <span className="font-bold text-slate-900">
-                                        {enrollment.progress}%
-                                      </span>
-                                    </div>
+                                        <span className="font-bold text-slate-900">
+                                          {
+                                            enrollment.progress
+                                          }
+                                          %
+                                        </span>
+                                      </div>
 
-                                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                                      <div
-                                        className="h-full rounded-full bg-blue-600"
-                                        style={{
-                                          width: `${Math.min(
-                                            100,
-                                            Math.max(
-                                              0,
-                                              enrollment.progress
-                                            )
-                                          )}%`,
-                                        }}
-                                      />
+                                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                                        <div
+                                          className="h-full rounded-full bg-blue-600"
+                                          style={{
+                                            width: `${Math.min(
+                                              100,
+                                              Math.max(
+                                                0,
+                                                enrollment.progress,
+                                              ),
+                                            )}%`,
+                                          }}
+                                        />
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              ),
+                            )}
                           </div>
                         )}
                       </div>
@@ -559,9 +729,13 @@ function StatCard({
         {value}
       </p>
 
-      <p className="mt-2 font-semibold text-slate-900">{label}</p>
+      <p className="mt-2 font-semibold text-slate-900">
+        {label}
+      </p>
 
-      <p className="mt-1 text-sm text-slate-500">{description}</p>
+      <p className="mt-1 text-sm text-slate-500">
+        {description}
+      </p>
     </div>
   );
 }
@@ -569,12 +743,20 @@ function StatCard({
 function StatusBadge({
   status,
 }: {
-  status: "ACTIVE" | "INACTIVE" | "SUSPENDED";
+  status:
+    | "ACTIVE"
+    | "INACTIVE"
+    | "SUSPENDED";
 }) {
   const styles = {
-    ACTIVE: "bg-emerald-50 text-emerald-700",
-    SUSPENDED: "bg-red-50 text-red-700",
-    INACTIVE: "bg-slate-100 text-slate-600",
+    ACTIVE:
+      "bg-emerald-50 text-emerald-700",
+
+    SUSPENDED:
+      "bg-red-50 text-red-700",
+
+    INACTIVE:
+      "bg-slate-100 text-slate-600",
   };
 
   return (
@@ -595,12 +777,19 @@ function InfoBadge({
 }) {
   return (
     <span className="rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs text-slate-600">
-      <span className="font-semibold">{label}:</span> {value}
+      <span className="font-semibold">
+        {label}:
+      </span>{" "}
+      {value}
     </span>
   );
 }
 
-function EmptyState({ search }: { search: string }) {
+function EmptyState({
+  search,
+}: {
+  search: string;
+}) {
   return (
     <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
       <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-2xl">
@@ -614,15 +803,17 @@ function EmptyState({ search }: { search: string }) {
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
         {search
           ? `No student matched "${search}". Try another name, email, phone number, or student number.`
-          : "Students will appear here after applications are approved and enrolled."}
+          : "Students will appear here after registration."}
       </p>
     </div>
   );
 }
 
-function getInitials(firstName: string, lastName: string) {
-  return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`
-    .toUpperCase();
+function getInitials(
+  firstName: string,
+  lastName: string,
+) {
+  return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`.toUpperCase();
 }
 
 function formatDate(date: Date) {
@@ -637,12 +828,18 @@ function formatPaymentStatus(status: string) {
   return status
     .toLowerCase()
     .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) =>
+      letter.toUpperCase(),
+    );
 }
 
-function formatEnrollmentStatus(status: string) {
+function formatEnrollmentStatus(
+  status: string,
+) {
   return status
     .toLowerCase()
     .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) =>
+      letter.toUpperCase(),
+    );
 }

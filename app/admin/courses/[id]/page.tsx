@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { redirect, notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import type { ReactNode } from "react";
+
 import {
   ArrowLeft,
   BookOpen,
@@ -29,6 +31,10 @@ import {
   toggleLessonPublished,
   toggleModulePublished,
 } from "./actions";
+
+/* -------------------------------------------------------------------------- */
+/* Page                                                                       */
+/* -------------------------------------------------------------------------- */
 
 export default async function AdminCourseManagementPage({
   params,
@@ -60,6 +66,7 @@ export default async function AdminCourseManagementPage({
           },
         },
       },
+
       _count: {
         select: {
           enrollments: true,
@@ -77,44 +84,37 @@ export default async function AdminCourseManagementPage({
     notFound();
   }
 
-  /*
-   * Keep a non-null reference after the notFound() check.
-   * This prevents TypeScript from treating course as possibly null.
-   */
   const currentCourse = course;
 
   const totalModules = currentCourse.modules.length;
 
   const totalLessons = currentCourse.modules.reduce(
     (total, module) => total + module.lessons.length,
-    0
+    0,
   );
 
   const publishedModules = currentCourse.modules.filter(
-    (module) => module.isPublished
+    (module) => module.isPublished,
   ).length;
 
   const publishedLessons = currentCourse.modules.reduce(
     (total, module) =>
       total +
       module.lessons.filter((lesson) => lesson.isPublished).length,
-    0
+    0,
   );
 
-  /*
-   * React's native <form action=""> expects an action that returns
-   * void or Promise<void>.
-   *
-   * Our server actions return CourseManagementResult.
-   * These wrappers await the server action without returning its result.
-   */
-
-  async function handleCreateModule(formData: FormData): Promise<void> {
-    await createModule(currentCourse.id, formData);
-  }
+  const createModuleAction = createModule.bind(
+    null,
+    currentCourse.id,
+  );
 
   return (
     <main className="min-h-screen bg-slate-50">
+      {/* ------------------------------------------------------------------ */}
+      {/* Header                                                             */}
+      {/* ------------------------------------------------------------------ */}
+
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-5 py-6 lg:px-8">
           <Link
@@ -140,7 +140,9 @@ export default async function AdminCourseManagementPage({
               </h1>
 
               <p className="mt-2 max-w-3xl text-slate-600">
-                {currentCourse.shortDescription}
+                {currentCourse.shortDescription ||
+                  currentCourse.description ||
+                  "Manage the course curriculum, modules, lessons, and learning content."}
               </p>
             </div>
 
@@ -155,6 +157,10 @@ export default async function AdminCourseManagementPage({
           </div>
         </div>
       </header>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Stats                                                              */}
+      {/* ------------------------------------------------------------------ */}
 
       <section className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -190,7 +196,15 @@ export default async function AdminCourseManagementPage({
           />
         </div>
 
+        {/* -------------------------------------------------------------- */}
+        {/* Main content                                                   */}
+        {/* -------------------------------------------------------------- */}
+
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_340px]">
+          {/* ------------------------------------------------------------ */}
+          {/* Curriculum                                                   */}
+          {/* ------------------------------------------------------------ */}
+
           <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="flex flex-col justify-between gap-4 border-b border-slate-200 p-6 sm:flex-row sm:items-center">
               <div>
@@ -204,7 +218,7 @@ export default async function AdminCourseManagementPage({
               </div>
 
               <form
-                action={handleCreateModule}
+                action={createModuleAction}
                 className="flex flex-col gap-2 sm:flex-row"
               >
                 <input
@@ -240,6 +254,10 @@ export default async function AdminCourseManagementPage({
             )}
           </section>
 
+          {/* ------------------------------------------------------------ */}
+          {/* Sidebar                                                      */}
+          {/* ------------------------------------------------------------ */}
+
           <aside className="space-y-5">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="font-bold text-slate-950">
@@ -267,31 +285,41 @@ export default async function AdminCourseManagementPage({
                 <InfoRow
                   icon={<Users size={17} />}
                   label="Applications"
-                  value={String(currentCourse._count.applications)}
+                  value={String(
+                    currentCourse._count.applications,
+                  )}
                 />
 
                 <InfoRow
                   icon={<Video size={17} />}
                   label="Live Classes"
-                  value={String(currentCourse._count.liveClasses)}
+                  value={String(
+                    currentCourse._count.liveClasses,
+                  )}
                 />
 
                 <InfoRow
                   icon={<FileText size={17} />}
                   label="Assessments"
-                  value={String(currentCourse._count.assessments)}
+                  value={String(
+                    currentCourse._count.assessments,
+                  )}
                 />
 
                 <InfoRow
                   icon={<FileText size={17} />}
                   label="Tests"
-                  value={String(currentCourse._count.tests)}
+                  value={String(
+                    currentCourse._count.tests,
+                  )}
                 />
 
                 <InfoRow
                   icon={<Layers3 size={17} />}
                   label="Cohorts"
-                  value={String(currentCourse._count.cohorts)}
+                  value={String(
+                    currentCourse._count.cohorts,
+                  )}
                 />
               </div>
             </div>
@@ -332,6 +360,10 @@ export default async function AdminCourseManagementPage({
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* Module Card                                                                */
+/* -------------------------------------------------------------------------- */
+
 function ModuleCard({
   courseId,
   module,
@@ -361,23 +393,29 @@ function ModuleCard({
 
   moduleIndex: number;
 }) {
-  async function handleToggleModulePublished(): Promise<void> {
-    await toggleModulePublished(courseId, module.id);
-  }
+  const toggleModulePublishedAction =
+    toggleModulePublished.bind(
+      null,
+      courseId,
+      module.id,
+    );
 
-  async function handleDeleteModule(): Promise<void> {
-    await deleteModule(courseId, module.id);
-  }
+  const deleteModuleAction = deleteModule.bind(
+    null,
+    courseId,
+    module.id,
+  );
 
-  async function handleCreateLesson(
-    formData: FormData
-  ): Promise<void> {
-    await createLesson(courseId, module.id, formData);
-  }
+  const createLessonAction = createLesson.bind(
+    null,
+    courseId,
+    module.id,
+  );
 
   return (
     <div className="p-6">
       <div className="flex flex-col gap-5">
+        {/* Module heading */}
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
           <div className="flex gap-4">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-sm font-bold text-blue-700">
@@ -417,10 +455,10 @@ function ModuleCard({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <form action={handleToggleModulePublished}>
+            <form action={toggleModulePublishedAction}>
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
               >
                 {module.isPublished ? (
                   <>
@@ -436,10 +474,10 @@ function ModuleCard({
               </button>
             </form>
 
-            <form action={handleDeleteModule}>
+            <form action={deleteModuleAction}>
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
               >
                 <Trash2 size={15} />
                 Delete
@@ -448,6 +486,7 @@ function ModuleCard({
           </div>
         </div>
 
+        {/* Lessons */}
         <div className="ml-0 rounded-xl border border-slate-100 bg-slate-50">
           {module.lessons.length > 0 && (
             <div className="divide-y divide-slate-200">
@@ -464,6 +503,7 @@ function ModuleCard({
             </div>
           )}
 
+          {/* Add lesson */}
           <div className="border-t border-slate-200 p-4">
             <details>
               <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold text-blue-600">
@@ -472,7 +512,7 @@ function ModuleCard({
               </summary>
 
               <form
-                action={handleCreateLesson}
+                action={createLessonAction}
                 className="mt-5 grid gap-4"
               >
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -535,6 +575,10 @@ function ModuleCard({
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* Lesson Row                                                                 */
+/* -------------------------------------------------------------------------- */
+
 function LessonRow({
   courseId,
   moduleId,
@@ -560,13 +604,20 @@ function LessonRow({
   index: number;
   totalLessons: number;
 }) {
-  async function handleToggleLessonPublished(): Promise<void> {
-    await toggleLessonPublished(courseId, moduleId, lesson.id);
-  }
+  const toggleLessonPublishedAction =
+    toggleLessonPublished.bind(
+      null,
+      courseId,
+      moduleId,
+      lesson.id,
+    );
 
-  async function handleDeleteLesson(): Promise<void> {
-    await deleteLesson(courseId, moduleId, lesson.id);
-  }
+  const deleteLessonAction = deleteLesson.bind(
+    null,
+    courseId,
+    moduleId,
+    lesson.id,
+  );
 
   return (
     <div className="flex flex-col justify-between gap-4 p-4 sm:flex-row sm:items-center">
@@ -596,6 +647,12 @@ function LessonRow({
             )}
           </div>
 
+          {lesson.description && (
+            <p className="mt-1 max-w-xl text-xs leading-5 text-slate-500">
+              {lesson.description}
+            </p>
+          )}
+
           <div className="mt-1 flex flex-wrap gap-3 text-xs text-slate-400">
             {lesson.duration !== null && (
               <span>{lesson.duration} minutes</span>
@@ -612,16 +669,18 @@ function LessonRow({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <form action={handleToggleLessonPublished}>
+        <form action={toggleLessonPublishedAction}>
           <button
             type="submit"
             className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
           >
-            {lesson.isPublished ? "Unpublish" : "Publish"}
+            {lesson.isPublished
+              ? "Unpublish"
+              : "Publish"}
           </button>
         </form>
 
-        <form action={handleDeleteLesson}>
+        <form action={deleteLessonAction}>
           <button
             type="submit"
             className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
@@ -635,16 +694,19 @@ function LessonRow({
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* Empty Modules                                                              */
+/* -------------------------------------------------------------------------- */
+
 function EmptyModules({
   courseId,
 }: {
   courseId: string;
 }) {
-  async function handleCreateModule(
-    formData: FormData
-  ): Promise<void> {
-    await createModule(courseId, formData);
-  }
+  const createModuleAction = createModule.bind(
+    null,
+    courseId,
+  );
 
   return (
     <div className="px-6 py-20 text-center">
@@ -661,7 +723,7 @@ function EmptyModules({
       </p>
 
       <form
-        action={handleCreateModule}
+        action={createModuleAction}
         className="mx-auto mt-6 flex max-w-md gap-2"
       >
         <input
@@ -683,6 +745,82 @@ function EmptyModules({
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* Stat Card                                                                  */
+/* -------------------------------------------------------------------------- */
+
+function StatCard({
+  icon,
+  label,
+  value,
+  secondary,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: number;
+  secondary?: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-blue-600">
+          {icon}
+        </div>
+      </div>
+
+      <p className="mt-4 text-sm font-medium text-slate-500">
+        {label}
+      </p>
+
+      <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">
+        {value}
+      </p>
+
+      {secondary && (
+        <p className="mt-1 text-xs font-semibold text-slate-400">
+          {secondary}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Info Row                                                                   */
+/* -------------------------------------------------------------------------- */
+
+function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500">
+          {icon}
+        </div>
+
+        <span className="text-sm font-medium text-slate-600">
+          {label}
+        </span>
+      </div>
+
+      <span className="text-right text-sm font-semibold text-slate-900">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Field                                                                      */
+/* -------------------------------------------------------------------------- */
+
 function Field({
   name,
   label,
@@ -700,103 +838,78 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-slate-700">
+      <label
+        htmlFor={name}
+        className="mb-2 block text-sm font-semibold text-slate-700"
+      >
         {label}
       </label>
 
       <input
+        id={name}
         name={name}
         type={type}
-        min={min}
         required={required}
+        min={min}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
       />
     </div>
   );
 }
 
-function InfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-2 text-sm text-slate-500">
-        {icon}
-        {label}
-      </div>
-
-      <span className="text-right text-sm font-semibold text-slate-800">
-        {value}
-      </span>
-    </div>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  secondary,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  secondary?: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-blue-600">
-        {icon}
-      </div>
-
-      <p className="mt-5 text-3xl font-bold tracking-tight text-slate-950">
-        {value}
-      </p>
-
-      <p className="mt-1 text-sm font-semibold text-slate-900">
-        {label}
-      </p>
-
-      {secondary && (
-        <p className="mt-1 text-xs text-slate-400">
-          {secondary}
-        </p>
-      )}
-    </div>
-  );
-}
+/* -------------------------------------------------------------------------- */
+/* Status Badge                                                               */
+/* -------------------------------------------------------------------------- */
 
 function StatusBadge({
   status,
 }: {
-  status: "ACTIVE" | "INACTIVE" | "DRAFT";
+  status: string;
 }) {
-  if (status === "ACTIVE") {
+  const normalized = status.toUpperCase();
+
+  if (
+    normalized === "PUBLISHED" ||
+    normalized === "ACTIVE"
+  ) {
     return (
-      <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
-        Active
+      <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700">
+        {formatStatus(status)}
       </span>
     );
   }
 
-  if (status === "INACTIVE") {
+  if (
+    normalized === "DRAFT" ||
+    normalized === "PENDING"
+  ) {
     return (
-      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-        Inactive
+      <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
+        {formatStatus(status)}
       </span>
     );
   }
 
   return (
-    <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-      Draft
+    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+      {formatStatus(status)}
     </span>
   );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Formatting                                                                 */
+/* -------------------------------------------------------------------------- */
+
+function formatStatus(value: string) {
+  return value
+    .toLowerCase()
+    .split("_")
+    .map(
+      (part) =>
+        part.charAt(0).toUpperCase() +
+        part.slice(1),
+    )
+    .join(" ");
 }

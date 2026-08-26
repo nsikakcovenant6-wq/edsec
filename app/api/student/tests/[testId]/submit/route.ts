@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/auth";
 
@@ -10,24 +11,32 @@ type SubmitTestContext = {
 
 export async function POST(
   request: Request,
-  { params }: SubmitTestContext
+  { params }: SubmitTestContext,
 ) {
   try {
     const { testId } = await params;
+
+    // ------------------------------------------------------------
+    // AUTHENTICATION
+    // ------------------------------------------------------------
 
     const user = await getCurrentUser();
 
     if (!user) {
       return NextResponse.redirect(
-        new URL("/login", request.url)
+        new URL("/login", request.url),
       );
     }
 
     if (user.role !== "STUDENT") {
       return NextResponse.redirect(
-        new URL("/admin", request.url)
+        new URL("/admin", request.url),
       );
     }
+
+    // ------------------------------------------------------------
+    // LOAD TEST
+    // ------------------------------------------------------------
 
     const test = await prisma.test.findUnique({
       where: {
@@ -53,30 +62,43 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error: "Test not found or not published",
+          error: "Test not found or not published.",
         },
-        { status: 404 }
+        {
+          status: 404,
+        },
       );
     }
 
-    const enrollment = await prisma.enrollment.findUnique({
-      where: {
-        studentId_courseId: {
-          studentId: user.id,
-          courseId: test.courseId,
+    // ------------------------------------------------------------
+    // CHECK ENROLLMENT
+    // ------------------------------------------------------------
+
+    const enrollment =
+      await prisma.enrollment.findUnique({
+        where: {
+          studentId_courseId: {
+            studentId: user.id,
+            courseId: test.courseId,
+          },
         },
-      },
-    });
+      });
 
     if (!enrollment) {
       return NextResponse.json(
         {
           success: false,
-          error: "You are not enrolled in this course",
+          error: "You are not enrolled in this course.",
         },
-        { status: 403 }
+        {
+          status: 403,
+        },
       );
     }
+
+    // ------------------------------------------------------------
+    // READ SUBMITTED ANSWERS
+    // ------------------------------------------------------------
 
     const formData = await request.formData();
 
@@ -93,17 +115,28 @@ export async function POST(
     for (const question of test.questions) {
       totalPoints += question.points;
 
-      const selectedOptionId = formData.get(
-        `question_${question.id}`
+      const submittedValue = formData.get(
+        `question_${question.id}`,
       );
 
-      const selectedOption =
-        typeof selectedOptionId === "string"
-          ? question.options.find(
-              (option) =>
-                option.id === selectedOptionId
-            )
+      const selectedOptionId =
+        typeof submittedValue === "string"
+          ? submittedValue
           : null;
+
+      // ----------------------------------------------------------
+      // IMPORTANT:
+      // Only accept an option that actually belongs to this
+      // question. This prevents a student from submitting an
+      // arbitrary option ID.
+      // ----------------------------------------------------------
+
+      const selectedOption = selectedOptionId
+        ? question.options.find(
+            (option) =>
+              option.id === selectedOptionId,
+          )
+        : null;
 
       const isCorrect =
         selectedOption?.isCorrect === true;
@@ -118,22 +151,26 @@ export async function POST(
 
       answers.push({
         questionId: question.id,
-        selectedOptionId:
-          typeof selectedOptionId === "string"
-            ? selectedOptionId
-            : null,
+        selectedOptionId,
         isCorrect,
         pointsAwarded,
       });
     }
 
+    // ------------------------------------------------------------
+    // CREATE TEST ATTEMPT
+    // ------------------------------------------------------------
+
     const attempt = await prisma.testAttempt.create({
       data: {
         testId: test.id,
         studentId: user.id,
+
         status: "GRADED",
+
         score,
         totalPoints,
+
         submittedAt: new Date(),
 
         answers: {
@@ -149,24 +186,31 @@ export async function POST(
       },
     });
 
+    // ------------------------------------------------------------
+    // REDIRECT TO RESULT
+    // ------------------------------------------------------------
+
     return NextResponse.redirect(
       new URL(
         `/student/tests/${test.id}/result?attemptId=${attempt.id}`,
-        request.url
-      )
+        request.url,
+      ),
     );
   } catch (error) {
     console.error(
       "TEST_SUBMISSION_ERROR:",
-      error
+      error,
     );
 
     return NextResponse.json(
       {
         success: false,
-        error: "Something went wrong while submitting the test",
+        error:
+          "Something went wrong while submitting the test.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      },
     );
   }
 }

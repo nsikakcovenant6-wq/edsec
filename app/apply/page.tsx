@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { FormEvent, useState } from "react";
 
 const courses = [
   "Microsoft Office Professional",
@@ -12,6 +15,78 @@ const courses = [
 ];
 
 export default function ApplyPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setIsSubmitting(true);
+    setSuccess("");
+    setError("");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const firstName = String(formData.get("firstName") || "").trim();
+    const lastName = String(formData.get("lastName") || "").trim();
+
+    const payload = {
+      fullName: `${firstName} ${lastName}`.trim(),
+      email: String(formData.get("email") || "").trim(),
+      phone: String(formData.get("phone") || "").trim(),
+      courseName: String(formData.get("course") || "").trim(),
+      dateOfBirth: String(formData.get("dateOfBirth") || "").trim(),
+      educationalLevel: String(
+        formData.get("educationalLevel") || ""
+      ).trim(),
+      preferredFormat: String(
+        formData.get("preferredFormat") || ""
+      ).trim(),
+      preferredStartDate: String(
+        formData.get("preferredStartDate") || ""
+      ).trim(),
+      additionalInfo: String(
+        formData.get("additionalInfo") || ""
+      ).trim(),
+    };
+
+    try {
+      const response = await fetch("/api/applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            "Unable to submit your application. Please try again."
+        );
+      }
+
+      setSuccess(
+        data?.message ||
+          "Your application has been submitted successfully."
+      );
+
+      form.reset();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to submit your application. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-50">
       {/* HERO */}
@@ -33,8 +108,9 @@ export default function ApplyPage() {
           </h1>
 
           <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-400">
-            Complete the application form and tell us about yourself, the
-            program you are interested in, and how you would like to learn.
+            Complete the application form and tell us about yourself,
+            the program you are interested in, and how you would like
+            to learn.
           </p>
         </div>
       </section>
@@ -45,7 +121,34 @@ export default function ApplyPage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
             {/* MAIN FORM */}
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
-              <form className="space-y-9">
+              {success && (
+                <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                  <p className="font-semibold text-emerald-800">
+                    Application submitted successfully.
+                  </p>
+
+                  <p className="mt-1 text-sm leading-6 text-emerald-700">
+                    {success}
+                  </p>
+                </div>
+              )}
+
+              {error && (
+                <div className="mb-8 rounded-2xl border border-red-200 bg-red-50 p-5">
+                  <p className="font-semibold text-red-800">
+                    Application could not be submitted.
+                  </p>
+
+                  <p className="mt-1 text-sm leading-6 text-red-700">
+                    {error}
+                  </p>
+                </div>
+              )}
+
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-9"
+              >
                 {/* PERSONAL INFORMATION */}
                 <div>
                   <h2 className="text-xl font-semibold text-slate-950">
@@ -158,12 +261,24 @@ export default function ApplyPage() {
                         name="educationalLevel"
                         className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                       >
-                        <option value="">Select level</option>
-                        <option>Secondary School</option>
-                        <option>Undergraduate</option>
-                        <option>Graduate</option>
-                        <option>Working Professional</option>
-                        <option>Other</option>
+                        <option value="">
+                          Select level
+                        </option>
+                        <option value="Secondary School">
+                          Secondary School
+                        </option>
+                        <option value="Undergraduate">
+                          Undergraduate
+                        </option>
+                        <option value="Graduate">
+                          Graduate
+                        </option>
+                        <option value="Working Professional">
+                          Working Professional
+                        </option>
+                        <option value="Other">
+                          Other
+                        </option>
                       </select>
                     </div>
                   </div>
@@ -193,10 +308,15 @@ export default function ApplyPage() {
                       required
                       className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     >
-                      <option value="">Select a course</option>
+                      <option value="">
+                        Select a course
+                      </option>
 
                       {courses.map((course) => (
-                        <option key={course} value={course}>
+                        <option
+                          key={course}
+                          value={course}
+                        >
                           {course}
                         </option>
                       ))}
@@ -209,24 +329,26 @@ export default function ApplyPage() {
                     </p>
 
                     <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                      {["On-site", "Online", "Hybrid"].map((format) => (
-                        <label
-                          key={format}
-                          className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-200 hover:bg-blue-50/50"
-                        >
-                          <input
-                            type="radio"
-                            name="preferredFormat"
-                            value={format}
-                            required
-                            className="h-4 w-4 accent-blue-600"
-                          />
+                      {["On-site", "Online", "Hybrid"].map(
+                        (format) => (
+                          <label
+                            key={format}
+                            className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-200 hover:bg-blue-50/50"
+                          >
+                            <input
+                              type="radio"
+                              name="preferredFormat"
+                              value={format}
+                              required
+                              className="h-4 w-4 accent-blue-600"
+                            />
 
-                          <span className="text-sm font-medium text-slate-700">
-                            {format}
-                          </span>
-                        </label>
-                      ))}
+                            <span className="text-sm font-medium text-slate-700">
+                              {format}
+                            </span>
+                          </label>
+                        )
+                      )}
                     </div>
                   </div>
 
@@ -270,14 +392,17 @@ export default function ApplyPage() {
                 <div className="border-t border-slate-200 pt-9">
                   <button
                     type="submit"
-                    className="w-full rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                   >
-                    Submit Application
+                    {isSubmitting
+                      ? "Submitting Application..."
+                      : "Submit Application"}
                   </button>
 
                   <p className="mt-4 text-sm leading-6 text-slate-500">
-                    By submitting this application, you confirm that the
-                    information provided is accurate.
+                    By submitting this application, you confirm
+                    that the information provided is accurate.
                   </p>
                 </div>
               </form>
@@ -311,7 +436,10 @@ export default function ApplyPage() {
                     "You complete enrollment and prepare to begin.",
                   ],
                 ].map(([number, title, text]) => (
-                  <div key={number} className="flex gap-4">
+                  <div
+                    key={number}
+                    className="flex gap-4"
+                  >
                     <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-blue-600 text-xs font-bold text-white">
                       {number}
                     </span>
@@ -335,8 +463,8 @@ export default function ApplyPage() {
                 </p>
 
                 <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Explore our courses or contact EDSEC before submitting your
-                  application.
+                  Explore our courses or contact EDSEC before
+                  submitting your application.
                 </p>
 
                 <Link

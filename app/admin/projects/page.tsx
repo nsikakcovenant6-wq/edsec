@@ -6,7 +6,7 @@ import {
   deleteStudentProject,
   toggleStudentProjectFeatured,
   toggleStudentProjectPublished,
-} from "./actions";
+} from "../student-projects/actions";
 
 export default async function AdminStudentProjectsPage() {
   await import("@/app/lib/auth").then(({ requireRole }) =>

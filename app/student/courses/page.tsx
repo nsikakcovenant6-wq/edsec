@@ -1,6 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { redirect } from "next/navigation";
+
 import { getCurrentUser } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
 
@@ -15,289 +15,677 @@ export default async function StudentCoursesPage() {
     redirect("/admin");
   }
 
-  const enrollments = await prisma.enrollment.findMany({
-    where: {
-      studentId: user.id,
-    },
-    include: {
-      course: {
-        include: {
-          modules: {
-            where: {
-              isPublished: true,
-            },
-            orderBy: {
-              displayOrder: "asc",
+  const [
+    courses,
+    enrollments,
+    applications,
+  ] = await Promise.all([
+    prisma.course.findMany({
+      where: {
+        status: "ACTIVE",
+      },
+      orderBy: {
+        displayOrder: "asc",
+      },
+      include: {
+        modules: {
+          where: {
+            isPublished: true,
+          },
+          orderBy: {
+            displayOrder: "asc",
+          },
+          include: {
+            lessons: {
+              where: {
+                isPublished: true,
+              },
+              orderBy: {
+                displayOrder: "asc",
+              },
             },
           },
         },
       },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+    }),
 
-  const activeCourses = enrollments.filter(
-    (enrollment) =>
-      enrollment.status === "ACTIVE" ||
-      enrollment.status === "COMPLETED"
+    prisma.enrollment.findMany({
+      where: {
+        studentId: user.id,
+      },
+      include: {
+        course: true,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    }),
+
+    prisma.application.findMany({
+      where: {
+        applicantId: user.id,
+      },
+      include: {
+        course: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+  ]);
+
+  const enrollmentMap = new Map(
+    enrollments.map((enrollment) => [
+      enrollment.courseId,
+      enrollment,
+    ]),
   );
 
+  /*
+   * Keep only the newest application for each course.
+   */
+  const applicationMap = new Map<
+    string,
+    (typeof applications)[number]
+  >();
+
+  for (const application of applications) {
+    if (!application.courseId) {
+      continue;
+    }
+
+    if (!applicationMap.has(application.courseId)) {
+      applicationMap.set(
+        application.courseId,
+        application,
+      );
+    }
+  }
+
+  const pendingApplications =
+    applications.filter(
+      (application) =>
+        application.status === "PENDING" &&
+        application.courseId &&
+        application.course,
+    );
+
+  const rejectedApplications =
+    applications.filter(
+      (application) =>
+        application.status === "REJECTED" &&
+        application.courseId &&
+        application.course,
+    );
+
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 text-slate-950">
       {/* HEADER */}
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-5 py-6 lg:px-8">
-          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-            <div>
-              <Link
-                href="/student/dashboard"
-                className="text-sm font-semibold text-blue-600 hover:text-blue-700"
-              >
-                ← Student Dashboard
-              </Link>
-
-              <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
-                My Courses
-              </h1>
-
-              <p className="mt-2 text-slate-600">
-                Continue learning and track your progress.
-              </p>
-            </div>
-
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-5 lg:px-8">
+          <div>
             <Link
-              href="/courses"
-              className="inline-flex w-fit rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+              href="/student/dashboard"
+              className="text-sm font-semibold text-blue-600 hover:text-blue-700"
             >
-              Explore Courses
+              ← Back to Dashboard
             </Link>
+
+            <p className="mt-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+              EDSEC ICT Institute
+            </p>
+
+            <h1 className="mt-1 text-2xl font-bold tracking-tight">
+              My Courses
+            </h1>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Choose a program, request enrollment,
+              and start learning after approval.
+            </p>
           </div>
+
+          <Link
+            href="/student/profile"
+            className="hidden rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:block"
+          >
+            Profile
+          </Link>
         </div>
       </header>
 
-      {/* CONTENT */}
-      <section className="mx-auto max-w-7xl px-5 py-10 lg:px-8">
-        {activeCourses.length === 0 ? (
-          <EmptyCourses />
-        ) : (
-          <>
-            {/* SUMMARY */}
-            <div className="mb-8 grid gap-4 sm:grid-cols-3">
-              <SummaryCard
-                label="Enrolled Courses"
-                value={activeCourses.length.toString()}
-              />
+      <div className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
+        {/* MY ENROLLMENTS */}
+        <section>
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">
+              My Learning
+            </p>
 
-              <SummaryCard
-                label="Completed"
-                value={activeCourses
-                  .filter(
-                    (enrollment) => enrollment.status === "COMPLETED"
-                  )
-                  .length.toString()}
-              />
+            <h2 className="mt-2 text-2xl font-bold tracking-tight">
+              Your enrolled courses
+            </h2>
 
-              <SummaryCard
-                label="Average Progress"
-                value={`${Math.round(
-                  activeCourses.reduce(
-                    (total, enrollment) => total + enrollment.progress,
-                    0
-                  ) / activeCourses.length
-                )}%`}
-              />
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Approved courses are available here.
+              Pending enrollment requests are shown
+              below while they wait for administrator
+              approval.
+            </p>
+          </div>
+
+          {enrollments.length === 0 ? (
+            <div className="mt-5 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-xl font-bold text-blue-600">
+                +
+              </div>
+
+              <h3 className="mt-5 text-lg font-bold">
+                You are not enrolled in a course yet
+              </h3>
+
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
+                Browse the available programs below
+                and submit an enrollment request. EDSEC
+                will review your request before giving
+                you course access.
+              </p>
+
+              <a
+                href="#available-courses"
+                className="mt-5 inline-flex rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
+              >
+                Browse Courses
+              </a>
+            </div>
+          ) : (
+            <div className="mt-5 grid gap-5 md:grid-cols-2">
+              {enrollments.map((enrollment) => {
+                const completed =
+                  enrollment.status ===
+                  "COMPLETED";
+
+                return (
+                  <div
+                    key={enrollment.id}
+                    className="overflow-hidden rounded-3xl border border-slate-200 bg-white"
+                  >
+                    <div className="p-7">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${
+                              completed
+                                ? "bg-blue-50 text-blue-700"
+                                : enrollment.status ===
+                                    "SUSPENDED"
+                                  ? "bg-red-50 text-red-700"
+                                  : enrollment.status ===
+                                      "DROPPED"
+                                    ? "bg-slate-100 text-slate-600"
+                                    : "bg-green-50 text-green-700"
+                            }`}
+                          >
+                            {enrollment.status.replaceAll(
+                              "_",
+                              " ",
+                            )}
+                          </span>
+
+                          <h3 className="mt-4 text-xl font-bold">
+                            {
+                              enrollment.course
+                                .title
+                            }
+                          </h3>
+                        </div>
+
+                        {enrollment.status ===
+                          "ACTIVE" && (
+                          <span className="text-xl text-green-600">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-500">
+                        {
+                          enrollment.course
+                            .shortDescription
+                        }
+                      </p>
+
+                      {enrollment.status ===
+                        "SUSPENDED" && (
+                        <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 p-4">
+                          <p className="font-semibold text-red-900">
+                            Course access suspended
+                          </p>
+
+                          <p className="mt-1 text-sm leading-6 text-red-800">
+                            Your access to this
+                            course has been
+                            suspended by EDSEC.
+                          </p>
+                        </div>
+                      )}
+
+                      {enrollment.status ===
+                        "DROPPED" && (
+                        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <p className="font-semibold text-slate-800">
+                            Enrollment ended
+                          </p>
+
+                          <p className="mt-1 text-sm leading-6 text-slate-500">
+                            This enrollment is no
+                            longer active.
+                          </p>
+                        </div>
+                      )}
+
+                      {(enrollment.status ===
+                        "ACTIVE" ||
+                        completed) && (
+                        <Link
+                          href={`/student/courses/${enrollment.course.slug}`}
+                          className="mt-5 inline-flex rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
+                        >
+                          {completed
+                            ? "Review Course →"
+                            : "Open Course →"}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* PENDING REQUESTS */}
+        {pendingApplications.length >
+          0 && (
+          <section className="mt-10">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-amber-600">
+                Awaiting Approval
+              </p>
+
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                Enrollment requests
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                These requests are currently being
+                reviewed by EDSEC administrators.
+              </p>
             </div>
 
-            {/* COURSE GRID */}
-            <div className="grid gap-6 lg:grid-cols-2">
-              {activeCourses.map((enrollment) => (
-                <CourseCard
-                  key={enrollment.id}
-                  enrollment={enrollment}
-                />
-              ))}
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {pendingApplications.map(
+                (application) => (
+                  <div
+                    key={application.id}
+                    className="rounded-2xl border border-amber-200 bg-amber-50 p-5"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wider text-amber-600">
+                          Pending
+                        </p>
+
+                        <h3 className="mt-2 font-bold text-amber-950">
+                          {
+                            application.course
+                              ?.title
+                          }
+                        </h3>
+                      </div>
+
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-amber-700">
+                        PENDING
+                      </span>
+                    </div>
+
+                    <p className="mt-3 text-sm leading-6 text-amber-800">
+                      Your request has been received.
+                      An EDSEC administrator needs to
+                      approve it before you can access
+                      the course.
+                    </p>
+                  </div>
+                ),
+              )}
             </div>
-          </>
+          </section>
         )}
-      </section>
+
+        {/* REJECTED REQUESTS */}
+        {rejectedApplications.length >
+          0 && (
+          <section className="mt-10">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-red-600">
+                Application Updates
+              </p>
+
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                Previous requests
+              </h2>
+            </div>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {rejectedApplications.map(
+                (application) => (
+                  <div
+                    key={application.id}
+                    className="rounded-2xl border border-red-200 bg-red-50 p-5"
+                  >
+                    <p className="text-xs font-bold uppercase tracking-wider text-red-600">
+                      Request not approved
+                    </p>
+
+                    <h3 className="mt-2 font-bold text-red-950">
+                      {
+                        application.course
+                          ?.title
+                      }
+                    </h3>
+
+                    <p className="mt-2 text-sm leading-6 text-red-800">
+                      Your previous enrollment
+                      request was not approved. You
+                      can submit another request from
+                      the available courses below.
+                    </p>
+
+                    <a
+                      href="#available-courses"
+                      className="mt-4 inline-flex rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
+                    >
+                      View Course
+                    </a>
+                  </div>
+                ),
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* AVAILABLE COURSES */}
+        <section
+          id="available-courses"
+          className="mt-12"
+        >
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">
+              Available Programs
+            </p>
+
+            <h2 className="mt-2 text-2xl font-bold tracking-tight">
+              Choose your learning program
+            </h2>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+              Select a program and submit an enrollment
+              request. Your course access will become
+              available after an administrator approves
+              your request.
+            </p>
+          </div>
+
+          {courses.length === 0 ? (
+            <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-slate-100">
+                📚
+              </div>
+
+              <h3 className="mt-5 font-semibold">
+                No courses are currently available
+              </h3>
+
+              <p className="mt-2 text-sm text-slate-500">
+                There are currently no active EDSEC
+                programs available for enrollment.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {courses.map((course) => {
+                const enrollment =
+                  enrollmentMap.get(course.id);
+
+                const application =
+                  applicationMap.get(course.id);
+
+                const isActive =
+                  enrollment?.status === "ACTIVE";
+
+                const isCompleted =
+                  enrollment?.status ===
+                  "COMPLETED";
+
+                const isSuspended =
+                  enrollment?.status ===
+                  "SUSPENDED";
+
+                const isDropped =
+                  enrollment?.status === "DROPPED";
+
+                const isPending =
+                  application?.status ===
+                  "PENDING";
+
+                const isRejected =
+                  application?.status ===
+                  "REJECTED";
+
+                const totalLessons =
+                  course.modules.reduce(
+                    (total, module) =>
+                      total +
+                      module.lessons.length,
+                    0,
+                  );
+
+                return (
+                  <article
+                    key={course.id}
+                    className="group overflow-hidden rounded-3xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
+                  >
+                    {/* IMAGE */}
+                    <div className="relative h-48 overflow-hidden bg-slate-950">
+                      {course.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={course.imageUrl}
+                          alt={course.title}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center bg-slate-950">
+                          <div className="text-center">
+                            <div className="text-4xl font-bold text-white">
+                              EDSEC
+                            </div>
+
+                            <div className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-blue-400">
+                              ICT Institute
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-slate-950/80 to-transparent" />
+
+                      {course.featured && (
+                        <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-900 shadow-sm">
+                          Featured
+                        </span>
+                      )}
+                    </div>
+
+                    {/* CONTENT */}
+                    <div className="p-6">
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-xl font-bold">
+                          {course.title}
+                        </h3>
+
+                        <span className="shrink-0 text-xs font-semibold text-slate-400">
+                          {
+                            course.modules.length
+                          }{" "}
+                          modules
+                        </span>
+                      </div>
+
+                      <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">
+                        {
+                          course.shortDescription
+                        }
+                      </p>
+
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        {course.duration && (
+                          <span className="rounded-lg bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600">
+                            {course.duration}
+                          </span>
+                        )}
+
+                        {course.learningFormat && (
+                          <span className="rounded-lg bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600">
+                            {
+                              course.learningFormat
+                            }
+                          </span>
+                        )}
+
+                        <span className="rounded-lg bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600">
+                          {totalLessons} lessons
+                        </span>
+                      </div>
+
+                      {/* ACTION */}
+                      <div className="mt-6">
+                        {isActive && (
+                          <Link
+                            href={`/student/courses/${course.slug}`}
+                            className="block rounded-xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
+                          >
+                            Continue Learning →
+                          </Link>
+                        )}
+
+                        {isCompleted && (
+                          <Link
+                            href={`/student/courses/${course.slug}`}
+                            className="block rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-center font-semibold text-slate-700 transition hover:bg-slate-100"
+                          >
+                            Review Course →
+                          </Link>
+                        )}
+
+                        {isPending && (
+                          <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-3 text-center text-sm font-semibold text-amber-700">
+                            Enrollment Pending
+                          </div>
+                        )}
+
+                        {isSuspended && (
+                          <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-center text-sm font-semibold text-red-700">
+                            Enrollment Suspended
+                          </div>
+                        )}
+
+                        {isDropped && (
+                          <Link
+                            href={`/student/courses/${course.slug}/enroll`}
+                            className="block rounded-xl bg-blue-600 px-5 py-3 text-center font-semibold text-white hover:bg-blue-700"
+                          >
+                            Request Enrollment Again →
+                          </Link>
+                        )}
+
+                        {!enrollment &&
+                          !isPending && (
+                            <Link
+                              href={`/student/courses/${course.slug}/enroll`}
+                              className="block rounded-xl bg-blue-600 px-5 py-3 text-center font-semibold text-white hover:bg-blue-700"
+                            >
+                              {isRejected
+                                ? "Apply Again →"
+                                : "Enroll Now →"}
+                            </Link>
+                          )}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* HOW ENROLLMENT WORKS */}
+        <section className="mt-12 overflow-hidden rounded-3xl bg-slate-950 p-7 text-white sm:p-9">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-400">
+            Enrollment Process
+          </p>
+
+          <h2 className="mt-2 text-2xl font-bold">
+            How enrollment works
+          </h2>
+
+          <div className="mt-7 grid gap-4 md:grid-cols-3">
+            <Step
+              number="01"
+              title="Choose a Course"
+              text="Select the EDSEC program you want to study."
+            />
+
+            <Step
+              number="02"
+              title="Submit Enrollment"
+              text="Send your enrollment request from your student dashboard."
+            />
+
+            <Step
+              number="03"
+              title="Get Approved"
+              text="An EDSEC administrator reviews your request and activates your course access."
+            />
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
 
-function CourseCard({
-  enrollment,
+function Step({
+  number,
+  title,
+  text,
 }: {
-  enrollment: {
-    id: string;
-    status: "ACTIVE" | "COMPLETED" | "SUSPENDED" | "DROPPED";
-    progress: number;
-    course: {
-      id: string;
-      title: string;
-      slug: string;
-      shortDescription: string;
-      description: string | null;
-      imageUrl: string | null;
-      duration: string | null;
-      learningFormat: string | null;
-      modules: {
-        id: string;
-        title: string;
-        description: string | null;
-      }[];
-    };
-  };
-}) {
-  const progress = Math.min(Math.max(enrollment.progress, 0), 100);
-
-  return (
-    <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      {/* IMAGE */}
-      <div className="relative h-52 overflow-hidden bg-slate-950">
-        {enrollment.course.imageUrl ? (
-          <img
-            src={enrollment.course.imageUrl}
-            alt={enrollment.course.title}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-linear-to-br from-slate-950 to-blue-950">
-            <span className="text-5xl font-black text-white/10">
-              EDSEC
-            </span>
-          </div>
-        )}
-
-        <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 to-transparent" />
-
-        <div className="absolute bottom-4 left-5">
-          <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-slate-900">
-            {enrollment.status === "COMPLETED"
-              ? "Completed"
-              : "In Progress"}
-          </span>
-        </div>
-      </div>
-
-      {/* CONTENT */}
-      <div className="p-6">
-        <h2 className="text-2xl font-bold text-slate-950">
-          {enrollment.course.title}
-        </h2>
-
-        <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">
-          {enrollment.course.shortDescription}
-        </p>
-
-        {/* COURSE INFO */}
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          <InfoItem
-            label="Duration"
-            value={enrollment.course.duration || "Not specified"}
-          />
-
-          <InfoItem
-            label="Modules"
-            value={enrollment.course.modules.length.toString()}
-          />
-        </div>
-
-        {/* PROGRESS */}
-        <div className="mt-7">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-semibold text-slate-700">
-              Learning Progress
-            </span>
-
-            <span className="font-bold text-blue-600">
-              {progress}%
-            </span>
-          </div>
-
-          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-blue-600 transition-all"
-              style={{
-                width: `${progress}%`,
-              }}
-            />
-          </div>
-        </div>
-
-        {/* ACTION */}
-        <Link
-          href={`/student/courses/${enrollment.course.slug}`}
-          className="mt-7 flex w-full items-center justify-center rounded-xl bg-blue-600 px-5 py-3.5 font-semibold text-white transition hover:bg-blue-700"
-        >
-          {progress === 100 ? "Review Course" : "Continue Learning"}
-        </Link>
-      </div>
-    </article>
-  );
-}
-
-function SummaryCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
+  number: string;
+  title: string;
+  text: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6">
-      <p className="text-sm text-slate-500">{label}</p>
-
-      <p className="mt-2 text-3xl font-bold text-slate-950">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function InfoItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-xl bg-slate-50 p-4">
-      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-        {label}
-      </p>
-
-      <p className="mt-1 text-sm font-semibold text-slate-800">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function EmptyCourses() {
-  return (
-    <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
-      <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-blue-50 text-2xl text-blue-600">
-        →
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+      <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-600 text-sm font-bold">
+        {number}
       </div>
 
-      <h2 className="mt-6 text-2xl font-bold text-slate-950">
-        No courses yet
-      </h2>
+      <h3 className="mt-5 font-bold">
+        {title}
+      </h3>
 
-      <p className="mx-auto mt-3 max-w-md leading-7 text-slate-600">
-        You haven&apos;t been enrolled in an EDSEC course yet. Explore our
-        available programs and apply for a course.
+      <p className="mt-2 text-sm leading-6 text-slate-400">
+        {text}
       </p>
-
-      <Link
-        href="/courses"
-        className="mt-7 inline-flex rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
-      >
-        Explore Courses
-      </Link>
     </div>
   );
 }

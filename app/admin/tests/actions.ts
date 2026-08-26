@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -7,11 +6,9 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { requireRole } from "@/app/lib/auth";
 
-type ActionResult = {
-  success: boolean;
-  message?: string;
-  error?: string;
-};
+/* =========================================================
+   HELPERS
+========================================================= */
 
 function getString(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim();
@@ -36,22 +33,11 @@ function getNumber(
   return Number.isFinite(value) ? value : fallback;
 }
 
-function getBoolean(
-  formData: FormData,
-  key: string
-): boolean {
-  const value = String(formData.get(key) ?? "").toLowerCase();
-
-  return value === "true" || value === "1" || value === "on";
-}
-
 /* =========================================================
    TEST ACTIONS
 ========================================================= */
 
-export async function createTest(
-  formData: FormData
-): Promise<ActionResult> {
+export async function createTest(formData: FormData): Promise<void> {
   await requireRole("ADMIN");
 
   const title = getString(formData, "title");
@@ -61,32 +47,21 @@ export async function createTest(
   const durationValue = getString(formData, "duration");
 
   const duration =
-    durationValue.length > 0
-      ? Number(durationValue)
-      : null;
+    durationValue.length > 0 ? Number(durationValue) : null;
 
   if (!title) {
-    return {
-      success: false,
-      error: "Test title is required.",
-    };
+    throw new Error("Test title is required.");
   }
 
   if (!courseId) {
-    return {
-      success: false,
-      error: "Please select a course.",
-    };
+    throw new Error("Please select a course.");
   }
 
   if (
     duration !== null &&
     (!Number.isFinite(duration) || duration <= 0)
   ) {
-    return {
-      success: false,
-      error: "Duration must be greater than zero.",
-    };
+    throw new Error("Duration must be greater than zero.");
   }
 
   const course = await prisma.course.findUnique({
@@ -99,10 +74,7 @@ export async function createTest(
   });
 
   if (!course) {
-    return {
-      success: false,
-      error: "Selected course was not found.",
-    };
+    throw new Error("Selected course was not found.");
   }
 
   const test = await prisma.test.create({
@@ -112,6 +84,7 @@ export async function createTest(
       description,
       duration,
       status: "DRAFT",
+      publishedAt: null,
     },
     select: {
       id: true,
@@ -124,9 +97,11 @@ export async function createTest(
   redirect(`/admin/tests/${test.id}`);
 }
 
-export async function updateTest(
-  formData: FormData
-): Promise<ActionResult> {
+/* =========================================================
+   UPDATE TEST
+========================================================= */
+
+export async function updateTest(formData: FormData): Promise<void> {
   await requireRole("ADMIN");
 
   const testId = getString(formData, "testId");
@@ -137,41 +112,27 @@ export async function updateTest(
   const durationValue = getString(formData, "duration");
 
   const duration =
-    durationValue.length > 0
-      ? Number(durationValue)
-      : null;
+    durationValue.length > 0 ? Number(durationValue) : null;
 
   const status = getString(formData, "status");
 
   if (!testId) {
-    return {
-      success: false,
-      error: "Test ID is required.",
-    };
+    throw new Error("Test ID is required.");
   }
 
   if (!title) {
-    return {
-      success: false,
-      error: "Test title is required.",
-    };
+    throw new Error("Test title is required.");
   }
 
   if (!courseId) {
-    return {
-      success: false,
-      error: "Please select a course.",
-    };
+    throw new Error("Please select a course.");
   }
 
   if (
     duration !== null &&
     (!Number.isFinite(duration) || duration <= 0)
   ) {
-    return {
-      success: false,
-      error: "Duration must be greater than zero.",
-    };
+    throw new Error("Duration must be greater than zero.");
   }
 
   if (
@@ -179,10 +140,7 @@ export async function updateTest(
     status !== "PUBLISHED" &&
     status !== "CLOSED"
   ) {
-    return {
-      success: false,
-      error: "Invalid test status.",
-    };
+    throw new Error("Invalid test status.");
   }
 
   const existingTest = await prisma.test.findUnique({
@@ -196,10 +154,7 @@ export async function updateTest(
   });
 
   if (!existingTest) {
-    return {
-      success: false,
-      error: "Test not found.",
-    };
+    throw new Error("Test not found.");
   }
 
   const course = await prisma.course.findUnique({
@@ -212,12 +167,19 @@ export async function updateTest(
   });
 
   if (!course) {
-    return {
-      success: false,
-      error: "Selected course was not found.",
-    };
+    throw new Error("Selected course was not found.");
   }
 
+  /*
+   * IMPORTANT:
+   *
+   * When publishing:
+   * - preserve an existing publishedAt
+   * - otherwise create a new publication timestamp
+   *
+   * When moving back to DRAFT or CLOSED:
+   * - clear publishedAt
+   */
   const publishedAt =
     status === "PUBLISHED"
       ? existingTest.publishedAt ?? new Date()
@@ -240,24 +202,25 @@ export async function updateTest(
   revalidatePath("/admin/tests");
   revalidatePath(`/admin/tests/${testId}`);
 
-  return {
-    success: true,
-    message: "Test updated successfully.",
-  };
+  /*
+   * Revalidate any student-facing test routes as well.
+   * These are harmless if the route does not exist yet.
+   */
+  revalidatePath("/student/tests");
+  revalidatePath("/student");
 }
 
-export async function deleteTest(
-  formData: FormData
-): Promise<ActionResult> {
+/* =========================================================
+   DELETE TEST
+========================================================= */
+
+export async function deleteTest(formData: FormData): Promise<void> {
   await requireRole("ADMIN");
 
   const testId = getString(formData, "testId");
 
   if (!testId) {
-    return {
-      success: false,
-      error: "Test ID is required.",
-    };
+    throw new Error("Test ID is required.");
   }
 
   const test = await prisma.test.findUnique({
@@ -270,17 +233,8 @@ export async function deleteTest(
   });
 
   if (!test) {
-    return {
-      success: false,
-      error: "Test not found.",
-    };
+    throw new Error("Test not found.");
   }
-
-  /*
-   * Delete dependent records first.
-   * This keeps the action safe even when the Prisma schema
-   * does not have cascading deletes configured.
-   */
 
   await prisma.$transaction(async (tx) => {
     const questions = await tx.question.findMany({
@@ -297,7 +251,7 @@ export async function deleteTest(
     );
 
     if (questionIds.length > 0) {
-      await tx.answerOption.deleteMany({
+      await tx.studentAnswer.deleteMany({
         where: {
           questionId: {
             in: questionIds,
@@ -305,7 +259,7 @@ export async function deleteTest(
         },
       });
 
-      await tx.studentAnswer.deleteMany({
+      await tx.answerOption.deleteMany({
         where: {
           questionId: {
             in: questionIds,
@@ -334,6 +288,7 @@ export async function deleteTest(
   });
 
   revalidatePath("/admin/tests");
+  revalidatePath("/student/tests");
 
   redirect("/admin/tests");
 }
@@ -344,7 +299,7 @@ export async function deleteTest(
 
 export async function createQuestion(
   formData: FormData
-): Promise<ActionResult> {
+): Promise<void> {
   await requireRole("ADMIN");
 
   const testId = getString(formData, "testId");
@@ -352,6 +307,7 @@ export async function createQuestion(
   const type = getString(formData, "type");
 
   const points = getNumber(formData, "points", 1);
+
   const displayOrder = getNumber(
     formData,
     "displayOrder",
@@ -359,34 +315,22 @@ export async function createQuestion(
   );
 
   if (!testId) {
-    return {
-      success: false,
-      error: "Test ID is required.",
-    };
+    throw new Error("Test ID is required.");
   }
 
   if (!question) {
-    return {
-      success: false,
-      error: "Question text is required.",
-    };
+    throw new Error("Question text is required.");
   }
 
   if (
     type !== "MULTIPLE_CHOICE" &&
     type !== "TRUE_FALSE"
   ) {
-    return {
-      success: false,
-      error: "Invalid question type.",
-    };
+    throw new Error("Invalid question type.");
   }
 
   if (!Number.isFinite(points) || points <= 0) {
-    return {
-      success: false,
-      error: "Points must be greater than zero.",
-    };
+    throw new Error("Points must be greater than zero.");
   }
 
   const test = await prisma.test.findUnique({
@@ -399,41 +343,8 @@ export async function createQuestion(
   });
 
   if (!test) {
-    return {
-      success: false,
-      error: "Test not found.",
-    };
+    throw new Error("Test not found.");
   }
-
-  const createdQuestion = await prisma.question.create({
-    data: {
-      testId,
-      question,
-      type,
-      points,
-      displayOrder,
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  /*
-   * Multiple choice options
-   *
-   * The form can send:
-   *
-   * optionText
-   * optionText
-   * optionText
-   * optionText
-   *
-   * and:
-   *
-   * correctOption
-   *
-   * containing the index of the correct option.
-   */
 
   const optionTexts = formData
     .getAll("optionText")
@@ -450,71 +361,86 @@ export async function createQuestion(
       ? Number(correctOptionValue)
       : -1;
 
+  const correctAnswer = getString(
+    formData,
+    "correctAnswer"
+  ).toUpperCase();
+
+  /*
+   * Validate BEFORE creating the question.
+   * This prevents orphaned questions when the options
+   * are invalid.
+   */
+
   if (type === "MULTIPLE_CHOICE") {
     if (optionTexts.length < 2) {
-      await prisma.question.delete({
-        where: {
-          id: createdQuestion.id,
-        },
-      });
-
-      return {
-        success: false,
-        error:
-          "Multiple-choice questions require at least two options.",
-      };
+      throw new Error(
+        "Multiple-choice questions require at least two options."
+      );
     }
 
+    if (
+      !Number.isInteger(correctOption) ||
+      correctOption < 0 ||
+      correctOption >= optionTexts.length
+    ) {
+      throw new Error(
+        "Please select the correct answer."
+      );
+    }
+  }
+
+  if (type === "TRUE_FALSE") {
+    if (
+      correctAnswer !== "TRUE" &&
+      correctAnswer !== "FALSE"
+    ) {
+      throw new Error(
+        "Please select TRUE or FALSE as the correct answer."
+      );
+    }
+  }
+
+  const createdQuestion =
+    await prisma.question.create({
+      data: {
+        testId,
+        question,
+        type,
+        points,
+        displayOrder,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+  if (type === "MULTIPLE_CHOICE") {
     await prisma.answerOption.createMany({
-      data: optionTexts.map((optionText, index) => ({
-        questionId: createdQuestion.id,
-        optionText,
-        isCorrect: index === correctOption,
-        displayOrder: index,
-      })),
+      data: optionTexts.map(
+        (optionText, index) => ({
+          questionId: createdQuestion.id,
+          optionText,
+          isCorrect: index === correctOption,
+          displayOrder: index,
+        })
+      ),
     });
   }
 
   if (type === "TRUE_FALSE") {
-    const correctAnswer = getString(
-      formData,
-      "correctAnswer"
-    );
-
-    const normalizedCorrectAnswer =
-      correctAnswer.toUpperCase();
-
-    if (
-      normalizedCorrectAnswer !== "TRUE" &&
-      normalizedCorrectAnswer !== "FALSE"
-    ) {
-      await prisma.question.delete({
-        where: {
-          id: createdQuestion.id,
-        },
-      });
-
-      return {
-        success: false,
-        error:
-          "Please select TRUE or FALSE as the correct answer.",
-      };
-    }
-
     await prisma.answerOption.createMany({
       data: [
         {
           questionId: createdQuestion.id,
           optionText: "True",
-          isCorrect:
-            normalizedCorrectAnswer === "TRUE",
+          isCorrect: correctAnswer === "TRUE",
           displayOrder: 0,
         },
         {
           questionId: createdQuestion.id,
           optionText: "False",
-          isCorrect:
-            normalizedCorrectAnswer === "FALSE",
+          isCorrect: correctAnswer === "FALSE",
           displayOrder: 1,
         },
       ],
@@ -525,16 +451,15 @@ export async function createQuestion(
   revalidatePath(
     `/admin/tests/${testId}/questions/new`
   );
-
-  return {
-    success: true,
-    message: "Question created successfully.",
-  };
 }
+
+/* =========================================================
+   UPDATE QUESTION
+========================================================= */
 
 export async function updateQuestion(
   formData: FormData
-): Promise<ActionResult> {
+): Promise<void> {
   await requireRole("ADMIN");
 
   const questionId = getString(
@@ -542,11 +467,26 @@ export async function updateQuestion(
     "questionId"
   );
 
-  const testId = getString(formData, "testId");
-  const question = getString(formData, "question");
-  const type = getString(formData, "type");
+  const testId = getString(
+    formData,
+    "testId"
+  );
 
-  const points = getNumber(formData, "points", 1);
+  const question = getString(
+    formData,
+    "question"
+  );
+
+  const type = getString(
+    formData,
+    "type"
+  );
+
+  const points = getNumber(
+    formData,
+    "points",
+    1
+  );
 
   const displayOrder = getNumber(
     formData,
@@ -555,41 +495,28 @@ export async function updateQuestion(
   );
 
   if (!questionId) {
-    return {
-      success: false,
-      error: "Question ID is required.",
-    };
+    throw new Error("Question ID is required.");
   }
 
   if (!testId) {
-    return {
-      success: false,
-      error: "Test ID is required.",
-    };
+    throw new Error("Test ID is required.");
   }
 
   if (!question) {
-    return {
-      success: false,
-      error: "Question text is required.",
-    };
+    throw new Error("Question text is required.");
   }
 
   if (
     type !== "MULTIPLE_CHOICE" &&
     type !== "TRUE_FALSE"
   ) {
-    return {
-      success: false,
-      error: "Invalid question type.",
-    };
+    throw new Error("Invalid question type.");
   }
 
   if (!Number.isFinite(points) || points <= 0) {
-    return {
-      success: false,
-      error: "Points must be greater than zero.",
-    };
+    throw new Error(
+      "Points must be greater than zero."
+    );
   }
 
   const existingQuestion =
@@ -604,40 +531,14 @@ export async function updateQuestion(
     });
 
   if (!existingQuestion) {
-    return {
-      success: false,
-      error: "Question not found.",
-    };
+    throw new Error("Question not found.");
   }
 
   if (existingQuestion.testId !== testId) {
-    return {
-      success: false,
-      error: "Question does not belong to this test.",
-    };
+    throw new Error(
+      "Question does not belong to this test."
+    );
   }
-
-  await prisma.question.update({
-    where: {
-      id: questionId,
-    },
-    data: {
-      question,
-      type,
-      points,
-      displayOrder,
-    },
-  });
-
-  /*
-   * Replace answer options.
-   */
-
-  await prisma.answerOption.deleteMany({
-    where: {
-      questionId,
-    },
-  });
 
   const optionTexts = formData
     .getAll("optionText")
@@ -654,110 +555,55 @@ export async function updateQuestion(
       ? Number(correctOptionValue)
       : -1;
 
+  const correctAnswer = getString(
+    formData,
+    "correctAnswer"
+  ).toUpperCase();
+
+  /*
+   * Validate the new answer structure BEFORE deleting
+   * the existing answer options.
+   */
+
   if (type === "MULTIPLE_CHOICE") {
     if (optionTexts.length < 2) {
-      return {
-        success: false,
-        error:
-          "Multiple-choice questions require at least two options.",
-      };
+      throw new Error(
+        "Multiple-choice questions require at least two options."
+      );
     }
 
-    await prisma.answerOption.createMany({
-      data: optionTexts.map((optionText, index) => ({
-        questionId,
-        optionText,
-        isCorrect: index === correctOption,
-        displayOrder: index,
-      })),
-    });
+    if (
+      !Number.isInteger(correctOption) ||
+      correctOption < 0 ||
+      correctOption >= optionTexts.length
+    ) {
+      throw new Error(
+        "Please select the correct answer."
+      );
+    }
   }
 
   if (type === "TRUE_FALSE") {
-    const correctAnswer = getString(
-      formData,
-      "correctAnswer"
-    ).toUpperCase();
-
     if (
       correctAnswer !== "TRUE" &&
       correctAnswer !== "FALSE"
     ) {
-      return {
-        success: false,
-        error:
-          "Please select TRUE or FALSE as the correct answer.",
-      };
+      throw new Error(
+        "Please select TRUE or FALSE as the correct answer."
+      );
     }
-
-    await prisma.answerOption.createMany({
-      data: [
-        {
-          questionId,
-          optionText: "True",
-          isCorrect:
-            correctAnswer === "TRUE",
-          displayOrder: 0,
-        },
-        {
-          questionId,
-          optionText: "False",
-          isCorrect:
-            correctAnswer === "FALSE",
-          displayOrder: 1,
-        },
-      ],
-    });
-  }
-
-  revalidatePath(`/admin/tests/${testId}`);
-
-  return {
-    success: true,
-    message: "Question updated successfully.",
-  };
-}
-
-export async function deleteQuestion(
-  formData: FormData
-): Promise<ActionResult> {
-  await requireRole("ADMIN");
-
-  const questionId = getString(
-    formData,
-    "questionId"
-  );
-
-  const testId = getString(formData, "testId");
-
-  if (!questionId) {
-    return {
-      success: false,
-      error: "Question ID is required.",
-    };
-  }
-
-  const question = await prisma.question.findUnique({
-    where: {
-      id: questionId,
-    },
-    select: {
-      id: true,
-      testId: true,
-    },
-  });
-
-  if (!question) {
-    return {
-      success: false,
-      error: "Question not found.",
-    };
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.studentAnswer.deleteMany({
+    await tx.question.update({
       where: {
-        questionId,
+        id: questionId,
+      },
+      data: {
+        question,
+        type,
+        points,
+        displayOrder,
       },
     });
 
@@ -767,21 +613,107 @@ export async function deleteQuestion(
       },
     });
 
-    await tx.question.delete({
+    if (type === "MULTIPLE_CHOICE") {
+      await tx.answerOption.createMany({
+        data: optionTexts.map(
+          (optionText, index) => ({
+            questionId,
+            optionText,
+            isCorrect: index === correctOption,
+            displayOrder: index,
+          })
+        ),
+      });
+    }
+
+    if (type === "TRUE_FALSE") {
+      await tx.answerOption.createMany({
+        data: [
+          {
+            questionId,
+            optionText: "True",
+            isCorrect: correctAnswer === "TRUE",
+            displayOrder: 0,
+          },
+          {
+            questionId,
+            optionText: "False",
+            isCorrect: correctAnswer === "FALSE",
+            displayOrder: 1,
+          },
+        ],
+      });
+    }
+  });
+
+  revalidatePath(`/admin/tests/${testId}`);
+}
+
+/* =========================================================
+   DELETE QUESTION
+========================================================= */
+
+export async function deleteQuestion(
+  formData: FormData
+): Promise<void> {
+  await requireRole("ADMIN");
+
+  const questionId = getString(
+    formData,
+    "questionId"
+  );
+
+  const testId = getString(
+    formData,
+    "testId"
+  );
+
+  if (!questionId) {
+    throw new Error("Question ID is required.");
+  }
+
+  const question =
+    await prisma.question.findUnique({
       where: {
         id: questionId,
       },
+      select: {
+        id: true,
+        testId: true,
+      },
     });
-  });
+
+  if (!question) {
+    throw new Error("Question not found.");
+  }
+
+  await prisma.$transaction(
+    async (tx) => {
+      await tx.studentAnswer.deleteMany({
+        where: {
+          questionId,
+        },
+      });
+
+      await tx.answerOption.deleteMany({
+        where: {
+          questionId,
+        },
+      });
+
+      await tx.question.delete({
+        where: {
+          id: questionId,
+        },
+      });
+    }
+  );
 
   if (testId) {
-    revalidatePath(`/admin/tests/${testId}`);
+    revalidatePath(
+      `/admin/tests/${testId}`
+    );
   }
 
   revalidatePath("/admin/tests");
-
-  return {
-    success: true,
-    message: "Question deleted successfully.",
-  };
 }

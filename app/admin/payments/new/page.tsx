@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { prisma } from "@/app/lib/prisma";
 import { requireRole } from "@/app/lib/auth";
 import { createPayment } from "../actions";
@@ -58,25 +59,31 @@ export default async function NewPaymentPage() {
         <div className="mb-6">
           <Link
             href="/admin/payments"
-            className="inline-flex text-sm font-medium text-slate-500 hover:text-slate-900"
+            className="inline-flex text-sm font-medium text-slate-500 transition hover:text-slate-900"
           >
             ← Back to Payments
           </Link>
 
-          <h1 className="mt-3 text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Record Payment
           </h1>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Record a payment or financial charge for a student.
+          <p className="mt-1 text-sm text-slate-500 sm:text-base">
+            Record a course charge, student payment or installment.
           </p>
         </div>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
           {students.length === 0 ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
-              There are currently no students available for payment
-              recording.
+              <p className="font-semibold">
+                No students available
+              </p>
+
+              <p className="mt-1">
+                There are currently no active students available
+                for payment recording.
+              </p>
             </div>
           ) : (
             <form action={createPayment} className="space-y-6">
@@ -105,12 +112,19 @@ export default async function NewPaymentPage() {
                       `${student.firstName} ${student.lastName}`.trim();
 
                     return (
-                      <option key={student.id} value={student.id}>
+                      <option
+                        key={student.id}
+                        value={student.id}
+                      >
                         {name} — {student.email}
                       </option>
                     );
                   })}
                 </select>
+
+                <p className="mt-2 text-xs text-slate-500">
+                  Only active student accounts are displayed.
+                </p>
               </div>
 
               {/* Enrollment */}
@@ -136,34 +150,37 @@ export default async function NewPaymentPage() {
                     const studentName =
                       `${student.firstName} ${student.lastName}`.trim();
 
-                    return student.enrollments.map((enrollment) => (
-                      <option
-                        key={enrollment.id}
-                        value={enrollment.id}
-                      >
-                        {studentName} — {enrollment.course.title}
-                        {enrollment.cohort
-                          ? ` — ${enrollment.cohort.name}`
-                          : ""}
-                      </option>
-                    ));
+                    return student.enrollments.map(
+                      (enrollment) => (
+                        <option
+                          key={enrollment.id}
+                          value={enrollment.id}
+                        >
+                          {studentName} —{" "}
+                          {enrollment.course.title}
+                          {enrollment.cohort
+                            ? ` — ${enrollment.cohort.name}`
+                            : ""}
+                        </option>
+                      )
+                    );
                   })}
                 </select>
 
                 <p className="mt-2 text-xs text-slate-500">
-                  Select the enrollment this payment belongs to, or leave it
-                  as a general payment.
+                  Choose the student&apos;s enrollment when this charge
+                  belongs to a specific course.
                 </p>
               </div>
 
-              {/* Amounts */}
+              {/* Amount */}
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label
                     htmlFor="amount"
                     className="mb-2 block text-sm font-semibold text-slate-700"
                   >
-                    Amount / Charge
+                    Total Charge
                   </label>
 
                   <div className="flex">
@@ -179,7 +196,7 @@ export default async function NewPaymentPage() {
                       step="0.01"
                       required
                       placeholder="150000"
-                      className="w-full rounded-r-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
+                      className="w-full rounded-r-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
                     />
                   </div>
                 </div>
@@ -206,10 +223,22 @@ export default async function NewPaymentPage() {
                       defaultValue="0"
                       required
                       placeholder="50000"
-                      className="w-full rounded-r-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
+                      className="w-full rounded-r-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
                     />
                   </div>
                 </div>
+              </div>
+
+              <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+                <p className="font-semibold text-slate-900">
+                  Payment calculation
+                </p>
+
+                <p className="mt-1 leading-6">
+                  The system automatically calculates the outstanding
+                  balance and payment status from the total charge,
+                  amount paid and due date.
+                </p>
               </div>
 
               {/* Method */}
@@ -225,13 +254,17 @@ export default async function NewPaymentPage() {
                   id="method"
                   name="method"
                   defaultValue="MANUAL"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-slate-900"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
                 >
                   <option value="MANUAL">Manual</option>
-                  <option value="BANK_TRANSFER">Bank Transfer</option>
+                  <option value="BANK_TRANSFER">
+                    Bank Transfer
+                  </option>
                   <option value="CASH">Cash</option>
                   <option value="PAYSTACK">Paystack</option>
-                  <option value="FLUTTERWAVE">Flutterwave</option>
+                  <option value="FLUTTERWAVE">
+                    Flutterwave
+                  </option>
                 </select>
               </div>
 
@@ -248,11 +281,12 @@ export default async function NewPaymentPage() {
                   id="reference"
                   name="reference"
                   placeholder="e.g. EDSEC-2026-0001"
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
                 />
 
                 <p className="mt-2 text-xs text-slate-500">
-                  Optional. Useful for bank transfers and online payments.
+                  Optional. Recommended for transfers and online
+                  payments.
                 </p>
               </div>
 
@@ -270,7 +304,7 @@ export default async function NewPaymentPage() {
                     id="paidAt"
                     name="paidAt"
                     type="date"
-                    className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
+                    className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
                   />
                 </div>
 
@@ -286,7 +320,7 @@ export default async function NewPaymentPage() {
                     id="dueDate"
                     name="dueDate"
                     type="date"
-                    className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
+                    className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
                   />
                 </div>
               </div>
@@ -305,7 +339,7 @@ export default async function NewPaymentPage() {
                   name="notes"
                   rows={4}
                   placeholder="Add any additional payment information..."
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"
                 />
               </div>
 
@@ -313,14 +347,14 @@ export default async function NewPaymentPage() {
               <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
                 <Link
                   href="/admin/payments"
-                  className="inline-flex justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="inline-flex justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   Cancel
                 </Link>
 
                 <button
                   type="submit"
-                  className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+                  className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
                 >
                   Record Payment
                 </button>

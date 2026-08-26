@@ -8,7 +8,7 @@ type Props = {
   studentId: string;
   status: "ACTIVE" | "SUSPENDED" | "INACTIVE";
   label: string;
-  variant: "primary" | "danger";
+  variant: "primary" | "danger" | "secondary";
 };
 
 export default function StudentStatusButton({
@@ -22,14 +22,20 @@ export default function StudentStatusButton({
   const [error, setError] = useState("");
 
   function handleClick() {
-    const confirmed =
-      status === "SUSPENDED"
-        ? window.confirm(
-            "Are you sure you want to suspend this student's account?"
-          )
-        : window.confirm(
-            "Are you sure you want to activate this student's account?"
-          );
+    let message = "";
+
+    if (status === "SUSPENDED") {
+      message =
+        "Are you sure you want to suspend this student's account?";
+    } else if (status === "INACTIVE") {
+      message =
+        "Are you sure you want to deactivate this student's account?";
+    } else {
+      message =
+        "Are you sure you want to activate this student's account?";
+    }
+
+    const confirmed = window.confirm(message);
 
     if (!confirmed) {
       return;
@@ -51,8 +57,10 @@ export default function StudentStatusButton({
 
   const buttonClass =
     variant === "danger"
-      ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
-      : "bg-blue-600 text-white hover:bg-blue-700";
+      ? "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+      : variant === "secondary"
+        ? "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+        : "border border-blue-600 bg-blue-600 text-white hover:bg-blue-700";
 
   return (
     <div>
@@ -66,7 +74,7 @@ export default function StudentStatusButton({
       </button>
 
       {error && (
-        <p className="mt-2 max-w-40 text-xs font-medium text-red-600">
+        <p className="mt-2 max-w-xs text-xs font-medium text-red-600">
           {error}
         </p>
       )}

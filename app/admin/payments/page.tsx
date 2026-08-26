@@ -1,6 +1,42 @@
 import Link from "next/link";
+
 import { prisma } from "@/app/lib/prisma";
 import { requireRole } from "@/app/lib/auth";
+
+const statusClass: Record<string, string> = {
+  PENDING: "bg-amber-100 text-amber-700",
+  PAID: "bg-emerald-100 text-emerald-700",
+  PARTIAL: "bg-blue-100 text-blue-700",
+  OVERDUE: "bg-red-100 text-red-700",
+  CANCELLED: "bg-slate-100 text-slate-600",
+};
+
+const statusLabel: Record<string, string> = {
+  PENDING: "Pending",
+  PAID: "Paid",
+  PARTIAL: "Partially Paid",
+  OVERDUE: "Overdue",
+  CANCELLED: "Cancelled",
+};
+
+function formatCurrency(amount: number) {
+  return `₦${amount.toLocaleString("en-NG")}`;
+}
+
+function formatDate(date: Date | null) {
+  if (!date) return "—";
+
+  return new Intl.DateTimeFormat("en-NG", {
+    dateStyle: "medium",
+  }).format(date);
+}
+
+function formatMethod(method: string) {
+  return method
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
 
 export default async function AdminPaymentsPage() {
   await requireRole("ADMIN");
@@ -22,6 +58,11 @@ export default async function AdminPaymentsPage() {
             select: {
               id: true,
               title: true,
+            },
+          },
+          cohort: {
+            select: {
+              name: true,
             },
           },
         },
@@ -58,24 +99,6 @@ export default async function AdminPaymentsPage() {
       payment.status === "OVERDUE"
   ).length;
 
-  const statusClass: Record<string, string> = {
-    PENDING: "bg-amber-100 text-amber-700",
-    PAID: "bg-emerald-100 text-emerald-700",
-    PARTIAL: "bg-blue-100 text-blue-700",
-    OVERDUE: "bg-red-100 text-red-700",
-    CANCELLED: "bg-slate-100 text-slate-600",
-  };
-
-  const formatDate = (date: Date | null) => {
-    if (!date) {
-      return "—";
-    }
-
-    return new Intl.DateTimeFormat("en-NG", {
-      dateStyle: "medium",
-    }).format(date);
-  };
-
   return (
     <main className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -84,17 +107,18 @@ export default async function AdminPaymentsPage() {
           <div>
             <Link
               href="/admin"
-              className="mb-2 inline-flex text-sm font-medium text-slate-500 hover:text-slate-900"
+              className="mb-2 inline-flex text-sm font-medium text-slate-500 transition hover:text-slate-900"
             >
               ← Admin Dashboard
             </Link>
 
-            <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               Payments
             </h1>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Manage student payments, balances and financial records.
+            <p className="mt-1 text-sm text-slate-500 sm:text-base">
+              Manage student fees, payments, balances and financial
+              records.
             </p>
           </div>
 
@@ -107,67 +131,48 @@ export default async function AdminPaymentsPage() {
         </div>
 
         {/* Summary */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-medium text-slate-500">
-              Total Charges
-            </p>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <SummaryCard
+            label="Total Charges"
+            value={formatCurrency(totalCharges)}
+            description={`${payments.length} payment ${
+              payments.length === 1 ? "record" : "records"
+            }`}
+          />
 
-            <p className="mt-2 text-2xl font-bold text-slate-900">
-              ₦{totalCharges.toLocaleString("en-NG")}
-            </p>
+          <SummaryCard
+            label="Total Paid"
+            value={formatCurrency(totalPaid)}
+            description={`${paidCount} fully paid`}
+            valueClassName="text-emerald-600"
+          />
 
-            <p className="mt-1 text-xs text-slate-400">
-              {payments.length} payment records
-            </p>
-          </section>
+          <SummaryCard
+            label="Outstanding"
+            value={formatCurrency(totalBalance)}
+            description="Amount remaining"
+            valueClassName={
+              totalBalance > 0
+                ? "text-red-600"
+                : "text-emerald-600"
+            }
+          />
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-medium text-slate-500">
-              Total Paid
-            </p>
-
-            <p className="mt-2 text-2xl font-bold text-emerald-600">
-              ₦{totalPaid.toLocaleString("en-NG")}
-            </p>
-
-            <p className="mt-1 text-xs text-slate-400">
-              {paidCount} fully paid
-            </p>
-          </section>
-
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-medium text-slate-500">
-              Outstanding
-            </p>
-
-            <p className="mt-2 text-2xl font-bold text-red-600">
-              ₦{totalBalance.toLocaleString("en-NG")}
-            </p>
-
-            <p className="mt-1 text-xs text-slate-400">
-              Amount remaining
-            </p>
-          </section>
-
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-medium text-slate-500">
-              Open Payments
-            </p>
-
-            <p className="mt-2 text-2xl font-bold text-amber-600">
-              {pendingCount}
-            </p>
-
-            <p className="mt-1 text-xs text-slate-400">
-              Pending, partial or overdue
-            </p>
-          </section>
+          <SummaryCard
+            label="Open Payments"
+            value={String(pendingCount)}
+            description="Pending, partial or overdue"
+            valueClassName={
+              pendingCount > 0
+                ? "text-amber-600"
+                : "text-emerald-600"
+            }
+          />
         </div>
 
-        {/* Payment List */}
+        {/* Payment Records */}
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 p-6">
+          <div className="border-b border-slate-200 p-5 sm:p-6">
             <h2 className="text-lg font-bold text-slate-900">
               Payment Records
             </h2>
@@ -178,114 +183,273 @@ export default async function AdminPaymentsPage() {
           </div>
 
           {payments.length === 0 ? (
-            <div className="p-10 text-center">
-              <p className="font-semibold text-slate-900">
-                No payments recorded yet.
-              </p>
+            <div className="p-10 text-center sm:p-14">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-xl font-bold text-slate-500">
+                ₦
+              </div>
 
-              <p className="mt-1 text-sm text-slate-500">
-                Record your first student payment to get started.
+              <h3 className="mt-4 font-bold text-slate-900">
+                No payments recorded yet
+              </h3>
+
+              <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
+                Start by recording a student payment or course
+                charge.
               </p>
 
               <Link
                 href="/admin/payments/new"
-                className="mt-5 inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+                className="mt-5 inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
                 Record Payment
               </Link>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-250 text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                  <tr>
-                    <th className="px-6 py-4">Student</th>
-                    <th className="px-6 py-4">Course</th>
-                    <th className="px-6 py-4">Amount</th>
-                    <th className="px-6 py-4">Paid</th>
-                    <th className="px-6 py-4">Balance</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4">Method</th>
-                    <th className="px-6 py-4">Date</th>
-                    <th className="px-6 py-4">Action</th>
-                  </tr>
-                </thead>
+            <>
+              {/* Mobile */}
+              <div className="divide-y divide-slate-100 md:hidden">
+                {payments.map((payment) => {
+                  const studentName =
+                    `${payment.student.firstName} ${payment.student.lastName}`.trim();
 
-                <tbody className="divide-y divide-slate-100">
-                  {payments.map((payment) => {
-                    const studentName =
-                      `${payment.student.firstName} ${payment.student.lastName}`.trim();
-
-                    return (
-                      <tr
-                        key={payment.id}
-                        className="transition hover:bg-slate-50"
-                      >
-                        <td className="px-6 py-4">
+                  return (
+                    <div
+                      key={payment.id}
+                      className="p-5"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
                           <Link
                             href={`/admin/students/${payment.student.id}`}
-                            className="font-semibold text-slate-900 hover:underline"
+                            className="font-bold text-slate-900 hover:underline"
                           >
                             {studentName}
                           </Link>
 
-                          <p className="mt-1 text-xs text-slate-500">
+                          <p className="mt-1 truncate text-xs text-slate-500">
                             {payment.student.email}
                           </p>
-                        </td>
 
-                        <td className="px-6 py-4 text-slate-700">
-                          {payment.enrollment?.course.title ?? "General Payment"}
-                        </td>
+                          <p className="mt-2 text-sm font-medium text-slate-700">
+                            {payment.enrollment?.course.title ??
+                              "General Payment"}
+                          </p>
+                        </div>
 
-                        <td className="px-6 py-4 font-medium text-slate-900">
-                          ₦{payment.amount.toLocaleString("en-NG")}
-                        </td>
+                        <StatusBadge status={payment.status} />
+                      </div>
 
-                        <td className="px-6 py-4 font-medium text-emerald-600">
-                          ₦{payment.amountPaid.toLocaleString("en-NG")}
-                        </td>
+                      <div className="mt-5 grid grid-cols-2 gap-4">
+                        <PaymentValue
+                          label="Charge"
+                          value={formatCurrency(payment.amount)}
+                        />
 
-                        <td className="px-6 py-4 font-medium text-red-600">
-                          ₦{payment.balance.toLocaleString("en-NG")}
-                        </td>
+                        <PaymentValue
+                          label="Paid"
+                          value={formatCurrency(
+                            payment.amountPaid
+                          )}
+                          valueClassName="text-emerald-600"
+                        />
 
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                              statusClass[payment.status] ??
-                              "bg-slate-100 text-slate-700"
+                        <PaymentValue
+                          label="Balance"
+                          value={formatCurrency(payment.balance)}
+                          valueClassName={
+                            payment.balance > 0
+                              ? "text-red-600"
+                              : "text-emerald-600"
+                          }
+                        />
+
+                        <PaymentValue
+                          label="Method"
+                          value={formatMethod(payment.method)}
+                        />
+                      </div>
+
+                      <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+                        <span className="text-xs text-slate-500">
+                          {formatDate(payment.createdAt)}
+                        </span>
+
+                        <Link
+                          href={`/admin/payments/${payment.id}`}
+                          className="text-sm font-semibold text-slate-900 hover:underline"
+                        >
+                          View payment →
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop */}
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full min-w-275 text-left text-sm">
+                  <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                    <tr>
+                      <th className="px-6 py-4">Student</th>
+                      <th className="px-6 py-4">Course</th>
+                      <th className="px-6 py-4">Charge</th>
+                      <th className="px-6 py-4">Paid</th>
+                      <th className="px-6 py-4">Balance</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Method</th>
+                      <th className="px-6 py-4">Date</th>
+                      <th className="px-6 py-4">Action</th>
+                    </tr>
+                  </thead>
+
+                  <tbody className="divide-y divide-slate-100">
+                    {payments.map((payment) => {
+                      const studentName =
+                        `${payment.student.firstName} ${payment.student.lastName}`.trim();
+
+                      return (
+                        <tr
+                          key={payment.id}
+                          className="transition hover:bg-slate-50"
+                        >
+                          <td className="px-6 py-5">
+                            <Link
+                              href={`/admin/students/${payment.student.id}`}
+                              className="font-semibold text-slate-900 hover:underline"
+                            >
+                              {studentName}
+                            </Link>
+
+                            <p className="mt-1 text-xs text-slate-500">
+                              {payment.student.email}
+                            </p>
+                          </td>
+
+                          <td className="px-6 py-5">
+                            <p className="font-medium text-slate-700">
+                              {payment.enrollment?.course.title ??
+                                "General Payment"}
+                            </p>
+
+                            {payment.enrollment?.cohort?.name && (
+                              <p className="mt-1 text-xs text-slate-500">
+                                {payment.enrollment.cohort.name}
+                              </p>
+                            )}
+                          </td>
+
+                          <td className="px-6 py-5 font-medium text-slate-900">
+                            {formatCurrency(payment.amount)}
+                          </td>
+
+                          <td className="px-6 py-5 font-medium text-emerald-600">
+                            {formatCurrency(payment.amountPaid)}
+                          </td>
+
+                          <td
+                            className={`px-6 py-5 font-medium ${
+                              payment.balance > 0
+                                ? "text-red-600"
+                                : "text-emerald-600"
                             }`}
                           >
-                            {payment.status}
-                          </span>
-                        </td>
+                            {formatCurrency(payment.balance)}
+                          </td>
 
-                        <td className="px-6 py-4 text-slate-600">
-                          {payment.method.replace("_", " ")}
-                        </td>
+                          <td className="px-6 py-5">
+                            <StatusBadge
+                              status={payment.status}
+                            />
+                          </td>
 
-                        <td className="px-6 py-4 text-slate-600">
-                          {formatDate(payment.createdAt)}
-                        </td>
+                          <td className="px-6 py-5 text-slate-600">
+                            {formatMethod(payment.method)}
+                          </td>
 
-                        <td className="px-6 py-4">
-                          <Link
-                            href={`/admin/payments/${payment.id}`}
-                            className="font-semibold text-slate-700 hover:underline"
-                          >
-                            View
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          <td className="px-6 py-5 text-slate-600">
+                            {formatDate(payment.createdAt)}
+                          </td>
+
+                          <td className="px-6 py-5">
+                            <Link
+                              href={`/admin/payments/${payment.id}`}
+                              className="font-semibold text-slate-700 hover:underline"
+                            >
+                              View
+                            </Link>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </section>
       </div>
     </main>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  description,
+  valueClassName = "text-slate-900",
+}: {
+  label: string;
+  value: string;
+  description: string;
+  valueClassName?: string;
+}) {
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-slate-500">
+        {label}
+      </p>
+
+      <p className={`mt-2 text-2xl font-bold ${valueClassName}`}>
+        {value}
+      </p>
+
+      <p className="mt-1 text-xs text-slate-400">
+        {description}
+      </p>
+    </section>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  return (
+    <span
+      className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${
+        statusClass[status] ??
+        "bg-slate-100 text-slate-700"
+      }`}
+    >
+      {statusLabel[status] ?? status}
+    </span>
+  );
+}
+
+function PaymentValue({
+  label,
+  value,
+  valueClassName = "text-slate-900",
+}: {
+  label: string;
+  value: string;
+  valueClassName?: string;
+}) {
+  return (
+    <div>
+      <p className="text-xs text-slate-400">{label}</p>
+
+      <p className={`mt-1 text-sm font-bold ${valueClassName}`}>
+        {value}
+      </p>
+    </div>
   );
 }

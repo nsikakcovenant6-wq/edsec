@@ -20,6 +20,20 @@ export default function RegisterPage() {
     event.preventDefault();
     setMessage("");
 
+    // ------------------------------------------------------------
+    // CLIENT-SIDE VALIDATION
+    // ------------------------------------------------------------
+
+    if (!fullName.trim()) {
+      setMessage("Please enter your full name.");
+      return;
+    }
+
+    if (!email.trim()) {
+      setMessage("Please enter your email address.");
+      return;
+    }
+
     if (password !== confirmPassword) {
       setMessage("Passwords do not match.");
       return;
@@ -33,32 +47,51 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      // ----------------------------------------------------------
+      // CREATE ACCOUNT
+      // ----------------------------------------------------------
+
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
-          fullName,
-          email,
-          phone,
+          fullName: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim(),
           password,
         }),
       });
 
       const data = await response.json();
 
+      // ----------------------------------------------------------
+      // HANDLE REGISTRATION ERROR
+      // ----------------------------------------------------------
+
       if (!response.ok) {
-        setMessage(data.message || "Unable to create your account.");
+        setMessage(
+          data.message || "Unable to create your account."
+        );
         return;
       }
 
-      // Registration successful.
-      // The student dashboard is located at /student/dashboard.
-      window.location.href = data.redirectTo || "/student/dashboard";
-    } catch {
+      // ----------------------------------------------------------
+      // REGISTRATION SUCCESSFUL
+      //
+      // The API creates the authentication cookie and returns
+      // /student/dashboard as the destination.
+      // ----------------------------------------------------------
+
+      window.location.href =
+        data.redirectTo || "/student/dashboard";
+    } catch (error) {
+      console.error("Registration request error:", error);
+
       setMessage(
-        "Unable to connect to EDSEC right now. Please try again.",
+        "Unable to connect to EDSEC right now. Please try again."
       );
     } finally {
       setLoading(false);
@@ -68,10 +101,17 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="grid min-h-screen lg:grid-cols-2">
-        {/* BRAND PANEL */}
+
+        {/* ========================================================
+            BRAND PANEL
+        ========================================================= */}
+
         <section className="hidden bg-slate-950 lg:flex lg:flex-col lg:justify-between">
           <div className="p-10">
-            <Link href="/" className="inline-flex items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-3"
+            >
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white">
                 <Image
                   src="/edsec-logo.png"
@@ -84,7 +124,10 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <p className="text-lg font-bold text-white">EDSEC</p>
+                <p className="text-lg font-bold text-white">
+                  EDSEC
+                </p>
+
                 <p className="text-xs text-slate-400">
                   Computer Training
                 </p>
@@ -113,12 +156,17 @@ export default function RegisterPage() {
                 "Build practical projects",
                 "Join the EDSEC learning community",
               ].map((item) => (
-                <div key={item} className="flex items-center gap-3">
+                <div
+                  key={item}
+                  className="flex items-center gap-3"
+                >
                   <span className="grid h-7 w-7 place-items-center rounded-full bg-blue-600 text-sm font-bold text-white">
                     ✓
                   </span>
 
-                  <span className="text-slate-300">{item}</span>
+                  <span className="text-slate-300">
+                    {item}
+                  </span>
                 </div>
               ))}
             </div>
@@ -131,12 +179,20 @@ export default function RegisterPage() {
           </div>
         </section>
 
-        {/* REGISTER PANEL */}
+        {/* ========================================================
+            REGISTER PANEL
+        ========================================================= */}
+
         <section className="flex items-center justify-center px-5 py-10 sm:px-8">
           <div className="w-full max-w-md">
+
             {/* MOBILE LOGO */}
+
             <div className="mb-8 flex justify-center lg:hidden">
-              <Link href="/" className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="flex items-center gap-3"
+              >
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm">
                   <Image
                     src="/edsec-logo.png"
@@ -160,7 +216,10 @@ export default function RegisterPage() {
               </Link>
             </div>
 
+            {/* REGISTER CARD */}
+
             <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-xl shadow-slate-200/50 sm:p-9">
+
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
                   Create account
@@ -179,7 +238,11 @@ export default function RegisterPage() {
                 onSubmit={handleSubmit}
                 className="mt-7 space-y-4"
               >
-                {/* FULL NAME */}
+
+                {/* ==================================================
+                    FULL NAME
+                ================================================== */}
+
                 <div>
                   <label
                     htmlFor="fullName"
@@ -202,7 +265,10 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                {/* EMAIL */}
+                {/* ==================================================
+                    EMAIL
+                ================================================== */}
+
                 <div>
                   <label
                     htmlFor="email"
@@ -225,7 +291,10 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                {/* PHONE */}
+                {/* ==================================================
+                    PHONE
+                ================================================== */}
+
                 <div>
                   <label
                     htmlFor="phone"
@@ -250,7 +319,10 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                {/* PASSWORD */}
+                {/* ==================================================
+                    PASSWORD
+                ================================================== */}
+
                 <div>
                   <label
                     htmlFor="password"
@@ -262,7 +334,11 @@ export default function RegisterPage() {
                   <div className="relative">
                     <input
                       id="password"
-                      type={showPassword ? "text" : "password"}
+                      type={
+                        showPassword
+                          ? "text"
+                          : "password"
+                      }
                       required
                       minLength={8}
                       autoComplete="new-password"
@@ -277,16 +353,23 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        setShowPassword((current) => !current)
+                        setShowPassword(
+                          (current) => !current
+                        )
                       }
                       className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                     >
-                      {showPassword ? "Hide" : "Show"}
+                      {showPassword
+                        ? "Hide"
+                        : "Show"}
                     </button>
                   </div>
                 </div>
 
-                {/* CONFIRM PASSWORD */}
+                {/* ==================================================
+                    CONFIRM PASSWORD
+                ================================================== */}
+
                 <div>
                   <label
                     htmlFor="confirmPassword"
@@ -308,7 +391,9 @@ export default function RegisterPage() {
                       autoComplete="new-password"
                       value={confirmPassword}
                       onChange={(event) =>
-                        setConfirmPassword(event.target.value)
+                        setConfirmPassword(
+                          event.target.value
+                        )
                       }
                       placeholder="Repeat your password"
                       className="w-full rounded-xl border border-slate-300 px-4 py-3.5 pr-20 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
@@ -318,24 +403,35 @@ export default function RegisterPage() {
                       type="button"
                       onClick={() =>
                         setShowConfirmPassword(
-                          (current) => !current,
+                          (current) => !current
                         )
                       }
                       className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                     >
-                      {showConfirmPassword ? "Hide" : "Show"}
+                      {showConfirmPassword
+                        ? "Hide"
+                        : "Show"}
                     </button>
                   </div>
                 </div>
 
-                {/* ERROR */}
+                {/* ==================================================
+                    ERROR MESSAGE
+                ================================================== */}
+
                 {message && (
-                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
+                  <div
+                    role="alert"
+                    className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+                  >
                     {message}
                   </div>
                 )}
 
-                {/* SUBMIT */}
+                {/* ==================================================
+                    SUBMIT
+                ================================================== */}
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -347,8 +443,11 @@ export default function RegisterPage() {
                 </button>
               </form>
 
+              {/* LOGIN LINK */}
+
               <p className="mt-7 text-center text-sm text-slate-500">
                 Already have an account?
+
                 <Link
                   href="/login"
                   className="ml-1 font-semibold text-blue-600 hover:text-blue-700"
@@ -356,6 +455,8 @@ export default function RegisterPage() {
                   Sign in
                 </Link>
               </p>
+
+              {/* BACK HOME */}
 
               <div className="mt-5 text-center">
                 <Link
@@ -366,6 +467,8 @@ export default function RegisterPage() {
                 </Link>
               </div>
             </div>
+
+            {/* TERMS */}
 
             <p className="mt-5 text-center text-xs leading-5 text-slate-400">
               By creating an account, you agree to use the EDSEC

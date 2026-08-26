@@ -1,8 +1,23 @@
 "use server";
 
 import { redirect } from "next/navigation";
+
 import { prisma } from "@/app/lib/prisma";
 import { requireRole } from "@/app/lib/auth";
+
+type PaymentMethod =
+  | "MANUAL"
+  | "PAYSTACK"
+  | "FLUTTERWAVE"
+  | "BANK_TRANSFER"
+  | "CASH";
+
+type PaymentStatus =
+  | "PENDING"
+  | "PAID"
+  | "PARTIAL"
+  | "OVERDUE"
+  | "CANCELLED";
 
 function getString(formData: FormData, name: string) {
   const value = formData.get(name);
@@ -29,32 +44,128 @@ function getOptionalDate(formData: FormData, name: string) {
     return null;
   }
 
-  const date = new Date(value);
+  const date = new Date(`${value}T00:00:00`);
 
   return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function getPaymentMethod(value: string): PaymentMethod {
+  const methods: PaymentMethod[] = [
+    "MANUAL",
+    "PAYSTACK",
+    "FLUTTERWAVE",
+    "BANK_TRANSFER",
+    "CASH",
+  ];
+
+  if (methods.includes(value as PaymentMethod)) {
+    return value as PaymentMethod;
+  }
+
+  return "MANUAL";
+}
+
+function getPaymentStatus(value: string): PaymentStatus {
+  const statuses: PaymentStatus[] = [
+    "PENDING",
+    "PAID",
+    "PARTIAL",
+    "OVERDUE",
+    "CANCELLED",
+  ];
+
+  if (statuses.includes(value as PaymentStatus)) {
+    return value as PaymentStatus;
+  }
+
+  throw new Error("Invalid payment status.");
 }
 
 function calculatePaymentStatus(
   amount: number,
   amountPaid: number,
   dueDate: Date | null
-) {
+): PaymentStatus {
   if (amountPaid >= amount) {
-    return "PAID" as const;
+    return "PAID";
   }
 
   if (amountPaid > 0) {
-    return "PARTIAL" as const;
+    return "PARTIAL";
   }
 
   if (dueDate && dueDate.getTime() < Date.now()) {
-    return "OVERDUE" as const;
+    return "OVERDUE";
   }
 
-  return "PENDING" as const;
+  return "PENDING";
 }
 
-export async function createPayment(formData: FormData): Promise<void> {
+function validateAmounts(amount: number, amountPaid: number) {
+  if (amount <= 0) {
+    throw new Error("Payment amount must be greater than zero.");
+  }
+
+  if (amountPaid < 0) {
+    throw new Error("Amount paid cannot be negative.");
+  }
+
+  if (amountPaid > amount) {
+    throw new Error(
+      "Amount paid cannot be greater than the payment amount."
+    );
+  }
+}
+
+async function verifyStudent(studentId: string) {
+  const student = await prisma.user.findUnique({
+    where: {
+      id: studentId,
+    },
+    select: {
+      id: true,
+      role: true,
+      status: true,
+    },
+  });
+
+  if (!student || student.role !== "STUDENT") {
+    throw new Error("Selected student was not found.");
+  }
+
+  return student;
+}
+
+async function verifyEnrollment(
+  enrollmentId: string,
+  studentId: string
+) {
+  const enrollment = await prisma.enrollment.findUnique({
+    where: {
+      id: enrollmentId,
+    },
+    select: {
+      id: true,
+      studentId: true,
+    },
+  });
+
+  if (!enrollment) {
+    throw new Error("Selected enrollment was not found.");
+  }
+
+  if (enrollment.studentId !== studentId) {
+    throw new Error(
+      "The selected enrollment does not belong to this student."
+    );
+  }
+
+  return enrollment;
+}
+
+export async function createPayment(
+  formData: FormData
+): Promise<void> {
   await requireRole("ADMIN");
 
   const studentId = getString(formData, "studentId");
@@ -63,7 +174,10 @@ export async function createPayment(formData: FormData): Promise<void> {
   const amount = getNumber(formData, "amount");
   const amountPaid = getNumber(formData, "amountPaid");
 
-  const method = getString(formData, "method") || "MANUAL";
+  const method = getPaymentMethod(
+    getString(formData, "method") || "MANUAL"
+  );
+
   const reference = getOptionalString(formData, "reference");
   const notes = getOptionalString(formData, "notes");
 
@@ -74,50 +188,12 @@ export async function createPayment(formData: FormData): Promise<void> {
     throw new Error("Student is required.");
   }
 
-  if (amount <= 0) {
-    throw new Error("Payment amount must be greater than zero.");
-  }
+  validateAmounts(amount, amountPaid);
 
-  if (amountPaid < 0) {
-    throw new Error("Amount paid cannot be negative.");
-  }
-
-  if (amountPaid > amount) {
-    throw new Error("Amount paid cannot be greater than the payment amount.");
-  }
-
-  const student = await prisma.user.findUnique({
-    where: {
-      id: studentId,
-    },
-    select: {
-      id: true,
-      role: true,
-    },
-  });
-
-  if (!student || student.role !== "STUDENT") {
-    throw new Error("Selected student was not found.");
-  }
+  await verifyStudent(studentId);
 
   if (enrollmentId) {
-    const enrollment = await prisma.enrollment.findUnique({
-      where: {
-        id: enrollmentId,
-      },
-      select: {
-        id: true,
-        studentId: true,
-      },
-    });
-
-    if (!enrollment) {
-      throw new Error("Selected enrollment was not found.");
-    }
-
-    if (enrollment.studentId !== studentId) {
-      throw new Error("The enrollment does not belong to this student.");
-    }
+    await verifyEnrollment(enrollmentId, studentId);
   }
 
   const balance = Math.max(0, amount - amountPaid);
@@ -136,15 +212,13 @@ export async function createPayment(formData: FormData): Promise<void> {
       amountPaid,
       balance,
       status,
+      method,
       reference,
-      method: method as
-        | "MANUAL"
-        | "PAYSTACK"
-        | "FLUTTERWAVE"
-        | "BANK_TRANSFER"
-        | "CASH",
       notes,
-      paidAt: amountPaid > 0 ? paidAt ?? new Date() : null,
+      paidAt:
+        amountPaid > 0
+          ? paidAt ?? new Date()
+          : null,
       dueDate,
     },
   });
@@ -158,15 +232,21 @@ export async function createPayment(formData: FormData): Promise<void> {
         status === "PAID"
           ? "Payment completed"
           : "Payment recorded",
-      description: `Payment of ₦${amountPaid.toLocaleString(
-        "en-NG"
-      )} was recorded.`,
+      description:
+        amountPaid > 0
+          ? `Payment of ₦${amountPaid.toLocaleString(
+              "en-NG"
+            )} was recorded.`
+          : `A charge of ₦${amount.toLocaleString(
+              "en-NG"
+            )} was recorded.`,
       metadata: JSON.stringify({
         paymentId: payment.id,
         amount,
         amountPaid,
         balance,
         status,
+        method,
         reference,
       }),
     },
@@ -175,7 +255,9 @@ export async function createPayment(formData: FormData): Promise<void> {
   redirect(`/admin/payments/${payment.id}`);
 }
 
-export async function updatePayment(formData: FormData): Promise<void> {
+export async function updatePayment(
+  formData: FormData
+): Promise<void> {
   await requireRole("ADMIN");
 
   const paymentId = getString(formData, "paymentId");
@@ -202,24 +284,17 @@ export async function updatePayment(formData: FormData): Promise<void> {
   const amount = getNumber(formData, "amount");
   const amountPaid = getNumber(formData, "amountPaid");
 
-  const method = getString(formData, "method") || "MANUAL";
+  const method = getPaymentMethod(
+    getString(formData, "method") || "MANUAL"
+  );
+
   const reference = getOptionalString(formData, "reference");
   const notes = getOptionalString(formData, "notes");
 
   const paidAt = getOptionalDate(formData, "paidAt");
   const dueDate = getOptionalDate(formData, "dueDate");
 
-  if (amount <= 0) {
-    throw new Error("Payment amount must be greater than zero.");
-  }
-
-  if (amountPaid < 0) {
-    throw new Error("Amount paid cannot be negative.");
-  }
-
-  if (amountPaid > amount) {
-    throw new Error("Amount paid cannot be greater than the payment amount.");
-  }
+  validateAmounts(amount, amountPaid);
 
   const balance = Math.max(0, amount - amountPaid);
 
@@ -238,40 +313,42 @@ export async function updatePayment(formData: FormData): Promise<void> {
       amountPaid,
       balance,
       status,
+      method,
       reference,
-      method: method as
-        | "MANUAL"
-        | "PAYSTACK"
-        | "FLUTTERWAVE"
-        | "BANK_TRANSFER"
-        | "CASH",
       notes,
-      paidAt: amountPaid > 0 ? paidAt ?? new Date() : null,
+      paidAt:
+        amountPaid > 0
+          ? paidAt ?? new Date()
+          : null,
       dueDate,
     },
   });
 
-  if (amountPaid > 0) {
-    await prisma.studentActivity.create({
-      data: {
-        studentId: payment.studentId,
-        enrollmentId: payment.enrollmentId,
-        type: "PAYMENT_MADE",
-        title: "Payment updated",
-        description: `Payment was updated to ₦${amountPaid.toLocaleString(
-          "en-NG"
-        )} paid.`,
-        metadata: JSON.stringify({
-          paymentId: payment.id,
-          amount,
-          amountPaid,
-          balance,
-          status,
-          reference,
-        }),
-      },
-    });
-  }
+  await prisma.studentActivity.create({
+    data: {
+      studentId: payment.studentId,
+      enrollmentId: payment.enrollmentId,
+      type: "PAYMENT_MADE",
+      title: "Payment record updated",
+      description:
+        amountPaid > 0
+          ? `Payment was updated to ₦${amountPaid.toLocaleString(
+              "en-NG"
+            )} paid.`
+          : `Payment charge was updated to ₦${amount.toLocaleString(
+              "en-NG"
+            )}.`,
+      metadata: JSON.stringify({
+        paymentId: payment.id,
+        amount,
+        amountPaid,
+        balance,
+        status,
+        method,
+        reference,
+      }),
+    },
+  });
 
   redirect(`/admin/payments/${payment.id}`);
 }
@@ -282,22 +359,28 @@ export async function updatePaymentStatus(
   await requireRole("ADMIN");
 
   const paymentId = getString(formData, "paymentId");
-  const status = getString(formData, "status");
+  const rawStatus = getString(formData, "status");
 
   if (!paymentId) {
     throw new Error("Payment ID is required.");
   }
 
-  const validStatuses = [
-    "PENDING",
-    "PAID",
-    "PARTIAL",
-    "OVERDUE",
-    "CANCELLED",
-  ];
+  const status = getPaymentStatus(rawStatus);
 
-  if (!validStatuses.includes(status)) {
-    throw new Error("Invalid payment status.");
+  const payment = await prisma.payment.findUnique({
+    where: {
+      id: paymentId,
+    },
+    select: {
+      id: true,
+      studentId: true,
+      enrollmentId: true,
+      status: true,
+    },
+  });
+
+  if (!payment) {
+    throw new Error("Payment not found.");
   }
 
   await prisma.payment.update({
@@ -305,19 +388,33 @@ export async function updatePaymentStatus(
       id: paymentId,
     },
     data: {
-      status: status as
-        | "PENDING"
-        | "PAID"
-        | "PARTIAL"
-        | "OVERDUE"
-        | "CANCELLED",
+      status,
     },
   });
+
+  if (payment.status !== status) {
+    await prisma.studentActivity.create({
+      data: {
+        studentId: payment.studentId,
+        enrollmentId: payment.enrollmentId,
+        type: "PAYMENT_MADE",
+        title: "Payment status updated",
+        description: `Payment status changed from ${payment.status} to ${status}.`,
+        metadata: JSON.stringify({
+          paymentId,
+          previousStatus: payment.status,
+          status,
+        }),
+      },
+    });
+  }
 
   redirect(`/admin/payments/${paymentId}`);
 }
 
-export async function deletePayment(formData: FormData): Promise<void> {
+export async function deletePayment(
+  formData: FormData
+): Promise<void> {
   await requireRole("ADMIN");
 
   const paymentId = getString(formData, "paymentId");
@@ -332,6 +429,8 @@ export async function deletePayment(formData: FormData): Promise<void> {
     },
     select: {
       id: true,
+      studentId: true,
+      enrollmentId: true,
     },
   });
 

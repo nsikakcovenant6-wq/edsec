@@ -1,20 +1,21 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { prisma } from "@/app/lib/prisma";
-import { getCurrentUser } from "@/app/lib/auth";
 
-type LessonPageProps = {
+import { getCurrentUser } from "@/app/lib/auth";
+import { prisma } from "@/app/lib/prisma";
+
+import { completeLesson } from "./actions";
+
+type Props = {
   params: Promise<{
     slug: string;
     lessonId: string;
   }>;
 };
 
-export default async function LessonPage({
+export default async function StudentLessonPage({
   params,
-}: LessonPageProps) {
-  const { slug, lessonId } = await params;
-
+}: Props) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -25,81 +26,77 @@ export default async function LessonPage({
     redirect("/admin");
   }
 
-  const course = await prisma.course.findUnique({
+  const { slug, lessonId } = await params;
+
+  const enrollment = await prisma.enrollment.findFirst({
     where: {
-      slug,
+      studentId: user.id,
+      course: {
+        slug,
+      },
     },
     include: {
-      modules: {
-        where: {
-          isPublished: true,
-        },
-        orderBy: {
-          displayOrder: "asc",
-        },
+      course: {
         include: {
-          lessons: {
+          modules: {
             where: {
               isPublished: true,
             },
             orderBy: {
               displayOrder: "asc",
             },
+            include: {
+              lessons: {
+                where: {
+                  isPublished: true,
+                },
+                orderBy: {
+                  displayOrder: "asc",
+                },
+              },
+            },
           },
         },
       },
+
+      lessonProgress: true,
     },
   });
 
-  if (!course) {
+  if (!enrollment) {
     notFound();
   }
 
-  const lesson = await prisma.lesson.findFirst({
-    where: {
-      id: lessonId,
-      module: {
-        courseId: course.id,
-      },
-      isPublished: true,
-    },
-    include: {
-      module: true,
-    },
-  });
+  const course = enrollment.course;
+
+  const lesson = course.modules
+    .flatMap((module) =>
+      module.lessons.map((item) => ({
+        lesson: item,
+        module,
+      })),
+    )
+    .find((item) => item.lesson.id === lessonId);
 
   if (!lesson) {
     notFound();
   }
 
-  const enrollment = await prisma.enrollment.findUnique({
-    where: {
-      studentId_courseId: {
-        studentId: user.id,
-        courseId: course.id,
-      },
-    },
-  });
+  const currentLesson = lesson.lesson;
+  const currentModule = lesson.module;
 
-  if (!enrollment) {
-    redirect(`/student/courses/${course.slug}`);
-  }
-
-  const lessonProgress = await prisma.lessonProgress.findUnique({
-    where: {
-      enrollmentId_lessonId: {
-        enrollmentId: enrollment.id,
-        lessonId: lesson.id,
-      },
-    },
-  });
+  const completed = enrollment.lessonProgress.some(
+    (item) =>
+      item.lessonId === currentLesson.id &&
+      item.completed,
+  );
 
   const allLessons = course.modules.flatMap(
-    (module) => module.lessons
+    (module) => module.lessons,
   );
 
   const currentIndex = allLessons.findIndex(
-    (item) => item.id === lesson.id
+    (item) => item.id === currentLesson.id,
   );
 
   const previousLesson =
@@ -108,322 +105,225 @@ export default async function LessonPage({
       : null;
 
   const nextLesson =
-    currentIndex >= 0 &&
     currentIndex < allLessons.length - 1
       ? allLessons[currentIndex + 1]
       : null;
 
-  const completedLessons = await prisma.lessonProgress.count({
-    where: {
-      enrollmentId: enrollment.id,
-      completed: true,
-      lesson: {
-        module: {
-          courseId: course.id,
-        },
-      },
-    },
-  });
-
-  const totalLessons = allLessons.length;
-
-  const calculatedProgress =
-    totalLessons > 0
-      ? Math.min(
-          100,
-          Math.round((completedLessons / totalLessons) * 100)
-        )
-      : 0;
-
-  const lessonNumber = currentIndex + 1;
-
   return (
-    <main className="min-h-screen bg-slate-50">
-      {/* HEADER */}
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-5 py-4 lg:px-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <Link
-                href={`/student/courses/${course.slug}`}
-                className="text-sm font-semibold text-blue-600 hover:text-blue-700"
-              >
-                ← Back to Course
-              </Link>
+    <main className="min-h-screen bg-slate-100">
+      {/* TOP BAR */}
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
+          <Link
+            href={`/student/courses/${course.slug}`}
+            className="text-sm font-semibold text-blue-600"
+          >
+            ← Course Content
+          </Link>
 
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                <span>{course.title}</span>
-                <span>•</span>
-                <span>Lesson {lessonNumber}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="text-sm text-slate-500">
-                Progress
-              </div>
-
-              <div className="w-28">
-                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className="h-full rounded-full bg-blue-600 transition-all"
-                    style={{
-                      width: `${calculatedProgress}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <span className="text-sm font-bold text-slate-900">
-                {calculatedProgress}%
-              </span>
-            </div>
+          <div className="hidden max-w-md truncate text-sm font-semibold text-slate-700 sm:block">
+            {course.title}
           </div>
+
+          <Link
+            href="/student/dashboard"
+            className="text-sm font-semibold text-slate-600"
+          >
+            Dashboard
+          </Link>
         </div>
       </header>
 
-      {/* MAIN */}
-      <div className="mx-auto grid max-w-7xl gap-8 px-5 py-8 lg:grid-cols-[1fr_320px] lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-8 px-5 py-8 lg:grid-cols-[1fr_340px] lg:px-8">
         {/* LESSON */}
-        <section>
-          <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            {/* LESSON HEADER */}
-            <div className="border-b border-slate-200 p-7 sm:p-9">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
-                  {lesson.module.title}
-                </span>
-
-                <span className="text-sm text-slate-400">
-                  Lesson {lessonNumber} of {totalLessons}
-                </span>
-              </div>
-
-              <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-                {lesson.title}
-              </h1>
-
-              {lesson.description && (
-                <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-                  {lesson.description}
-                </p>
-              )}
-
-              <div className="mt-5 flex flex-wrap gap-3">
-                {lesson.duration && (
-                  <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600">
-                    {lesson.duration} minutes
-                  </span>
-                )}
-
-                {lessonProgress?.completed && (
-                  <span className="rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700">
-                    ✓ Completed
-                  </span>
-                )}
-              </div>
-            </div>
-
+        <article>
+          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
             {/* VIDEO */}
-            {lesson.videoUrl && (
-              <div className="bg-slate-950 p-5 sm:p-7">
-                <div className="aspect-video overflow-hidden rounded-2xl bg-black">
-                  <iframe
-                    src={lesson.videoUrl}
-                    title={lesson.title}
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
+            {currentLesson.videoUrl ? (
+              <div className="aspect-video overflow-hidden rounded-t-3xl bg-black">
+                <iframe
+                  src={currentLesson.videoUrl}
+                  title={currentLesson.title}
+                  className="h-full w-full"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <div className="flex aspect-video items-center justify-center rounded-t-3xl bg-slate-950">
+                <div className="text-center">
+                  <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-blue-600 text-2xl font-bold text-white">
+                    ▶
+                  </div>
+
+                  <p className="mt-4 text-sm text-slate-400">
+                    Lesson content
+                  </p>
                 </div>
               </div>
             )}
 
-            {/* CONTENT */}
-            <div className="p-7 sm:p-9">
-              <div className="mb-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">
-                  Lesson Material
-                </p>
+            <div className="p-7 sm:p-10">
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">
+                {currentModule.title}
+              </p>
 
-                <h2 className="mt-2 text-2xl font-bold text-slate-950">
-                  {lesson.title}
-                </h2>
+              <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+                {currentLesson.title}
+              </h1>
+
+              {currentLesson.description && (
+                <p className="mt-4 text-lg leading-8 text-slate-500">
+                  {currentLesson.description}
+                </p>
+              )}
+
+              {currentLesson.content ? (
+                <div className="mt-8 whitespace-pre-line text-base leading-8 text-slate-700">
+                  {currentLesson.content}
+                </div>
+              ) : (
+                <div className="mt-8 rounded-2xl bg-slate-50 p-6 text-sm text-slate-500">
+                  Your instructor has not added written content to this lesson
+                  yet.
+                </div>
+              )}
+
+              {/* COMPLETE LESSON */}
+              <div className="mt-10 border-t border-slate-100 pt-7">
+                {completed ? (
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <p className="font-bold text-green-700">
+                        ✓ Lesson completed
+                      </p>
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        Your learning progress has been saved.
+                      </p>
+                    </div>
+
+                    {nextLesson && (
+                      <Link
+                        href={`/student/courses/${course.slug}/lessons/${nextLesson.id}`}
+                        className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
+                      >
+                        Next Lesson →
+                      </Link>
+                    )}
+                  </div>
+                ) : (
+                  <form
+                    action={completeLesson.bind(
+                      null,
+                      enrollment.id,
+                      currentLesson.id,
+                      course.id,
+                    )}
+                  >
+                    <button
+                      type="submit"
+                      className="w-full rounded-xl bg-blue-600 px-5 py-3.5 font-semibold text-white hover:bg-blue-700 sm:w-auto"
+                    >
+                      Mark Lesson as Complete →
+                    </button>
+                  </form>
+                )}
               </div>
 
-              {lesson.content ? (
-                <div className="whitespace-pre-wrap text-base leading-8 text-slate-700">
-                  {lesson.content}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-                  <p className="font-semibold text-slate-900">
-                    Lesson content coming soon
-                  </p>
+              {/* PREVIOUS / NEXT */}
+              <div className="mt-7 flex flex-wrap justify-between gap-3 border-t border-slate-100 pt-6">
+                {previousLesson ? (
+                  <Link
+                    href={`/student/courses/${course.slug}/lessons/${previousLesson.id}`}
+                    className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    ← Previous
+                  </Link>
+                ) : (
+                  <span />
+                )}
 
-                  <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Your instructor has not added the lesson material yet.
-                  </p>
-                </div>
-              )}
+                {nextLesson && completed && (
+                  <Link
+                    href={`/student/courses/${course.slug}/lessons/${nextLesson.id}`}
+                    className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Next →
+                  </Link>
+                )}
+              </div>
             </div>
-
-            {/* COMPLETE */}
-            <div className="border-t border-slate-200 p-7 sm:p-9">
-              <form
-                action="/api/student/lessons/complete"
-                method="POST"
-              >
-                <input
-                  type="hidden"
-                  name="lessonId"
-                  value={lesson.id}
-                />
-
-                <input
-                  type="hidden"
-                  name="courseId"
-                  value={course.id}
-                />
-
-                <button
-                  type="submit"
-                  disabled={lessonProgress?.completed}
-                  className={`w-full rounded-xl px-6 py-4 font-semibold transition ${
-                    lessonProgress?.completed
-                      ? "cursor-not-allowed bg-green-100 text-green-700"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  }`}
-                >
-                  {lessonProgress?.completed
-                    ? "✓ Lesson Completed"
-                    : "Mark Lesson as Complete"}
-                </button>
-              </form>
-            </div>
-
-            {/* NAVIGATION */}
-            <div className="grid gap-4 border-t border-slate-200 p-7 sm:grid-cols-2 sm:p-9">
-              {previousLesson ? (
-                <Link
-                  href={`/student/courses/${course.slug}/lessons/${previousLesson.id}`}
-                  className="rounded-xl border border-slate-200 p-5 transition hover:border-blue-300 hover:bg-blue-50"
-                >
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Previous Lesson
-                  </p>
-
-                  <p className="mt-2 font-semibold text-slate-900">
-                    ← {previousLesson.title}
-                  </p>
-                </Link>
-              ) : (
-                <div />
-              )}
-
-              {nextLesson ? (
-                <Link
-                  href={`/student/courses/${course.slug}/lessons/${nextLesson.id}`}
-                  className="rounded-xl border border-slate-200 p-5 text-left transition hover:border-blue-300 hover:bg-blue-50 sm:text-right"
-                >
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Next Lesson
-                  </p>
-
-                  <p className="mt-2 font-semibold text-slate-900">
-                    {nextLesson.title} →
-                  </p>
-                </Link>
-              ) : (
-                <Link
-                  href={`/student/courses/${course.slug}`}
-                  className="rounded-xl bg-green-50 p-5 transition hover:bg-green-100 sm:text-right"
-                >
-                  <p className="text-xs font-semibold uppercase tracking-wider text-green-600">
-                    Final Lesson
-                  </p>
-
-                  <p className="mt-2 font-semibold text-green-800">
-                    Return to Course →
-                  </p>
-                </Link>
-              )}
-            </div>
-          </article>
-        </section>
+          </div>
+        </article>
 
         {/* SIDEBAR */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">
-              Course Contents
+        <aside className="h-fit overflow-hidden rounded-3xl border border-slate-200 bg-white lg:sticky lg:top-24">
+          <div className="border-b border-slate-100 p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600">
+              Course Content
             </p>
 
             <h2 className="mt-2 font-bold text-slate-950">
               {course.title}
             </h2>
+          </div>
 
-            {/* PROGRESS */}
-            <div className="mt-5">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-500">
-                  Your Progress
-                </span>
-
-                <span className="font-bold text-slate-900">
-                  {calculatedProgress}%
-                </span>
-              </div>
-
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-blue-600"
-                  style={{
-                    width: `${calculatedProgress}%`,
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* MODULES */}
-            <div className="mt-7 space-y-7">
-              {course.modules.map((module, moduleIndex) => (
-                <div key={module.id}>
-                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Module {moduleIndex + 1}
+          <div className="max-h-[70vh] overflow-y-auto">
+            {course.modules.map((module, moduleIndex) => (
+              <div key={module.id}>
+                <div className="bg-slate-50 px-5 py-4">
+                  <p className="text-xs font-bold text-slate-400">
+                    MODULE {moduleIndex + 1}
                   </p>
 
-                  <p className="mb-3 text-sm font-semibold text-slate-900">
+                  <p className="mt-1 text-sm font-bold text-slate-900">
                     {module.title}
                   </p>
+                </div>
 
-                  <div className="space-y-1">
-                    {module.lessons.map((moduleLesson) => {
-                      const isCurrent =
-                        moduleLesson.id === lesson.id;
+                <div>
+                  {module.lessons.map((item) => {
+                    const isCurrent =
+                      item.id === currentLesson.id;
 
-                      return (
-                        <Link
-                          key={moduleLesson.id}
-                          href={`/student/courses/${course.slug}/lessons/${moduleLesson.id}`}
-                          className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition ${
-                            isCurrent
-                              ? "bg-blue-50 font-semibold text-blue-700"
-                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    const isCompleted =
+                      enrollment.lessonProgress.some(
+                        (progress) =>
+                          progress.lessonId === item.id &&
+                          progress.completed,
+                      );
+
+                    return (
+                      <Link
+                        key={item.id}
+                        href={`/student/courses/${course.slug}/lessons/${item.id}`}
+                        className={`flex items-center gap-3 border-b border-slate-100 px-5 py-4 text-sm ${
+                          isCurrent
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span
+                          className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-bold ${
+                            isCompleted
+                              ? "bg-green-100 text-green-700"
+                              : isCurrent
+                                ? "bg-blue-600 text-white"
+                                : "bg-slate-100 text-slate-500"
                           }`}
                         >
-                          <span>
-                            {isCurrent ? "▶" : "○"}
-                          </span>
+                          {isCompleted ? "✓" : "▶"}
+                        </span>
 
-                          <span>{moduleLesson.title}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
+                        <span className="min-w-0 flex-1">
+                          {item.title}
+                        </span>
+                      </Link>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </aside>
       </div>
