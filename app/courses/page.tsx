@@ -1,4 +1,5 @@
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
+
 import Link from "next/link";
 
 const courses = [
@@ -7,7 +8,8 @@ const courses = [
     slug: "full-stack-web-development",
     description:
       "Learn to build modern websites and complete web applications from frontend to backend.",
-    image: "/images/courses/web-development.jpg",
+    image:
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=85",
     duration: "6 Months",
     level: "Beginner to Advanced",
     category: "Development",
@@ -17,7 +19,8 @@ const courses = [
     slug: "cybersecurity",
     description:
       "Build practical cybersecurity skills including security fundamentals, networking, threats, and protection.",
-    image: "/images/courses/cybersecurity.jpg",
+    image:
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=85",
     duration: "6 Months",
     level: "Beginner to Intermediate",
     category: "Technology",
@@ -27,7 +30,8 @@ const courses = [
     slug: "graphic-design",
     description:
       "Learn professional graphic design, branding, digital graphics, and visual communication.",
-    image: "/images/courses/graphic-design.jpg",
+    image:
+      "https://images.unsplash.com/photo-1559028012-481c04fa702d?auto=format&fit=crop&w=1400&q=85",
     duration: "3 Months",
     level: "Beginner to Advanced",
     category: "Creative",
@@ -37,7 +41,8 @@ const courses = [
     slug: "data-analysis",
     description:
       "Learn how to transform raw data into useful insights using modern data analysis tools.",
-    image: "/images/courses/data-analysis.jpg",
+    image:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1400&q=85",
     duration: "4 Months",
     level: "Beginner to Intermediate",
     category: "Data",
@@ -47,7 +52,8 @@ const courses = [
     slug: "digital-marketing",
     description:
       "Learn modern digital marketing strategies, social media, advertising, content, and analytics.",
-    image: "/images/courses/digital-marketing.jpg",
+    image:
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1400&q=85",
     duration: "3 Months",
     level: "Beginner",
     category: "Business",
@@ -57,7 +63,8 @@ const courses = [
     slug: "it-support-networking",
     description:
       "Develop practical skills in computer troubleshooting, networking, systems, and IT support.",
-    image: "/images/courses/it-support.jpg",
+    image:
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=85",
     duration: "4 Months",
     level: "Beginner to Intermediate",
     category: "IT",
@@ -67,7 +74,8 @@ const courses = [
     slug: "ui-ux-design",
     description:
       "Learn how to design beautiful, accessible, and user-friendly digital experiences.",
-    image: "/images/courses/ui-ux.jpg",
+    image:
+      "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=1400&q=85",
     duration: "3 Months",
     level: "Beginner to Advanced",
     category: "Design",
@@ -77,7 +85,8 @@ const courses = [
     slug: "microsoft-office-professional",
     description:
       "Master Word, Excel, PowerPoint and essential productivity tools for school and work.",
-    image: "/images/courses/microsoft-office.jpg",
+    image:
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=85",
     duration: "2 Months",
     level: "Beginner to Advanced",
     category: "Productivity",
@@ -90,6 +99,7 @@ export default function CoursesPage() {
       {/* HERO */}
       <section className="relative overflow-hidden bg-slate-950 px-6 py-24 text-white">
         <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
+
         <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl">
@@ -146,7 +156,7 @@ export default function CoursesPage() {
           </div>
 
           <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((course) => (
+            {courses.map((course, index) => (
               <article
                 key={course.slug}
                 className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:border-cyan-200 hover:shadow-2xl hover:shadow-cyan-100/40"
@@ -154,13 +164,13 @@ export default function CoursesPage() {
                 <Link href={`/courses/${course.slug}`}>
                   {/* COURSE IMAGE */}
                   <div className="relative aspect-16/10 overflow-hidden bg-slate-100">
-                    <Image
+                    <img
                       src={course.image}
                       alt={`${course.title} course`}
-                      fill
-                      priority={course.slug === "full-stack-web-development"}
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover transition duration-700 group-hover:scale-110"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      fetchPriority={index === 0 ? "high" : "auto"}
+                      decoding="async"
+                      className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-110"
                     />
 
                     {/* IMAGE OVERLAY */}
@@ -212,6 +222,7 @@ export default function CoursesPage() {
                       </div>
                     </div>
 
+                    {/* COURSE LINK */}
                     <div className="mt-5 flex items-center justify-between">
                       <span className="text-sm font-semibold text-cyan-600">
                         Explore program

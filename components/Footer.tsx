@@ -89,10 +89,10 @@ export default function Footer() {
               </a>
 
               <a
-                href="mailto:mmekanudoh@gmail.com"
+                href="mailto:edseceducation@gmsip.com"
                 className="block break-all transition hover:text-white"
               >
-                mmekanudoh@gmail.com
+                edseceducation@gmsip.com
               </a>
 
               <p>Port Harcourt, Rivers State, Nigeria</p>

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
 const projects = [
@@ -7,8 +8,8 @@ const projects = [
     description:
       "A modern learning platform with course management, student accounts, applications, and an administrative system.",
     tech: ["Next.js", "TypeScript", "PostgreSQL"],
-    accent: "blue",
-    icon: "⌘",
+    image:
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1400&q=80",
   },
   {
     title: "Secure Network Monitor",
@@ -16,8 +17,8 @@ const projects = [
     description:
       "A practical cybersecurity project focused on monitoring network activity and identifying suspicious behaviour.",
     tech: ["Networking", "Security", "Linux"],
-    accent: "violet",
-    icon: "◈",
+    image:
+      "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1400&q=80",
   },
   {
     title: "Student Finance Dashboard",
@@ -25,8 +26,8 @@ const projects = [
     description:
       "An interactive dashboard designed to turn financial information into useful visual insights.",
     tech: ["Python", "SQL", "Data"],
-    accent: "cyan",
-    icon: "▥",
+    image:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1400&q=80",
   },
   {
     title: "Modern Brand Experience",
@@ -34,8 +35,8 @@ const projects = [
     description:
       "A complete digital interface created around user experience, accessibility, visual hierarchy, and responsive design.",
     tech: ["Figma", "UI/UX", "Prototyping"],
-    accent: "pink",
-    icon: "✦",
+    image:
+      "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=1400&q=80",
   },
   {
     title: "Small Business Network",
@@ -43,8 +44,8 @@ const projects = [
     description:
       "A practical network design showing how computers, routers, switches, and shared resources can work together.",
     tech: ["Networking", "Windows", "Hardware"],
-    accent: "emerald",
-    icon: "⌁",
+    image:
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80",
   },
   {
     title: "Digital Campaign System",
@@ -52,19 +53,10 @@ const projects = [
     description:
       "A digital marketing project covering campaign planning, audience targeting, content strategy, and performance tracking.",
     tech: ["Marketing", "Analytics", "Content"],
-    accent: "amber",
-    icon: "↗",
+    image:
+      "https://images.unsplash.com/photo-1557838923-2985c318be48?auto=format&fit=crop&w=1400&q=80",
   },
 ];
-
-const accentStyles: Record<string, string> = {
-  blue: "from-blue-600/30 via-blue-500/10 to-slate-950",
-  violet: "from-violet-600/30 via-violet-500/10 to-slate-950",
-  cyan: "from-cyan-600/30 via-cyan-500/10 to-slate-950",
-  pink: "from-pink-600/30 via-pink-500/10 to-slate-950",
-  emerald: "from-emerald-600/30 via-emerald-500/10 to-slate-950",
-  amber: "from-amber-500/30 via-amber-500/10 to-slate-950",
-};
 
 export default function StudentProjectsPage() {
   return (
@@ -82,7 +74,9 @@ export default function StudentProjectsPage() {
 
             <h1 className="mt-7 text-5xl font-bold tracking-[-0.04em] text-white sm:text-6xl">
               Learning becomes
-              <span className="block text-blue-400">real when you build.</span>
+              <span className="block text-blue-400">
+                real when you build.
+              </span>
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-400">
@@ -153,36 +147,35 @@ export default function StudentProjectsPage() {
             </p>
           </div>
 
+          {/* PROJECT GRID */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
               <article
                 key={project.title}
                 className="group overflow-hidden rounded-3xl border border-slate-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-100/40"
               >
-                {/* CSS GENERATED VISUAL */}
-                <div
-                  className={`relative h-56 overflow-hidden bg-linear-to-br ${accentStyles[project.accent]}`}
-                >
-                  <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full border border-white/10" />
-                  <div className="absolute -bottom-20 -left-10 h-48 w-48 rounded-full border border-white/10" />
+                {/* PROJECT IMAGE */}
+                <div className="relative h-56 overflow-hidden bg-slate-200">
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-110"
+                  />
 
-                  <div className="absolute inset-0 opacity-30">
-                    <div className="absolute left-8 top-10 h-px w-32 bg-white" />
-                    <div className="absolute left-8 top-20 h-px w-20 bg-white" />
-                    <div className="absolute left-8 top-30 h-px w-28 bg-white" />
+                  {/* IMAGE OVERLAY */}
+                  <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-950/10 to-transparent" />
+
+                  {/* CATEGORY */}
+                  <div className="absolute bottom-5 left-5">
+                    <span className="rounded-full border border-white/20 bg-slate-950/60 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
+                      {project.category}
+                    </span>
                   </div>
 
-                  <div className="absolute inset-0 grid place-items-center">
-                    <div className="relative grid h-24 w-24 place-items-center rounded-3xl border border-white/20 bg-white/10 text-4xl text-white shadow-2xl backdrop-blur-md">
-                      {project.icon}
-
-                      <div className="absolute -right-3 -top-3 h-5 w-5 rounded-full border border-white/30 bg-white/20" />
-                      <div className="absolute -bottom-2 -left-3 h-3 w-3 rounded-full bg-white/40" />
-                    </div>
-                  </div>
-
-                  <div className="absolute bottom-5 left-5 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md">
-                    {project.category}
+                  {/* EXPLORE */}
+                  <div className="absolute right-5 top-5 translate-y-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white opacity-0 backdrop-blur-md transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                    Explore
                   </div>
                 </div>
 
@@ -196,6 +189,7 @@ export default function StudentProjectsPage() {
                     {project.description}
                   </p>
 
+                  {/* TECHNOLOGIES */}
                   <div className="mt-6 flex flex-wrap gap-2">
                     {project.tech.map((technology) => (
                       <span
@@ -207,6 +201,7 @@ export default function StudentProjectsPage() {
                     ))}
                   </div>
 
+                  {/* FOOTER */}
                   <div className="mt-7 flex items-center justify-between border-t border-slate-100 pt-5">
                     <span className="text-sm font-medium text-slate-400">
                       Student showcase
@@ -219,6 +214,53 @@ export default function StudentProjectsPage() {
                 </div>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROJECT EXPERIENCE */}
+      <section className="border-y border-slate-100 bg-white py-20">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-3">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                Learn by doing
+              </p>
+
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+                Build skills through real projects.
+              </h2>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-7">
+              <div className="text-3xl font-bold text-blue-600">
+                01
+              </div>
+
+              <h3 className="mt-5 text-xl font-bold text-slate-950">
+                Learn
+              </h3>
+
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                Understand the tools, concepts and technologies required to
+                solve practical problems.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-7">
+              <div className="text-3xl font-bold text-blue-600">
+                02
+              </div>
+
+              <h3 className="mt-5 text-xl font-bold text-slate-950">
+                Build
+              </h3>
+
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                Turn your knowledge into useful applications, designs,
+                dashboards, networks and digital solutions.
+              </p>
+            </div>
           </div>
         </div>
       </section>

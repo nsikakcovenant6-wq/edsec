@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
+import { LogIn, LogOut, UserPlus, LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type AuthButtonsProps = {
   isLoggedIn: boolean;
-  role?: string | null;
+  role: string | null;
 };
 
 export default function AuthButtons({
@@ -36,45 +37,56 @@ export default function AuthButtons({
     }
   }
 
+  // ---------------------------------------------------------
+  // LOGGED OUT
+  // ---------------------------------------------------------
   if (!isLoggedIn) {
     return (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <Link
           href="/login"
-          className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-500 hover:text-blue-600"
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600"
         >
+          <LogIn className="h-4 w-4" />
           Login
         </Link>
 
         <Link
-          href="/apply"
-          className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+          href="/register"
+          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
         >
-          Apply Now
+          <UserPlus className="h-4 w-4" />
+          Register
         </Link>
       </div>
     );
   }
 
-  const dashboardHref = role === "ADMIN"
-    ? "/admin"
-    : "/student/dashboard";
+  // ---------------------------------------------------------
+  // LOGGED IN
+  // ---------------------------------------------------------
+
+  const isAdmin = role === "ADMIN";
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       <Link
-        href={dashboardHref}
-        className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-500 hover:text-blue-600"
+        href={isAdmin ? "/admin" : "/student"}
+        className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
       >
-        Dashboard
+        <LayoutDashboard className="h-4 w-4" />
+
+        {isAdmin ? "Admin Dashboard" : "Student Portal"}
       </Link>
 
       <button
         type="button"
         onClick={handleLogout}
         disabled={loading}
-        className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
       >
+        <LogOut className="h-4 w-4" />
+
         {loading ? "Logging out..." : "Logout"}
       </button>
     </div>

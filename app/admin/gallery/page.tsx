@@ -1,11 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
+
 import Link from "next/link";
 
 import { prisma } from "@/app/lib/prisma";
 import { requireRole } from "@/app/lib/auth";
 
 import {
-  createGalleryItem,
   deleteGalleryItem,
   toggleGalleryPublished,
   updateGalleryItem,
@@ -21,9 +21,12 @@ function formatDate(date: Date) {
 const categories = [
   "Training",
   "Students",
+  "Graduation",
   "Events",
   "Projects",
   "Campus",
+  "Learning Environment",
+  "Technology",
   "Other",
 ];
 
@@ -52,12 +55,12 @@ export default async function AdminGalleryPage() {
   return (
     <main className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <Link
               href="/admin"
-              className="text-sm font-medium text-slate-500 hover:text-slate-900"
+              className="text-sm font-medium text-slate-500 transition hover:text-slate-900"
             >
               ← Back to Dashboard
             </Link>
@@ -66,21 +69,22 @@ export default async function AdminGalleryPage() {
               Gallery
             </h1>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Manage photos and visual content displayed across
-              the EDSEC platform.
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+              Manage photographs of EDSEC learning environments,
+              students, graduation events, projects, workshops and
+              other visual content.
             </p>
           </div>
 
-          <a
-            href="#add-gallery"
-            className="inline-flex w-fit rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+          <Link
+            href="/admin/gallery/new"
+            className="inline-flex w-fit items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
           >
             + Add Gallery Item
-          </a>
+          </Link>
         </div>
 
-        {/* Statistics */}
+        {/* STATISTICS */}
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -113,160 +117,36 @@ export default async function AdminGalleryPage() {
           </div>
         </div>
 
-        {/* Add Gallery Item */}
-        <section
-          id="add-gallery"
-          className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-        >
-          <div className="border-b border-slate-200 pb-5">
-            <h2 className="text-lg font-bold text-slate-900">
-              Add Gallery Item
-            </h2>
+        {/* QUICK ADD */}
+        <section className="rounded-2xl border border-blue-100 bg-linear-to-br from-blue-50 to-cyan-50 p-6">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
+                EDSEC Gallery
+              </p>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Upload or add an image that can be displayed on the
-              public EDSEC website.
-            </p>
-          </div>
+              <h2 className="mt-1 text-xl font-bold text-slate-900">
+                Add real photographs to your website
+              </h2>
 
-          <form
-            action={createGalleryItem}
-            className="mt-6 space-y-6"
-          >
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <label
-                  htmlFor="title"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
-                >
-                  Title
-                </label>
-
-                <input
-                  id="title"
-                  name="title"
-                  required
-                  placeholder="e.g. Web Development Training"
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label
-                  htmlFor="imageUrl"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
-                >
-                  Image URL
-                </label>
-
-                <input
-                  id="imageUrl"
-                  name="imageUrl"
-                  type="url"
-                  required
-                  placeholder="https://..."
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-                />
-
-                <p className="mt-2 text-xs text-slate-400">
-                  Use the URL of the image you want to display.
-                </p>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="category"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
-                >
-                  Category
-                </label>
-
-                <select
-                  id="category"
-                  name="category"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-                  defaultValue=""
-                >
-                  <option value="">Select category</option>
-
-                  {categories.map((category) => (
-                    <option
-                      key={category}
-                      value={category}
-                    >
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="displayOrder"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
-                >
-                  Display Order
-                </label>
-
-                <input
-                  id="displayOrder"
-                  name="displayOrder"
-                  type="number"
-                  min="0"
-                  defaultValue="0"
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label
-                  htmlFor="description"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
-                >
-                  Description
-                </label>
-
-                <textarea
-                  id="description"
-                  name="description"
-                  rows={4}
-                  placeholder="Describe this image..."
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-                />
-              </div>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                Upload photographs of EDSEC classrooms, students,
+                graduation ceremonies, projects, workshops and
+                learning environments directly from the admin
+                dashboard.
+              </p>
             </div>
 
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <input
-                type="checkbox"
-                name="isPublished"
-                value="true"
-                defaultChecked
-                className="h-4 w-4 rounded border-slate-300"
-              />
-
-              <span>
-                <span className="block text-sm font-semibold text-slate-800">
-                  Publish immediately
-                </span>
-
-                <span className="block text-xs text-slate-500">
-                  Published gallery items can appear on the public
-                  website.
-                </span>
-              </span>
-            </label>
-
-            <button
-              type="submit"
-              className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            <Link
+              href="/admin/gallery/new"
+              className="inline-flex shrink-0 items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
             >
-              Add Gallery Item
-            </button>
-          </form>
+              Upload Image
+            </Link>
+          </div>
         </section>
 
-        {/* Gallery Items */}
+        {/* GALLERY ITEMS */}
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 p-6">
             <h2 className="text-lg font-bold text-slate-900">
@@ -280,7 +160,7 @@ export default async function AdminGalleryPage() {
 
           {galleryItems.length === 0 ? (
             <div className="p-10 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-2xl">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-3xl">
                 🖼️
               </div>
 
@@ -289,8 +169,15 @@ export default async function AdminGalleryPage() {
               </h3>
 
               <p className="mt-1 text-sm text-slate-500">
-                Add your first image using the form above.
+                Upload your first photograph to get started.
               </p>
+
+              <Link
+                href="/admin/gallery/new"
+                className="mt-5 inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                Upload First Image
+              </Link>
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
@@ -300,48 +187,46 @@ export default async function AdminGalleryPage() {
                   className="p-5 sm:p-6"
                 >
                   <div className="flex flex-col gap-6 lg:flex-row">
-                    {/* Image */}
-                    <div className="w-full shrink-0 lg:w-56">
+                    {/* IMAGE */}
+                    <div className="w-full shrink-0 lg:w-64">
                       <div className="aspect-video overflow-hidden rounded-2xl bg-slate-100">
                         <img
                           src={item.imageUrl}
                           alt={item.title}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-cover transition duration-300 hover:scale-105"
                         />
                       </div>
                     </div>
 
-                    {/* Content */}
+                    {/* CONTENT */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <h3 className="text-lg font-bold text-slate-900">
-                            {item.title}
-                          </h3>
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900">
+                          {item.title}
+                        </h3>
 
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <span
-                              className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                                item.isPublished
-                                  ? "bg-emerald-100 text-emerald-700"
-                                  : "bg-amber-100 text-amber-700"
-                              }`}
-                            >
-                              {item.isPublished
-                                ? "Published"
-                                : "Unpublished"}
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                              item.isPublished
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-amber-100 text-amber-700"
+                            }`}
+                          >
+                            {item.isPublished
+                              ? "Published"
+                              : "Unpublished"}
+                          </span>
+
+                          {item.category && (
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                              {item.category}
                             </span>
+                          )}
 
-                            {item.category && (
-                              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                                {item.category}
-                              </span>
-                            )}
-
-                            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-                              Order: {item.displayOrder}
-                            </span>
-                          </div>
+                          <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                            Order: {item.displayOrder}
+                          </span>
                         </div>
                       </div>
 
@@ -359,9 +244,9 @@ export default async function AdminGalleryPage() {
                         Added {formatDate(item.createdAt)}
                       </p>
 
-                      {/* Edit Form */}
+                      {/* EDIT */}
                       <details className="mt-5 rounded-xl border border-slate-200">
-                        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                           Edit Gallery Item
                         </summary>
 
@@ -389,7 +274,7 @@ export default async function AdminGalleryPage() {
                                 name="title"
                                 required
                                 defaultValue={item.title}
-                                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-slate-900"
+                                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
                               />
                             </div>
 
@@ -407,8 +292,13 @@ export default async function AdminGalleryPage() {
                                 type="url"
                                 required
                                 defaultValue={item.imageUrl}
-                                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-slate-900"
+                                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
                               />
+
+                              <p className="mt-1 text-xs text-slate-400">
+                                The URL is generated automatically when
+                                an image is uploaded.
+                              </p>
                             </div>
 
                             <div>
@@ -425,22 +315,20 @@ export default async function AdminGalleryPage() {
                                 defaultValue={
                                   item.category ?? ""
                                 }
-                                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-900"
+                                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
                               >
                                 <option value="">
                                   No category
                                 </option>
 
-                                {categories.map(
-                                  (category) => (
-                                    <option
-                                      key={category}
-                                      value={category}
-                                    >
-                                      {category}
-                                    </option>
-                                  ),
-                                )}
+                                {categories.map((category) => (
+                                  <option
+                                    key={category}
+                                    value={category}
+                                  >
+                                    {category}
+                                  </option>
+                                ))}
                               </select>
                             </div>
 
@@ -460,7 +348,7 @@ export default async function AdminGalleryPage() {
                                 defaultValue={
                                   item.displayOrder
                                 }
-                                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-slate-900"
+                                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
                               />
                             </div>
 
@@ -479,7 +367,7 @@ export default async function AdminGalleryPage() {
                                 defaultValue={
                                   item.description ?? ""
                                 }
-                                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-slate-900"
+                                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
                               />
                             </div>
                           </div>
@@ -502,14 +390,14 @@ export default async function AdminGalleryPage() {
 
                           <button
                             type="submit"
-                            className="mt-4 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
+                            className="mt-4 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
                           >
                             Save Changes
                           </button>
                         </form>
                       </details>
 
-                      {/* Actions */}
+                      {/* ACTIONS */}
                       <div className="mt-4 flex flex-wrap gap-2">
                         <form
                           action={toggleGalleryPublished}
@@ -522,7 +410,7 @@ export default async function AdminGalleryPage() {
 
                           <button
                             type="submit"
-                            className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                           >
                             {item.isPublished
                               ? "Unpublish"
@@ -539,7 +427,7 @@ export default async function AdminGalleryPage() {
 
                           <button
                             type="submit"
-                            className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
+                            className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
                           >
                             Delete
                           </button>

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const contactDetails = {
   phone: "+234 814 213 7101",
-  email: "mmekanudoh@gmail.com",
+  email: "edseceducation@gmsip.com",
   whatsapp: "2348142137101",
   address: "Port Harcourt, Rivers State, Nigeria",
   hours: "Monday – Saturday, 8:00 AM – 5:00 PM",
