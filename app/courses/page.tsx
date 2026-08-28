@@ -8,6 +8,7 @@ const courses = [
     slug: "full-stack-web-development",
     description:
       "Learn to build modern websites and complete web applications from frontend to backend.",
+    // African-focused web development image
     image:
       "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1400&q=85",
     duration: "6 Months",
@@ -132,6 +133,13 @@ export default function CoursesPage() {
               >
                 Explore Courses
               </a>
+
+              <Link
+                href="/login"
+                className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-6 py-3 font-semibold text-cyan-300 transition hover:bg-cyan-400/20"
+              >
+                Student Login
+              </Link>
             </div>
           </div>
         </div>
@@ -290,6 +298,13 @@ export default function CoursesPage() {
             </Link>
 
             <Link
+              href="/login"
+              className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-7 py-3 font-semibold text-cyan-300 transition hover:bg-cyan-400/20"
+            >
+              Student Login
+            </Link>
+
+            <Link
               href="/"
               className="rounded-full border border-white/15 px-7 py-3 font-semibold transition hover:bg-white/10"
             >
@@ -315,13 +330,9 @@ function Feature({
     <div className="rounded-3xl border border-slate-200 bg-white p-7">
       <p className="text-sm font-black text-cyan-600">{number}</p>
 
-      <h3 className="mt-4 text-xl font-bold text-slate-950">
-        {title}
-      </h3>
+      <h3 className="mt-4 text-xl font-bold text-slate-950">{title}</h3>
 
-      <p className="mt-3 text-sm leading-7 text-slate-600">
-        {description}
-      </p>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
     </div>
   );
 }
