@@ -9,7 +9,7 @@ const courses = [
     description:
       "Learn to build modern websites and complete web applications from frontend to backend.",
     image:
-      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=85",
+      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1400&q=85",
     duration: "6 Months",
     level: "Beginner to Advanced",
     category: "Development",
