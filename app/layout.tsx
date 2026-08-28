@@ -10,8 +10,15 @@ export const metadata: Metadata = {
     default: "EDSEC ICT INSTITUTE",
     template: "%s | EDSEC ICT INSTITUTE",
   },
+
   description:
     "EDSEC — Educational Services Consultancy. Practical technology education, digital skills and technology solutions.",
+
+  icons: {
+    icon: "/edsec-logo.png",
+    shortcut: "/edsec-logo.png",
+    apple: "/edsec-logo.png",
+  },
 };
 
 export default function RootLayout({
