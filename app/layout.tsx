@@ -15,9 +15,9 @@ export const metadata: Metadata = {
     "EDSEC — Educational Services Consultancy. Practical technology education, digital skills and technology solutions.",
 
   icons: {
-    icon: "/edsec-logo.png",
-    shortcut: "/edsec-logo.png",
-    apple: "/edsec-logo.png",
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
   },
 };
 
