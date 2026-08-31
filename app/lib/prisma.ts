@@ -1,5 +1,7 @@
 import "dotenv/config";
+
 import { PrismaPg } from "@prisma/adapter-pg";
+
 import { PrismaClient } from "@/app/generated/prisma/client";
 
 const connectionString = process.env.DATABASE_URL;
@@ -10,7 +12,7 @@ if (!connectionString) {
 
 const adapter = new PrismaPg({
   connectionString,
-  max: 1,
+  max: 5,
   idleTimeoutMillis: 10_000,
   connectionTimeoutMillis: 10_000,
 });
