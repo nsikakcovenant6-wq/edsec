@@ -1,9 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-
 import { prisma } from "@/app/lib/prisma";
 import { requireRole } from "@/app/lib/auth";
+import { notifyPaymentFullyPaid } from "@/app/lib/payment-notifications";
 
 type PaymentMethod =
   | "MANUAL"
@@ -19,66 +19,51 @@ type PaymentStatus =
   | "OVERDUE"
   | "CANCELLED";
 
-function getString(formData: FormData, name: string) {
-  const value = formData.get(name);
-
-  return typeof value === "string" ? value.trim() : "";
+function getString(formData: FormData, key: string): string {
+  return String(formData.get(key) ?? "").trim();
 }
 
-function getOptionalString(formData: FormData, name: string) {
-  const value = getString(formData, name);
-
-  return value.length > 0 ? value : null;
+function getOptionalString(
+  formData: FormData,
+  key: string
+): string | null {
+  const value = getString(formData, key);
+  return value || null;
 }
 
-function getNumber(formData: FormData, name: string) {
-  const value = Number(formData.get(name));
+function getNumber(formData: FormData, key: string): number {
+  const value = Number(formData.get(key) ?? 0);
 
   return Number.isFinite(value) ? value : 0;
 }
 
-function getOptionalDate(formData: FormData, name: string) {
-  const value = getString(formData, name);
+function getOptionalDate(
+  formData: FormData,
+  key: string
+): Date | null {
+  const value = getString(formData, key);
 
   if (!value) {
     return null;
   }
 
-  const date = new Date(`${value}T00:00:00`);
+  const date = new Date(value);
 
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function getPaymentMethod(value: string): PaymentMethod {
-  const methods: PaymentMethod[] = [
-    "MANUAL",
-    "PAYSTACK",
-    "FLUTTERWAVE",
-    "BANK_TRANSFER",
-    "CASH",
-  ];
-
-  if (methods.includes(value as PaymentMethod)) {
-    return value as PaymentMethod;
+  if (
+    value === "MANUAL" ||
+    value === "PAYSTACK" ||
+    value === "FLUTTERWAVE" ||
+    value === "BANK_TRANSFER" ||
+    value === "CASH"
+  ) {
+    return value;
   }
 
   return "MANUAL";
-}
-
-function getPaymentStatus(value: string): PaymentStatus {
-  const statuses: PaymentStatus[] = [
-    "PENDING",
-    "PAID",
-    "PARTIAL",
-    "OVERDUE",
-    "CANCELLED",
-  ];
-
-  if (statuses.includes(value as PaymentStatus)) {
-    return value as PaymentStatus;
-  }
-
-  throw new Error("Invalid payment status.");
 }
 
 function calculatePaymentStatus(
@@ -86,28 +71,37 @@ function calculatePaymentStatus(
   amountPaid: number,
   dueDate: Date | null
 ): PaymentStatus {
-  if (amountPaid >= amount) {
-    return "PAID";
-  }
+  const balance = Math.max(0, amount - amountPaid);
 
-  if (amountPaid > 0) {
-    return "PARTIAL";
+  if (balance <= 0 && amount > 0) {
+    return "PAID";
   }
 
   if (dueDate && dueDate.getTime() < Date.now()) {
     return "OVERDUE";
   }
 
+  if (amountPaid > 0) {
+    return "PARTIAL";
+  }
+
   return "PENDING";
 }
 
-function validateAmounts(amount: number, amountPaid: number) {
-  if (amount <= 0) {
-    throw new Error("Payment amount must be greater than zero.");
+function validateAmounts(
+  amount: number,
+  amountPaid: number
+): void {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error(
+      "Payment amount must be greater than zero."
+    );
   }
 
-  if (amountPaid < 0) {
-    throw new Error("Amount paid cannot be negative.");
+  if (!Number.isFinite(amountPaid) || amountPaid < 0) {
+    throw new Error(
+      "Amount paid cannot be negative."
+    );
   }
 
   if (amountPaid > amount) {
@@ -118,18 +112,24 @@ function validateAmounts(amount: number, amountPaid: number) {
 }
 
 async function verifyStudent(studentId: string) {
-  const student = await prisma.user.findUnique({
+  if (!studentId) {
+    throw new Error("Student is required.");
+  }
+
+  const student = await prisma.user.findFirst({
     where: {
       id: studentId,
+      role: "STUDENT",
+      status: {
+        not: "INACTIVE",
+      },
     },
     select: {
       id: true,
-      role: true,
-      status: true,
     },
   });
 
-  if (!student || student.role !== "STUDENT") {
+  if (!student) {
     throw new Error("Selected student was not found.");
   }
 
@@ -140,27 +140,69 @@ async function verifyEnrollment(
   enrollmentId: string,
   studentId: string
 ) {
-  const enrollment = await prisma.enrollment.findUnique({
+  if (!enrollmentId) {
+    return null;
+  }
+
+  const enrollment = await prisma.enrollment.findFirst({
     where: {
       id: enrollmentId,
+      studentId,
+      status: {
+        not: "DROPPED",
+      },
     },
     select: {
       id: true,
-      studentId: true,
     },
   });
 
   if (!enrollment) {
-    throw new Error("Selected enrollment was not found.");
-  }
-
-  if (enrollment.studentId !== studentId) {
     throw new Error(
-      "The selected enrollment does not belong to this student."
+      "Selected enrollment does not belong to the selected student."
     );
   }
 
   return enrollment;
+}
+
+function generateReceiptNumber(): string {
+  const year = new Date().getFullYear();
+
+  const randomPart = crypto
+    .randomUUID()
+    .replaceAll("-", "")
+    .slice(0, 10)
+    .toUpperCase();
+
+  return `EDSEC-${year}-${randomPart}`;
+}
+
+async function createPaymentActivity(
+  studentId: string,
+  paymentId: string,
+  amountPaid: number,
+  status: PaymentStatus
+) {
+  try {
+    await prisma.studentActivity.create({
+      data: {
+        studentId,
+        type: "PAYMENT_MADE",
+        title: "Payment recorded",
+        metadata: JSON.stringify({
+          paymentId,
+          amountPaid,
+          status,
+        }),
+      },
+    });
+  } catch (error) {
+    console.error(
+      "[Payment Activity] Failed to create activity:",
+      error
+    );
+  }
 }
 
 export async function createPayment(
@@ -169,34 +211,40 @@ export async function createPayment(
   await requireRole("ADMIN");
 
   const studentId = getString(formData, "studentId");
-  const enrollmentId = getOptionalString(formData, "enrollmentId");
+  const enrollmentId = getString(formData, "enrollmentId");
 
   const amount = getNumber(formData, "amount");
   const amountPaid = getNumber(formData, "amountPaid");
 
   const method = getPaymentMethod(
-    getString(formData, "method") || "MANUAL"
+    getString(formData, "method")
   );
 
-  const reference = getOptionalString(formData, "reference");
+  const reference = getOptionalString(
+    formData,
+    "reference"
+  );
+
   const notes = getOptionalString(formData, "notes");
 
-  const paidAt = getOptionalDate(formData, "paidAt");
-  const dueDate = getOptionalDate(formData, "dueDate");
-
-  if (!studentId) {
-    throw new Error("Student is required.");
-  }
+  const dueDate = getOptionalDate(
+    formData,
+    "dueDate"
+  );
 
   validateAmounts(amount, amountPaid);
 
   await verifyStudent(studentId);
 
-  if (enrollmentId) {
-    await verifyEnrollment(enrollmentId, studentId);
-  }
+  const enrollment = await verifyEnrollment(
+    enrollmentId,
+    studentId
+  );
 
-  const balance = Math.max(0, amount - amountPaid);
+  const balance = Math.max(
+    0,
+    amount - amountPaid
+  );
 
   const status = calculatePaymentStatus(
     amount,
@@ -204,55 +252,39 @@ export async function createPayment(
     dueDate
   );
 
+  const isPaid = status === "PAID";
+
   const payment = await prisma.payment.create({
     data: {
       studentId,
-      enrollmentId,
+      enrollmentId: enrollment?.id ?? null,
       amount,
       amountPaid,
       balance,
       status,
-      method,
       reference,
+      receiptNumber: isPaid
+        ? generateReceiptNumber()
+        : null,
+      method,
       notes,
-      paidAt:
-        amountPaid > 0
-          ? paidAt ?? new Date()
-          : null,
+      paidAt: isPaid ? new Date() : null,
       dueDate,
     },
   });
 
-  await prisma.studentActivity.create({
-    data: {
-      studentId,
-      enrollmentId,
-      type: "PAYMENT_MADE",
-      title:
-        status === "PAID"
-          ? "Payment completed"
-          : "Payment recorded",
-      description:
-        amountPaid > 0
-          ? `Payment of ₦${amountPaid.toLocaleString(
-              "en-NG"
-            )} was recorded.`
-          : `A charge of ₦${amount.toLocaleString(
-              "en-NG"
-            )} was recorded.`,
-      metadata: JSON.stringify({
-        paymentId: payment.id,
-        amount,
-        amountPaid,
-        balance,
-        status,
-        method,
-        reference,
-      }),
-    },
-  });
+  await createPaymentActivity(
+    studentId,
+    payment.id,
+    amountPaid,
+    status
+  );
 
-  redirect(`/admin/payments/${payment.id}`);
+  if (isPaid) {
+    await notifyPaymentFullyPaid(payment.id);
+  }
+
+  redirect("/admin/payments");
 }
 
 export async function updatePayment(
@@ -266,37 +298,54 @@ export async function updatePayment(
     throw new Error("Payment ID is required.");
   }
 
-  const existingPayment = await prisma.payment.findUnique({
+  const existing = await prisma.payment.findUnique({
     where: {
       id: paymentId,
     },
-    select: {
-      id: true,
-      studentId: true,
-      enrollmentId: true,
-    },
   });
 
-  if (!existingPayment) {
+  if (!existing) {
     throw new Error("Payment not found.");
   }
+
+  const studentId = getString(formData, "studentId");
+  const enrollmentId = getString(formData, "enrollmentId");
 
   const amount = getNumber(formData, "amount");
   const amountPaid = getNumber(formData, "amountPaid");
 
   const method = getPaymentMethod(
-    getString(formData, "method") || "MANUAL"
+    getString(formData, "method")
   );
 
-  const reference = getOptionalString(formData, "reference");
-  const notes = getOptionalString(formData, "notes");
+  const reference = getOptionalString(
+    formData,
+    "reference"
+  );
 
-  const paidAt = getOptionalDate(formData, "paidAt");
-  const dueDate = getOptionalDate(formData, "dueDate");
+  const notes = getOptionalString(
+    formData,
+    "notes"
+  );
+
+  const dueDate = getOptionalDate(
+    formData,
+    "dueDate"
+  );
 
   validateAmounts(amount, amountPaid);
 
-  const balance = Math.max(0, amount - amountPaid);
+  await verifyStudent(studentId);
+
+  const enrollment = await verifyEnrollment(
+    enrollmentId,
+    studentId
+  );
+
+  const balance = Math.max(
+    0,
+    amount - amountPaid
+  );
 
   const status = calculatePaymentStatus(
     amount,
@@ -304,53 +353,61 @@ export async function updatePayment(
     dueDate
   );
 
+  const isPaid = status === "PAID";
+
   const payment = await prisma.payment.update({
     where: {
       id: paymentId,
     },
     data: {
+      studentId,
+      enrollmentId: enrollment?.id ?? null,
       amount,
       amountPaid,
       balance,
       status,
-      method,
       reference,
+      method,
       notes,
-      paidAt:
-        amountPaid > 0
-          ? paidAt ?? new Date()
-          : null,
       dueDate,
+
+      paidAt: isPaid
+        ? existing.paidAt ?? new Date()
+        : null,
+
+      receiptNumber: isPaid
+        ? existing.receiptNumber ?? generateReceiptNumber()
+        : null,
+
+      paymentNotificationSentAt:
+        isPaid && existing.status === "PAID"
+          ? existing.paymentNotificationSentAt
+          : null,
+
+      dueReminderSentAt:
+        existing.amount !== amount ||
+        existing.amountPaid !== amountPaid ||
+        existing.dueDate?.getTime() !== dueDate?.getTime()
+          ? null
+          : existing.dueReminderSentAt,
+
+      overdueReminderSentAt:
+        existing.amount !== amount ||
+        existing.amountPaid !== amountPaid ||
+        existing.dueDate?.getTime() !== dueDate?.getTime()
+          ? null
+          : existing.overdueReminderSentAt,
     },
   });
 
-  await prisma.studentActivity.create({
-    data: {
-      studentId: payment.studentId,
-      enrollmentId: payment.enrollmentId,
-      type: "PAYMENT_MADE",
-      title: "Payment record updated",
-      description:
-        amountPaid > 0
-          ? `Payment was updated to ₦${amountPaid.toLocaleString(
-              "en-NG"
-            )} paid.`
-          : `Payment charge was updated to ₦${amount.toLocaleString(
-              "en-NG"
-            )}.`,
-      metadata: JSON.stringify({
-        paymentId: payment.id,
-        amount,
-        amountPaid,
-        balance,
-        status,
-        method,
-        reference,
-      }),
-    },
-  });
+  if (
+    isPaid &&
+    existing.status !== "PAID"
+  ) {
+    await notifyPaymentFullyPaid(payment.id);
+  }
 
-  redirect(`/admin/payments/${payment.id}`);
+  redirect("/admin/payments");
 }
 
 export async function updatePaymentStatus(
@@ -358,24 +415,23 @@ export async function updatePaymentStatus(
 ): Promise<void> {
   await requireRole("ADMIN");
 
-  const paymentId = getString(formData, "paymentId");
-  const rawStatus = getString(formData, "status");
+  const paymentId = getString(
+    formData,
+    "paymentId"
+  );
+
+  const requestedStatus = getString(
+    formData,
+    "status"
+  ) as PaymentStatus;
 
   if (!paymentId) {
     throw new Error("Payment ID is required.");
   }
 
-  const status = getPaymentStatus(rawStatus);
-
   const payment = await prisma.payment.findUnique({
     where: {
       id: paymentId,
-    },
-    select: {
-      id: true,
-      studentId: true,
-      enrollmentId: true,
-      status: true,
     },
   });
 
@@ -383,33 +439,62 @@ export async function updatePaymentStatus(
     throw new Error("Payment not found.");
   }
 
-  await prisma.payment.update({
+  const validStatuses: PaymentStatus[] = [
+    "PENDING",
+    "PAID",
+    "PARTIAL",
+    "OVERDUE",
+    "CANCELLED",
+  ];
+
+  if (!validStatuses.includes(requestedStatus)) {
+    throw new Error("Invalid payment status.");
+  }
+
+  if (
+    requestedStatus === "PAID" &&
+    payment.balance > 0
+  ) {
+    throw new Error(
+      "A payment with an outstanding balance cannot be marked as PAID."
+    );
+  }
+
+  const isPaid =
+    requestedStatus === "PAID";
+
+  const updated = await prisma.payment.update({
     where: {
       id: paymentId,
     },
     data: {
-      status,
+      status: requestedStatus,
+
+      paidAt: isPaid
+        ? payment.paidAt ?? new Date()
+        : payment.paidAt,
+
+      receiptNumber: isPaid
+        ? payment.receiptNumber ?? generateReceiptNumber()
+        : payment.receiptNumber,
+
+      paymentNotificationSentAt:
+        isPaid && payment.status !== "PAID"
+          ? null
+          : payment.paymentNotificationSentAt,
     },
   });
 
-  if (payment.status !== status) {
-    await prisma.studentActivity.create({
-      data: {
-        studentId: payment.studentId,
-        enrollmentId: payment.enrollmentId,
-        type: "PAYMENT_MADE",
-        title: "Payment status updated",
-        description: `Payment status changed from ${payment.status} to ${status}.`,
-        metadata: JSON.stringify({
-          paymentId,
-          previousStatus: payment.status,
-          status,
-        }),
-      },
-    });
+  if (
+    isPaid &&
+    payment.status !== "PAID"
+  ) {
+    await notifyPaymentFullyPaid(
+      updated.id
+    );
   }
 
-  redirect(`/admin/payments/${paymentId}`);
+  redirect("/admin/payments");
 }
 
 export async function deletePayment(
@@ -417,7 +502,10 @@ export async function deletePayment(
 ): Promise<void> {
   await requireRole("ADMIN");
 
-  const paymentId = getString(formData, "paymentId");
+  const paymentId = getString(
+    formData,
+    "paymentId"
+  );
 
   if (!paymentId) {
     throw new Error("Payment ID is required.");
@@ -429,13 +517,22 @@ export async function deletePayment(
     },
     select: {
       id: true,
-      studentId: true,
-      enrollmentId: true,
+      status: true,
+      receiptNumber: true,
     },
   });
 
   if (!payment) {
     throw new Error("Payment not found.");
+  }
+
+  if (
+    payment.status === "PAID" &&
+    payment.receiptNumber
+  ) {
+    throw new Error(
+      "Paid payments with receipts cannot be deleted. Reverse or correct the payment instead."
+    );
   }
 
   await prisma.payment.delete({

@@ -21,7 +21,10 @@ const statusLabel: Record<string, string> = {
 };
 
 function formatCurrency(amount: number) {
-  return `₦${amount.toLocaleString("en-NG")}`;
+  return `₦${amount.toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 function formatDate(date: Date | null) {
@@ -49,7 +52,9 @@ function formatMethod(method: string) {
   return method
     .replaceAll("_", " ")
     .toLowerCase()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) =>
+      letter.toUpperCase()
+    );
 }
 
 export default async function StudentPaymentsPage() {
@@ -63,68 +68,69 @@ export default async function StudentPaymentsPage() {
     redirect("/admin");
   }
 
-  const payments = await prisma.payment.findMany({
-    where: {
-      studentId: user.id,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
-      enrollment: {
-        include: {
-          course: {
-            select: {
-              id: true,
-              title: true,
-              duration: true,
-              learningFormat: true,
+  const payments =
+    await prisma.payment.findMany({
+      where: {
+        studentId: user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        enrollment: {
+          include: {
+            course: {
+              select: {
+                id: true,
+                title: true,
+              },
             },
-          },
-          cohort: {
-            select: {
-              id: true,
-              name: true,
-              status: true,
-              startDate: true,
-              endDate: true,
+            cohort: {
+              select: {
+                id: true,
+                name: true,
+                status: true,
+                startDate: true,
+                endDate: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
   const totalCharges = payments.reduce(
-    (sum, payment) => sum + payment.amount,
+    (sum, payment) =>
+      sum + payment.amount,
     0
   );
 
   const totalPaid = payments.reduce(
-    (sum, payment) => sum + payment.amountPaid,
+    (sum, payment) =>
+      sum + payment.amountPaid,
     0
   );
 
   const totalBalance = payments.reduce(
-    (sum, payment) => sum + payment.balance,
+    (sum, payment) =>
+      sum + payment.balance,
     0
   );
 
-  const paidPayments = payments.filter(
-    (payment) => payment.status === "PAID"
-  ).length;
+  const paidPayments =
+    payments.filter(
+      (payment) =>
+        payment.status === "PAID"
+    ).length;
 
-  const openPayments = payments.filter(
-    (payment) =>
-      payment.status === "PENDING" ||
-      payment.status === "PARTIAL" ||
-      payment.status === "OVERDUE"
-  ).length;
+  const openPayments =
+    payments.filter(
+      (payment) =>
+        payment.status === "PENDING" ||
+        payment.status === "PARTIAL" ||
+        payment.status === "OVERDUE"
+    ).length;
 
-  /*
-   * Group payments by enrollment so the student can easily understand
-   * the financial position of each course.
-   */
   const enrollmentMap = new Map<
     string,
     {
@@ -143,8 +149,13 @@ export default async function StudentPaymentsPage() {
       continue;
     }
 
-    const enrollmentId = payment.enrollment.id;
-    const existing = enrollmentMap.get(enrollmentId);
+    const enrollmentId =
+      payment.enrollment.id;
+
+    const existing =
+      enrollmentMap.get(
+        enrollmentId
+      );
 
     if (existing) {
       existing.total += payment.amount;
@@ -152,19 +163,39 @@ export default async function StudentPaymentsPage() {
       existing.balance += payment.balance;
       existing.paymentCount += 1;
     } else {
-      enrollmentMap.set(enrollmentId, {
+      enrollmentMap.set(
         enrollmentId,
-        courseTitle: payment.enrollment.course.title,
-        cohortName: payment.enrollment.cohort?.name ?? null,
-        total: payment.amount,
-        paid: payment.amountPaid,
-        balance: payment.balance,
-        paymentCount: 1,
-      });
+        {
+          enrollmentId,
+          courseTitle:
+            payment.enrollment.course.title,
+          cohortName:
+            payment.enrollment.cohort
+              ?.name ?? null,
+          total: payment.amount,
+          paid: payment.amountPaid,
+          balance: payment.balance,
+          paymentCount: 1,
+        }
+      );
     }
   }
 
-  const enrollmentSummaries = Array.from(enrollmentMap.values());
+  const enrollmentSummaries =
+    Array.from(
+      enrollmentMap.values()
+    );
+
+  const overallPercentage =
+    totalCharges > 0
+      ? Math.min(
+          100,
+          Math.round(
+            (totalPaid / totalCharges) *
+              100
+          )
+        )
+      : 0;
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
@@ -184,37 +215,50 @@ export default async function StudentPaymentsPage() {
             </h1>
 
             <p className="mt-1 max-w-2xl text-sm text-slate-500 sm:text-base">
-              View your course fees, payment history and outstanding
-              balances.
+              View your course fees, payment
+              history, outstanding balances and
+              receipts.
             </p>
           </div>
         </div>
 
-        {/* Financial Summary */}
+        {/* Summary */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <SummaryCard
             label="Total Charges"
-            value={formatCurrency(totalCharges)}
+            value={formatCurrency(
+              totalCharges
+            )}
             description={`${payments.length} payment ${
-              payments.length === 1 ? "record" : "records"
+              payments.length === 1
+                ? "record"
+                : "records"
             }`}
           />
 
           <SummaryCard
             label="Total Paid"
-            value={formatCurrency(totalPaid)}
+            value={formatCurrency(
+              totalPaid
+            )}
             description={`${paidPayments} fully paid ${
-              paidPayments === 1 ? "record" : "records"
+              paidPayments === 1
+                ? "record"
+                : "records"
             }`}
             valueClassName="text-emerald-600"
           />
 
           <SummaryCard
             label="Outstanding Balance"
-            value={formatCurrency(totalBalance)}
+            value={formatCurrency(
+              totalBalance
+            )}
             description="Amount remaining"
             valueClassName={
-              totalBalance > 0 ? "text-red-600" : "text-emerald-600"
+              totalBalance > 0
+                ? "text-red-600"
+                : "text-emerald-600"
             }
           />
 
@@ -223,12 +267,14 @@ export default async function StudentPaymentsPage() {
             value={String(openPayments)}
             description="Pending, partial or overdue"
             valueClassName={
-              openPayments > 0 ? "text-amber-600" : "text-emerald-600"
+              openPayments > 0
+                ? "text-amber-600"
+                : "text-emerald-600"
             }
           />
         </div>
 
-        {/* Payment Progress */}
+        {/* Overall Progress */}
         {totalCharges > 0 && (
           <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -238,16 +284,13 @@ export default async function StudentPaymentsPage() {
                 </h2>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  Your payments toward all recorded charges.
+                  Your payments toward all
+                  recorded charges.
                 </p>
               </div>
 
               <p className="text-lg font-bold text-slate-900">
-                {Math.min(
-                  100,
-                  Math.round((totalPaid / totalCharges) * 100)
-                )}
-                %
+                {overallPercentage}%
               </p>
             </div>
 
@@ -255,30 +298,28 @@ export default async function StudentPaymentsPage() {
               <div
                 className="h-full rounded-full bg-slate-900 transition-all"
                 style={{
-                  width: `${Math.min(
-                    100,
-                    Math.max(
-                      0,
-                      Math.round((totalPaid / totalCharges) * 100)
-                    )
-                  )}%`,
+                  width: `${overallPercentage}%`,
                 }}
               />
             </div>
 
             <div className="mt-3 flex flex-col justify-between gap-1 text-xs text-slate-500 sm:flex-row">
               <span>
-                Paid: {formatCurrency(totalPaid)}
+                Paid:{" "}
+                {formatCurrency(totalPaid)}
               </span>
 
               <span>
-                Remaining: {formatCurrency(totalBalance)}
+                Remaining:{" "}
+                {formatCurrency(
+                  totalBalance
+                )}
               </span>
             </div>
           </section>
         )}
 
-        {/* Course Financial Summary */}
+        {/* Course Summary */}
         {enrollmentSummaries.length > 0 && (
           <section className="space-y-4">
             <div>
@@ -287,103 +328,123 @@ export default async function StudentPaymentsPage() {
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Your payment position for each enrolled course.
+                Your payment position for each
+                enrolled course.
               </p>
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2">
-              {enrollmentSummaries.map((enrollment) => {
-                const percentage =
-                  enrollment.total > 0
-                    ? Math.min(
-                        100,
-                        Math.round(
-                          (enrollment.paid / enrollment.total) * 100
+              {enrollmentSummaries.map(
+                (enrollment) => {
+                  const percentage =
+                    enrollment.total > 0
+                      ? Math.min(
+                          100,
+                          Math.round(
+                            (enrollment.paid /
+                              enrollment.total) *
+                              100
+                          )
                         )
-                      )
-                    : 0;
+                      : 0;
 
-                return (
-                  <div
-                    key={enrollment.enrollmentId}
-                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <h3 className="font-bold text-slate-900">
-                          {enrollment.courseTitle}
-                        </h3>
+                  return (
+                    <div
+                      key={
+                        enrollment.enrollmentId
+                      }
+                      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h3 className="font-bold text-slate-900">
+                            {
+                              enrollment.courseTitle
+                            }
+                          </h3>
 
-                        {enrollment.cohortName && (
-                          <p className="mt-1 text-sm text-slate-500">
-                            {enrollment.cohortName}
+                          {enrollment.cohortName && (
+                            <p className="mt-1 text-sm text-slate-500">
+                              {
+                                enrollment.cohortName
+                              }
+                            </p>
+                          )}
+                        </div>
+
+                        <span className="inline-flex w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                          {
+                            enrollment.paymentCount
+                          }{" "}
+                          {enrollment.paymentCount ===
+                          1
+                            ? "payment"
+                            : "payments"}
+                        </span>
+                      </div>
+
+                      <div className="mt-5 grid grid-cols-3 gap-3">
+                        <div>
+                          <p className="text-xs text-slate-400">
+                            Charges
                           </p>
-                        )}
+
+                          <p className="mt-1 text-sm font-bold text-slate-900">
+                            {formatCurrency(
+                              enrollment.total
+                            )}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs text-slate-400">
+                            Paid
+                          </p>
+
+                          <p className="mt-1 text-sm font-bold text-emerald-600">
+                            {formatCurrency(
+                              enrollment.paid
+                            )}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs text-slate-400">
+                            Balance
+                          </p>
+
+                          <p className="mt-1 text-sm font-bold text-red-600">
+                            {formatCurrency(
+                              enrollment.balance
+                            )}
+                          </p>
+                        </div>
                       </div>
 
-                      <span className="inline-flex w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                        {enrollment.paymentCount}{" "}
-                        {enrollment.paymentCount === 1
-                          ? "payment"
-                          : "payments"}
-                      </span>
-                    </div>
+                      <div className="mt-5">
+                        <div className="mb-2 flex items-center justify-between text-xs">
+                          <span className="text-slate-500">
+                            Payment progress
+                          </span>
 
-                    <div className="mt-5 grid grid-cols-3 gap-3">
-                      <div>
-                        <p className="text-xs text-slate-400">
-                          Charges
-                        </p>
+                          <span className="font-semibold text-slate-700">
+                            {percentage}%
+                          </span>
+                        </div>
 
-                        <p className="mt-1 text-sm font-bold text-slate-900">
-                          {formatCurrency(enrollment.total)}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-xs text-slate-400">
-                          Paid
-                        </p>
-
-                        <p className="mt-1 text-sm font-bold text-emerald-600">
-                          {formatCurrency(enrollment.paid)}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-xs text-slate-400">
-                          Balance
-                        </p>
-
-                        <p className="mt-1 text-sm font-bold text-red-600">
-                          {formatCurrency(enrollment.balance)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-5">
-                      <div className="mb-2 flex items-center justify-between text-xs">
-                        <span className="text-slate-500">
-                          Payment progress
-                        </span>
-
-                        <span className="font-semibold text-slate-700">
-                          {percentage}%
-                        </span>
-                      </div>
-
-                      <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className="h-full rounded-full bg-slate-900 transition-all"
-                          style={{
-                            width: `${percentage}%`,
-                          }}
-                        />
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                          <div
+                            className="h-full rounded-full bg-slate-900 transition-all"
+                            style={{
+                              width: `${percentage}%`,
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                }
+              )}
             </div>
           </section>
         )}
@@ -396,8 +457,8 @@ export default async function StudentPaymentsPage() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              A complete record of payments and charges recorded on
-              your student account.
+              View individual payment records
+              and receipts.
             </p>
           </div>
 
@@ -412,171 +473,310 @@ export default async function StudentPaymentsPage() {
               </h3>
 
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-                Your payment records will appear here once a payment
-                or course charge has been recorded by EDSEC.
+                Your payment records will
+                appear here once a payment or
+                course charge has been recorded
+                by EDSEC.
               </p>
-
-              <Link
-                href="/student/dashboard"
-                className="mt-5 inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-              >
-                Return to Dashboard
-              </Link>
             </div>
           ) : (
             <>
-              {/* Mobile Cards */}
+              {/* Mobile */}
               <div className="divide-y divide-slate-100 md:hidden">
-                {payments.map((payment) => (
-                  <div key={payment.id} className="p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <h3 className="truncate font-bold text-slate-900">
-                          {payment.enrollment?.course.title ??
-                            "General Payment"}
-                        </h3>
+                {payments.map(
+                  (payment) => (
+                    <div
+                      key={payment.id}
+                      className="p-5"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <h3 className="truncate font-bold text-slate-900">
+                            {payment.enrollment
+                              ?.course
+                              .title ??
+                              "General Payment"}
+                          </h3>
 
-                        {payment.enrollment?.cohort?.name && (
-                          <p className="mt-1 text-xs text-slate-500">
-                            {payment.enrollment.cohort.name}
-                          </p>
+                          {payment.enrollment
+                            ?.cohort
+                            ?.name && (
+                            <p className="mt-1 text-xs text-slate-500">
+                              {
+                                payment
+                                  .enrollment
+                                  .cohort
+                                  .name
+                              }
+                            </p>
+                          )}
+                        </div>
+
+                        <span
+                          className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            statusClass[
+                              payment.status
+                            ] ??
+                            "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {statusLabel[
+                            payment.status
+                          ] ??
+                            payment.status}
+                        </span>
+                      </div>
+
+                      <div className="mt-5 grid grid-cols-2 gap-4">
+                        <PaymentValue
+                          label="Charge"
+                          value={formatCurrency(
+                            payment.amount
+                          )}
+                        />
+
+                        <PaymentValue
+                          label="Paid"
+                          value={formatCurrency(
+                            payment.amountPaid
+                          )}
+                          valueClassName="text-emerald-600"
+                        />
+
+                        <PaymentValue
+                          label="Balance"
+                          value={formatCurrency(
+                            payment.balance
+                          )}
+                          valueClassName={
+                            payment.balance >
+                            0
+                              ? "text-red-600"
+                              : "text-emerald-600"
+                          }
+                        />
+
+                        <PaymentValue
+                          label="Method"
+                          value={formatMethod(
+                            payment.method
+                          )}
+                        />
+                      </div>
+
+                      <div className="mt-5 space-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
+                        <div className="flex justify-between gap-4">
+                          <span>
+                            Payment date
+                          </span>
+
+                          <span className="text-right font-medium text-slate-700">
+                            {formatDateTime(
+                              payment.paidAt
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between gap-4">
+                          <span>
+                            Due date
+                          </span>
+
+                          <span className="text-right font-medium text-slate-700">
+                            {formatDate(
+                              payment.dueDate
+                            )}
+                          </span>
+                        </div>
+
+                        {payment.receiptNumber && (
+                          <div className="flex justify-between gap-4">
+                            <span>
+                              Receipt
+                            </span>
+
+                            <span className="text-right font-medium text-slate-700">
+                              {
+                                payment.receiptNumber
+                              }
+                            </span>
+                          </div>
                         )}
                       </div>
 
-                      <StatusBadge status={payment.status} />
-                    </div>
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        <Link
+                          href={`/student/payments/${payment.id}`}
+                          className="inline-flex flex-1 items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        >
+                          View Details
+                        </Link>
 
-                    <div className="mt-5 grid grid-cols-2 gap-4">
-                      <PaymentValue
-                        label="Charge"
-                        value={formatCurrency(payment.amount)}
-                      />
-
-                      <PaymentValue
-                        label="Paid"
-                        value={formatCurrency(payment.amountPaid)}
-                        valueClassName="text-emerald-600"
-                      />
-
-                      <PaymentValue
-                        label="Balance"
-                        value={formatCurrency(payment.balance)}
-                        valueClassName={
-                          payment.balance > 0
-                            ? "text-red-600"
-                            : "text-emerald-600"
-                        }
-                      />
-
-                      <PaymentValue
-                        label="Method"
-                        value={formatMethod(payment.method)}
-                      />
-                    </div>
-
-                    <div className="mt-5 space-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
-                      <div className="flex justify-between gap-4">
-                        <span>Payment date</span>
-                        <span className="text-right font-medium text-slate-700">
-                          {formatDateTime(payment.paidAt)}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between gap-4">
-                        <span>Due date</span>
-                        <span className="text-right font-medium text-slate-700">
-                          {formatDate(payment.dueDate)}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between gap-4">
-                        <span>Reference</span>
-                        <span className="max-w-[60%] break-all text-right font-medium text-slate-700">
-                          {payment.reference ?? "—"}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between gap-4">
-                        <span>Recorded</span>
-                        <span className="text-right font-medium text-slate-700">
-                          {formatDate(payment.createdAt)}
-                        </span>
+                        {payment.status ===
+                          "PAID" &&
+                          payment.receiptNumber && (
+                            <Link
+                              href={`/student/payments/${payment.id}/receipt`}
+                              className="inline-flex flex-1 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                            >
+                              View Receipt
+                            </Link>
+                          )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
 
-              {/* Desktop Table */}
+              {/* Desktop */}
               <div className="hidden overflow-x-auto md:block">
-                <table className="w-full min-w-225 text-left text-sm">
+                <table className="w-full min-w-275 text-left text-sm">
                   <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                     <tr>
-                      <th className="px-6 py-4">Course</th>
-                      <th className="px-6 py-4">Charge</th>
-                      <th className="px-6 py-4">Paid</th>
-                      <th className="px-6 py-4">Balance</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4">Method</th>
-                      <th className="px-6 py-4">Payment Date</th>
-                      <th className="px-6 py-4">Reference</th>
+                      <th className="px-6 py-4">
+                        Course
+                      </th>
+                      <th className="px-6 py-4">
+                        Charge
+                      </th>
+                      <th className="px-6 py-4">
+                        Paid
+                      </th>
+                      <th className="px-6 py-4">
+                        Balance
+                      </th>
+                      <th className="px-6 py-4">
+                        Status
+                      </th>
+                      <th className="px-6 py-4">
+                        Receipt
+                      </th>
+                      <th className="px-6 py-4">
+                        Payment Date
+                      </th>
+                      <th className="px-6 py-4">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
 
                   <tbody className="divide-y divide-slate-100">
-                    {payments.map((payment) => (
-                      <tr
-                        key={payment.id}
-                        className="transition hover:bg-slate-50"
-                      >
-                        <td className="px-6 py-5">
-                          <p className="font-semibold text-slate-900">
-                            {payment.enrollment?.course.title ??
-                              "General Payment"}
-                          </p>
-
-                          {payment.enrollment?.cohort?.name && (
-                            <p className="mt-1 text-xs text-slate-500">
-                              {payment.enrollment.cohort.name}
-                            </p>
-                          )}
-                        </td>
-
-                        <td className="px-6 py-5 font-medium text-slate-900">
-                          {formatCurrency(payment.amount)}
-                        </td>
-
-                        <td className="px-6 py-5 font-medium text-emerald-600">
-                          {formatCurrency(payment.amountPaid)}
-                        </td>
-
-                        <td
-                          className={`px-6 py-5 font-medium ${
-                            payment.balance > 0
-                              ? "text-red-600"
-                              : "text-emerald-600"
-                          }`}
+                    {payments.map(
+                      (payment) => (
+                        <tr
+                          key={payment.id}
+                          className="transition hover:bg-slate-50"
                         >
-                          {formatCurrency(payment.balance)}
-                        </td>
+                          <td className="px-6 py-5">
+                            <p className="font-semibold text-slate-900">
+                              {payment
+                                .enrollment
+                                ?.course
+                                .title ??
+                                "General Payment"}
+                            </p>
 
-                        <td className="px-6 py-5">
-                          <StatusBadge status={payment.status} />
-                        </td>
+                            {payment
+                              .enrollment
+                              ?.cohort
+                              ?.name && (
+                              <p className="mt-1 text-xs text-slate-500">
+                                {
+                                  payment
+                                    .enrollment
+                                    .cohort
+                                    .name
+                                }
+                              </p>
+                            )}
+                          </td>
 
-                        <td className="px-6 py-5 text-slate-600">
-                          {formatMethod(payment.method)}
-                        </td>
+                          <td className="px-6 py-5 font-medium text-slate-900">
+                            {formatCurrency(
+                              payment.amount
+                            )}
+                          </td>
 
-                        <td className="px-6 py-5 text-slate-600">
-                          {formatDate(payment.paidAt)}
-                        </td>
+                          <td className="px-6 py-5 font-medium text-emerald-600">
+                            {formatCurrency(
+                              payment.amountPaid
+                            )}
+                          </td>
 
-                        <td className="max-w-48 break-all px-6 py-5 text-slate-500">
-                          {payment.reference ?? "—"}
-                        </td>
-                      </tr>
-                    ))}
+                          <td
+                            className={`px-6 py-5 font-medium ${
+                              payment.balance >
+                              0
+                                ? "text-red-600"
+                                : "text-emerald-600"
+                            }`}
+                          >
+                            {formatCurrency(
+                              payment.balance
+                            )}
+                          </td>
+
+                          <td className="px-6 py-5">
+                            <span
+                              className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                statusClass[
+                                  payment
+                                    .status
+                                ] ??
+                                "bg-slate-100 text-slate-600"
+                              }`}
+                            >
+                              {statusLabel[
+                                payment.status
+                              ] ??
+                                payment.status}
+                            </span>
+                          </td>
+
+                          <td className="px-6 py-5">
+                            {payment.receiptNumber ? (
+                              <span className="font-medium text-slate-700">
+                                {
+                                  payment.receiptNumber
+                                }
+                              </span>
+                            ) : (
+                              <span className="text-slate-400">
+                                —
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="px-6 py-5 text-slate-600">
+                            {formatDate(
+                              payment.paidAt
+                            )}
+                          </td>
+
+                          <td className="px-6 py-5">
+                            <div className="flex flex-wrap gap-2">
+                              <Link
+                                href={`/student/payments/${payment.id}`}
+                                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                              >
+                                Details
+                              </Link>
+
+                              {payment.status ===
+                                "PAID" &&
+                                payment.receiptNumber && (
+                                  <Link
+                                    href={`/student/payments/${payment.id}/receipt`}
+                                    className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                                  >
+                                    Receipt
+                                  </Link>
+                                )}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -584,35 +784,17 @@ export default async function StudentPaymentsPage() {
           )}
         </section>
 
-        {/* Payment Information */}
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <h2 className="font-bold text-slate-900">
             Payment Information
           </h2>
 
-          <div className="mt-4 grid gap-4 text-sm text-slate-600 sm:grid-cols-2">
-            <div className="rounded-xl bg-slate-50 p-4">
-              <p className="font-semibold text-slate-900">
-                Need help with a payment?
-              </p>
-
-              <p className="mt-1 leading-6">
-                If you believe a payment, balance or financial record
-                is incorrect, please contact EDSEC administration.
-              </p>
-            </div>
-
-            <div className="rounded-xl bg-slate-50 p-4">
-              <p className="font-semibold text-slate-900">
-                Keep your references
-              </p>
-
-              <p className="mt-1 leading-6">
-                Keep your bank transfer or payment reference for your
-                records. It can help EDSEC verify a payment quickly.
-              </p>
-            </div>
-          </div>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            Fully paid payments receive an EDSEC
+            receipt number. You can open the payment
+            details or view the receipt directly from
+            your payment history.
+          </p>
         </section>
       </div>
     </main>
@@ -632,26 +814,20 @@ function SummaryCard({
 }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
+      <p className="text-sm font-medium text-slate-500">
+        {label}
+      </p>
 
-      <p className={`mt-2 text-2xl font-bold ${valueClassName}`}>
+      <p
+        className={`mt-2 text-2xl font-bold ${valueClassName}`}
+      >
         {value}
       </p>
 
-      <p className="mt-1 text-xs text-slate-400">{description}</p>
+      <p className="mt-1 text-xs text-slate-400">
+        {description}
+      </p>
     </section>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  return (
-    <span
-      className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${
-        statusClass[status] ?? "bg-slate-100 text-slate-700"
-      }`}
-    >
-      {statusLabel[status] ?? status}
-    </span>
   );
 }
 
@@ -666,8 +842,13 @@ function PaymentValue({
 }) {
   return (
     <div>
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className={`mt-1 text-sm font-bold ${valueClassName}`}>
+      <p className="text-xs text-slate-400">
+        {label}
+      </p>
+
+      <p
+        className={`mt-1 text-sm font-bold ${valueClassName}`}
+      >
         {value}
       </p>
     </div>

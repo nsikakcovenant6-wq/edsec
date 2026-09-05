@@ -360,27 +360,37 @@ model CorporateInquiry {
 }
 
 model Payment {
-  id           String        @id @default(cuid())
-  studentId    String
-  enrollmentId String?
-  amount       Float
-  amountPaid   Float         @default(0)
-  balance      Float         @default(0)
-  status       PaymentStatus @default(PENDING)
-  reference    String?       @unique
-  method       PaymentMethod @default(MANUAL)
-  notes        String?
-  paidAt       DateTime?
-  dueDate      DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  enrollment   Enrollment?   @relation(fields: [enrollmentId], references: [id])
-  student      User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id            String        @id @default(cuid())
+  studentId     String
+  enrollmentId  String?
+  amount        Float
+  amountPaid    Float         @default(0)
+  balance       Float         @default(0)
+  status        PaymentStatus @default(PENDING)
+  reference     String?       @unique
+  receiptNumber String?       @unique
+  method        PaymentMethod @default(MANUAL)
+  notes         String?
+  paidAt        DateTime?
+  dueDate       DateTime?
+
+  // Notification / reminder tracking
+  paymentNotificationSentAt DateTime?
+  dueReminderSentAt         DateTime?
+  overdueReminderSentAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id])
+  student    User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([enrollmentId])
   @@index([status])
   @@index([createdAt])
+  @@index([dueDate])
+  @@index([status, dueDate])
 }
 
 model Cohort {

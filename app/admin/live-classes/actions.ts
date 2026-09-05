@@ -1,5 +1,3 @@
-"app/admin/live-classes/actions.ts"
-
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -8,14 +6,27 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { requireRole } from "@/app/lib/auth";
 
+const LIVE_CLASS_STATUSES = [
+  "SCHEDULED",
+  "LIVE",
+  "COMPLETED",
+  "CANCELLED",
+] as const;
+
+const ATTENDANCE_STATUSES = [
+  "PRESENT",
+  "ABSENT",
+  "LATE",
+  "EXCUSED",
+] as const;
+
+type LiveClassStatus = (typeof LIVE_CLASS_STATUSES)[number];
+type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
+
 function getString(formData: FormData, name: string): string {
   const value = formData.get(name);
 
-  if (typeof value !== "string") {
-    return "";
-  }
-
-  return value.trim();
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function getOptionalString(
@@ -43,7 +54,11 @@ function getOptionalInt(
     return null;
   }
 
-  return Math.round(parsed);
+  if (!Number.isInteger(parsed)) {
+    return null;
+  }
+
+  return parsed;
 }
 
 function getDateTime(
@@ -54,32 +69,14 @@ function getDateTime(
     return null;
   }
 
-  const value = new Date(`${date}T${time}`);
+  const dateTime = new Date(`${date}T${time}`);
 
-  if (Number.isNaN(value.getTime())) {
+  if (Number.isNaN(dateTime.getTime())) {
     return null;
   }
 
-  return value;
+  return dateTime;
 }
-
-const LIVE_CLASS_STATUSES = [
-  "SCHEDULED",
-  "LIVE",
-  "COMPLETED",
-  "CANCELLED",
-] as const;
-
-const ATTENDANCE_STATUSES = [
-  "PRESENT",
-  "ABSENT",
-  "LATE",
-  "EXCUSED",
-] as const;
-
-type LiveClassStatus = (typeof LIVE_CLASS_STATUSES)[number];
-
-type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
 
 function isLiveClassStatus(
   value: string,
@@ -97,6 +94,48 @@ function isAttendanceStatus(
   );
 }
 
+function validateMeetingUrl(value: string): string {
+  if (!value) {
+    throw new Error("Meeting URL is required.");
+  }
+
+  let url: URL;
+
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error("Please provide a valid meeting URL.");
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error(
+      "Meeting URL must use HTTP or HTTPS.",
+    );
+  }
+
+  return url.toString();
+}
+
+function parsePublishedValue(
+  formData: FormData,
+): boolean {
+  return getString(formData, "isPublished") === "true";
+}
+
+function validateDuration(
+  duration: number | null,
+): void {
+  if (duration === null) {
+    return;
+  }
+
+  if (!Number.isInteger(duration) || duration < 1) {
+    throw new Error(
+      "Duration must be a whole number of at least 1 minute.",
+    );
+  }
+}
+
 /**
  * Create a new live class.
  */
@@ -105,12 +144,6 @@ export async function createLiveClass(
 ): Promise<void> {
   const admin = await requireRole("ADMIN");
 
-  /*
-   * requireRole() performs the authorization check, but its
-   * TypeScript return type may still allow null.
-   *
-   * Explicitly guard against that before accessing admin.id.
-   */
   if (!admin) {
     throw new Error("Unauthorized.");
   }
@@ -123,30 +156,31 @@ export async function createLiveClass(
   );
   const date = getString(formData, "date");
   const time = getString(formData, "time");
-  const meetingUrl = getString(
-    formData,
-    "meetingUrl",
+  const meetingUrl = validateMeetingUrl(
+    getString(formData, "meetingUrl"),
   );
   const duration = getOptionalInt(
     formData,
     "duration",
   );
-  const isPublished =
-    getString(formData, "isPublished") === "true";
+  const isPublished = parsePublishedValue(formData);
 
   if (!title) {
-    throw new Error("Live class title is required.");
+    throw new Error(
+      "Live class title is required.",
+    );
   }
 
   if (!courseId) {
-    throw new Error("Please select a course.");
+    throw new Error(
+      "Please select a course.",
+    );
   }
 
-  if (!meetingUrl) {
-    throw new Error("Meeting URL is required.");
-  }
-
-  const scheduledAt = getDateTime(date, time);
+  const scheduledAt = getDateTime(
+    date,
+    time,
+  );
 
   if (!scheduledAt) {
     throw new Error(
@@ -154,11 +188,7 @@ export async function createLiveClass(
     );
   }
 
-  if (duration !== null && duration < 1) {
-    throw new Error(
-      "Duration must be at least 1 minute.",
-    );
-  }
+  validateDuration(duration);
 
   const course = await prisma.course.findUnique({
     where: {
@@ -175,58 +205,65 @@ export async function createLiveClass(
     );
   }
 
-  const liveClass = await prisma.liveClass.create({
-    data: {
-      courseId,
-      createdById: admin.id,
-      title,
-      description,
-      scheduledAt,
-      duration,
-      meetingUrl,
-      status: "SCHEDULED",
-      isPublished,
+  const liveClass = await prisma.$transaction(
+    async (tx) => {
+      const createdLiveClass =
+        await tx.liveClass.create({
+          data: {
+            courseId,
+            createdById: admin.id,
+            title,
+            description,
+            scheduledAt,
+            duration,
+            meetingUrl,
+            status: "SCHEDULED",
+            isPublished,
+          },
+        });
+
+      const enrollments =
+        await tx.enrollment.findMany({
+          where: {
+            courseId,
+            status: "ACTIVE",
+          },
+          select: {
+            id: true,
+            studentId: true,
+          },
+        });
+
+      if (enrollments.length > 0) {
+        await tx.liveClassEnrollment.createMany({
+          data: enrollments.map(
+            (enrollment) => ({
+              liveClassId:
+                createdLiveClass.id,
+              enrollmentId:
+                enrollment.id,
+            }),
+          ),
+          skipDuplicates: true,
+        });
+
+        await tx.attendance.createMany({
+          data: enrollments.map(
+            (enrollment) => ({
+              liveClassId:
+                createdLiveClass.id,
+              studentId:
+                enrollment.studentId,
+              status: "ABSENT",
+            }),
+          ),
+          skipDuplicates: true,
+        });
+      }
+
+      return createdLiveClass;
     },
-  });
-
-  /*
-   * Automatically attach all active students enrolled
-   * in this course to the live class.
-   */
-  const enrollments =
-    await prisma.enrollment.findMany({
-      where: {
-        courseId,
-        status: "ACTIVE",
-      },
-      select: {
-        id: true,
-        studentId: true,
-      },
-    });
-
-  if (enrollments.length > 0) {
-    await prisma.liveClassEnrollment.createMany({
-      data: enrollments.map((enrollment) => ({
-        liveClassId: liveClass.id,
-        enrollmentId: enrollment.id,
-      })),
-      skipDuplicates: true,
-    });
-
-    /*
-     * Create attendance records for all enrolled
-     * students.
-     */
-    await prisma.attendance.createMany({
-      data: enrollments.map((enrollment) => ({
-        liveClassId: liveClass.id,
-        studentId: enrollment.studentId,
-        status: "ABSENT",
-      })),
-      skipDuplicates: true,
-    });
-  }
+  );
 
   revalidatePath("/admin/live-classes");
   revalidatePath(
@@ -244,7 +281,11 @@ export async function createLiveClass(
 export async function updateLiveClass(
   formData: FormData,
 ): Promise<void> {
-  await requireRole("ADMIN");
+  const admin = await requireRole("ADMIN");
+
+  if (!admin) {
+    throw new Error("Unauthorized.");
+  }
 
   const id = getString(formData, "id");
   const title = getString(formData, "title");
@@ -258,9 +299,8 @@ export async function updateLiveClass(
   );
   const date = getString(formData, "date");
   const time = getString(formData, "time");
-  const meetingUrl = getString(
-    formData,
-    "meetingUrl",
+  const meetingUrl = validateMeetingUrl(
+    getString(formData, "meetingUrl"),
   );
   const duration = getOptionalInt(
     formData,
@@ -270,8 +310,7 @@ export async function updateLiveClass(
     formData,
     "status",
   );
-  const isPublished =
-    getString(formData, "isPublished") === "true";
+  const isPublished = parsePublishedValue(formData);
 
   if (!id) {
     throw new Error(
@@ -286,14 +325,15 @@ export async function updateLiveClass(
   }
 
   if (!courseId) {
-    throw new Error("Please select a course.");
+    throw new Error(
+      "Please select a course.",
+    );
   }
 
-  if (!meetingUrl) {
-    throw new Error("Meeting URL is required.");
-  }
-
-  const scheduledAt = getDateTime(date, time);
+  const scheduledAt = getDateTime(
+    date,
+    time,
+  );
 
   if (!scheduledAt) {
     throw new Error(
@@ -301,14 +341,7 @@ export async function updateLiveClass(
     );
   }
 
-  if (
-    duration !== null &&
-    duration < 1
-  ) {
-    throw new Error(
-      "Duration must be at least 1 minute.",
-    );
-  }
+  validateDuration(duration);
 
   if (!isLiveClassStatus(statusValue)) {
     throw new Error(
@@ -324,6 +357,7 @@ export async function updateLiveClass(
         },
         select: {
           id: true,
+          courseId: true,
         },
       }),
 
@@ -349,56 +383,88 @@ export async function updateLiveClass(
     );
   }
 
-  await prisma.liveClass.update({
-    where: {
-      id,
+  const courseChanged =
+    existing.courseId !== courseId;
+
+  await prisma.$transaction(
+    async (tx) => {
+      await tx.liveClass.update({
+        where: {
+          id,
+        },
+        data: {
+          courseId,
+          title,
+          description,
+          scheduledAt,
+          duration,
+          meetingUrl,
+          status: statusValue,
+          isPublished,
+        },
+      });
+
+      /*
+       * Only rebuild student assignments when
+       * the course actually changes.
+       *
+       * This prevents existing attendance records
+       * from being unnecessarily modified whenever
+       * an admin edits the class title, time, link,
+       * description, or status.
+       */
+      if (courseChanged) {
+        await tx.liveClassEnrollment.deleteMany({
+          where: {
+            liveClassId: id,
+          },
+        });
+
+        await tx.attendance.deleteMany({
+          where: {
+            liveClassId: id,
+          },
+        });
+
+        const enrollments =
+          await tx.enrollment.findMany({
+            where: {
+              courseId,
+              status: "ACTIVE",
+            },
+            select: {
+              id: true,
+              studentId: true,
+            },
+          });
+
+        if (enrollments.length > 0) {
+          await tx.liveClassEnrollment.createMany({
+            data: enrollments.map(
+              (enrollment) => ({
+                liveClassId: id,
+                enrollmentId:
+                  enrollment.id,
+              }),
+            ),
+            skipDuplicates: true,
+          });
+
+          await tx.attendance.createMany({
+            data: enrollments.map(
+              (enrollment) => ({
+                liveClassId: id,
+                studentId:
+                  enrollment.studentId,
+                status: "ABSENT",
+              }),
+            ),
+            skipDuplicates: true,
+          });
+        }
+      }
     },
-    data: {
-      courseId,
-      title,
-      description,
-      scheduledAt,
-      duration,
-      meetingUrl,
-      status: statusValue,
-      isPublished,
-    },
-  });
-
-  /*
-   * If the course changes, synchronize the students
-   * attached to the live class with the new course.
-   */
-  const enrollments =
-    await prisma.enrollment.findMany({
-      where: {
-        courseId,
-        status: "ACTIVE",
-      },
-      select: {
-        id: true,
-        studentId: true,
-      },
-    });
-
-  if (enrollments.length > 0) {
-    await prisma.liveClassEnrollment.createMany({
-      data: enrollments.map((enrollment) => ({
-        liveClassId: id,
-        enrollmentId: enrollment.id,
-      })),
-      skipDuplicates: true,
-    });
-
-    await prisma.attendance.createMany({
-      data: enrollments.map((enrollment) => ({
-        liveClassId: id,
-        studentId: enrollment.studentId,
-        status: "ABSENT",
-      })),
-      skipDuplicates: true,
-    });
-  }
+  );
 
   revalidatePath("/admin/live-classes");
   revalidatePath(
@@ -408,14 +474,15 @@ export async function updateLiveClass(
 
 /**
  * Delete a live class.
- *
- * Prisma cascades the related student assignment
- * and attendance records according to the schema.
  */
 export async function deleteLiveClass(
   formData: FormData,
 ): Promise<void> {
-  await requireRole("ADMIN");
+  const admin = await requireRole("ADMIN");
+
+  if (!admin) {
+    throw new Error("Unauthorized.");
+  }
 
   const id = getString(formData, "id");
 
@@ -458,7 +525,11 @@ export async function deleteLiveClass(
 export async function toggleLiveClassPublished(
   formData: FormData,
 ): Promise<void> {
-  await requireRole("ADMIN");
+  const admin = await requireRole("ADMIN");
+
+  if (!admin) {
+    throw new Error("Unauthorized.");
+  }
 
   const id = getString(formData, "id");
 
@@ -473,7 +544,7 @@ export async function toggleLiveClassPublished(
       where: {
         id,
       },
-        select: {
+      select: {
         id: true,
         isPublished: true,
       },
@@ -490,7 +561,8 @@ export async function toggleLiveClassPublished(
       id,
     },
     data: {
-      isPublished: !liveClass.isPublished,
+      isPublished:
+        !liveClass.isPublished,
     },
   });
 
@@ -506,7 +578,11 @@ export async function toggleLiveClassPublished(
 export async function updateLiveClassStatus(
   formData: FormData,
 ): Promise<void> {
-  await requireRole("ADMIN");
+  const admin = await requireRole("ADMIN");
+
+  if (!admin) {
+    throw new Error("Unauthorized.");
+  }
 
   const id = getString(formData, "id");
   const statusValue = getString(
@@ -563,7 +639,11 @@ export async function updateLiveClassStatus(
 export async function updateAttendance(
   formData: FormData,
 ): Promise<void> {
-  await requireRole("ADMIN");
+  const admin = await requireRole("ADMIN");
+
+  if (!admin) {
+    throw new Error("Unauthorized.");
+  }
 
   const attendanceId = getString(
     formData,
@@ -600,7 +680,6 @@ export async function updateAttendance(
       select: {
         id: true,
         liveClassId: true,
-        status: true,
         joinedAt: true,
       },
     });
@@ -615,16 +694,8 @@ export async function updateAttendance(
     statusValue === "PRESENT" ||
     statusValue === "LATE";
 
-  /*
-   * If a student is marked absent/excused,
-   * preserve an existing joinedAt value.
-   *
-   * If marked present/late and there is no
-   * joinedAt value, record the current time.
-   */
   const joinedAt =
-    isPresentLike &&
-    !attendance.joinedAt
+    isPresentLike && !attendance.joinedAt
       ? new Date()
       : attendance.joinedAt;
 
@@ -649,13 +720,18 @@ export async function updateAttendance(
  * Synchronize all active course enrollments
  * with a live class.
  *
- * This adds missing students and attendance
- * records without creating duplicates.
+ * Missing student assignments and attendance
+ * records are added without duplicating existing
+ * records.
  */
 export async function syncLiveClassStudents(
   formData: FormData,
 ): Promise<void> {
-  await requireRole("ADMIN");
+  const admin = await requireRole("ADMIN");
+
+  if (!admin) {
+    throw new Error("Unauthorized.");
+  }
 
   const liveClassId = getString(
     formData,
@@ -698,22 +774,32 @@ export async function syncLiveClassStudents(
     });
 
   if (enrollments.length > 0) {
-    await prisma.liveClassEnrollment.createMany({
-      data: enrollments.map((enrollment) => ({
-        liveClassId,
-        enrollmentId: enrollment.id,
-      })),
-      skipDuplicates: true,
-    });
+    await prisma.$transaction(
+      async (tx) => {
+        await tx.liveClassEnrollment.createMany({
+          data: enrollments.map(
+            (enrollment) => ({
+              liveClassId,
+              enrollmentId:
+                enrollment.id,
+            }),
+          ),
+          skipDuplicates: true,
+        });
 
-    await prisma.attendance.createMany({
-      data: enrollments.map((enrollment) => ({
-        liveClassId,
-        studentId: enrollment.studentId,
-        status: "ABSENT",
-      })),
-      skipDuplicates: true,
-    });
+        await tx.attendance.createMany({
+          data: enrollments.map(
+            (enrollment) => ({
+              liveClassId,
+              studentId:
+                enrollment.studentId,
+              status: "ABSENT",
+            }),
+          ),
+          skipDuplicates: true,
+        });
+      },
+    );
   }
 
   revalidatePath(
