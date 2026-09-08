@@ -563,11 +563,7 @@ export default function LoginPage() {
                     <div className="relative">
                       <input
                         id="password"
-                        type={
-                          showPassword
-                            ? "text"
-                            : "password"
-                        }
+                        type={showPassword ? "text" : "password"}
                         required
                         autoComplete="current-password"
                         value={password}
@@ -585,9 +581,75 @@ export default function LoginPage() {
                             (current) => !current
                           )
                         }
-                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold text-white/50 transition hover:bg-white/10 hover:text-white"
+                        aria-label={
+                          showPassword
+                            ? "Hide password"
+                            : "Show password"
+                        }
+                        aria-pressed={showPassword}
+                        className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/50 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400/50"
                       >
-                        {showPassword ? "Hide" : "Show"}
+                        {showPassword ? (
+                          <>
+                            {/* Eye slash icon */}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.8"
+                              className="h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M3 3l18 18"
+                              />
+
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M10.58 10.58a2 2 0 102.83 2.83"
+                              />
+
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9.88 4.24A9.94 9.94 0 0112 4c5.05 0 8.27 4.1 9.5 6.02a3.6 3.6 0 010 3.96 15.9 15.9 0 01-4.12 4.29M6.61 6.61C4.64 7.83 3.29 9.55 2.5 10.98a3.6 3.6 0 000 3.96C3.73 16.86 6.95 21 12 21c1.61 0 3.07-.38 4.37-1"
+                              />
+                            </svg>
+
+                            <span>Hide</span>
+                          </>
+                        ) : (
+                          <>
+                            {/* Eye icon */}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.8"
+                              className="h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M2.5 12s3.2-6 9.5-6 9.5 6 9.5 6-3.2 6-9.5 6-9.5-6-9.5-6z"
+                              />
+
+                              <circle
+                                cx="12"
+                                cy="12"
+                                r="2.5"
+                              />
+                            </svg>
+
+                            <span>Show</span>
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
