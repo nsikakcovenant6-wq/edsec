@@ -1,65 +1,162 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
+import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+
+type Slide = {
+  image: string;
+  location: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+};
+
+const slides: Slide[] = [
+  {
+    image:
+      "https://images.unsplash.com/photo-1526253038957-bce54e05968e?auto=format&fit=crop&w=2200&q=90",
+    location: "PORT HARCOURT, NIGERIA",
+    eyebrow: "TECH MENTORSHIP",
+    title: "Learn from people building Africa's digital future.",
+    description:
+      "Practical ICT education designed to help you build real skills for the digital economy.",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=2200&q=90",
+    location: "PORT HARCOURT, NIGERIA",
+    eyebrow: "COLLABORATIVE LEARNING",
+    title: "Learn together. Build together.",
+    description:
+      "Turn ideas into practical projects through collaboration, technology and hands-on learning.",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1528901166007-3784c7dd3653?auto=format&fit=crop&w=2200&q=90",
+    location: "PORT HARCOURT, NIGERIA",
+    eyebrow: "AFRICAN DEVELOPERS",
+    title: "Technology is being built right here in Africa.",
+    description:
+      "Develop the skills and confidence to become part of Africa's growing technology ecosystem.",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1532522953890-ccc87dfeb0b7?auto=format&fit=crop&w=2200&q=90",
+    location: "PORT HARCOURT, NIGERIA",
+    eyebrow: "CYBER & SOFTWARE",
+    title: "Code. Secure. Create.",
+    description:
+      "Explore software development, cybersecurity and the technologies shaping tomorrow.",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1529429612779-c8e40ef2f36d?auto=format&fit=crop&w=2200&q=90",
+    location: "PORT HARCOURT, NIGERIA",
+    eyebrow: "DIGITAL SKILLS",
+    title: "Your next skill could change your future.",
+    description:
+      "Build practical ICT skills that move you closer to the career and opportunities you want.",
+  },
+];
+
+const courses = [
+  "Web Development",
+  "Cybersecurity",
+  "UI/UX Design",
+  "Data Analysis",
+];
 
 export default function LoginPage() {
-  const router = useRouter();
-
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
-  ) {
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % slides.length);
+    }, 5500);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const currentSlide = slides[activeSlide];
+
+  const previewTransform = useMemo(() => {
+    const rotateX = mouse.y * -4;
+    const rotateY = mouse.x * 5;
+
+    return `perspective(1500px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  }, [mouse]);
+
+  function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+
+    const x = (event.clientX - rect.left) / rect.width;
+    const y = (event.clientY - rect.top) / rect.height;
+
+    setMouse({
+      x: (x - 0.5) * 2,
+      y: (y - 0.5) * 2,
+    });
+  }
+
+  function resetMouse() {
+    setMouse({ x: 0, y: 0 });
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setMessage("");
 
-    setError("");
+    if (!email.trim()) {
+      setMessage("Please enter your email address.");
+      return;
+    }
+
+    if (!password) {
+      setMessage("Please enter your password.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            email,
-            password,
-          }),
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        credentials: "include",
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password,
+        }),
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(
-          data?.message ||
-            "Unable to sign in. Please check your details.",
-        );
+        setMessage(data.message || "Invalid email or password.");
         return;
       }
 
-      if (data?.user?.role === "ADMIN") {
-        router.replace("/admin");
-      } else {
-        router.replace("/student/dashboard");
-      }
-
-      router.refresh();
+      window.location.href =
+        data.redirectTo ||
+        (data.role === "ADMIN"
+          ? "/admin"
+          : "/student/dashboard");
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Login request error:", error);
 
-      setError(
-        "Something went wrong while signing in. Please try again.",
+      setMessage(
+        "Unable to connect to EDSEC right now. Please try again."
       );
     } finally {
       setLoading(false);
@@ -67,236 +164,375 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#050816]">
-      <section className="grid min-h-screen lg:grid-cols-[1.15fr_0.85fr]">
-        {/* =========================================================
-            VISUAL / 3D SIDE
-        ========================================================= */}
-        <div className="relative hidden overflow-hidden lg:block">
-          {/* Background */}
-          <div className="absolute inset-0">
+    <main
+      className="relative min-h-screen overflow-hidden bg-slate-950"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={resetMouse}
+    >
+      {/* =========================================================
+          BACKGROUND SLIDESHOW
+      ========================================================== */}
+      <div className="absolute inset-0">
+        {slides.map((slide, index) => (
+          <div
+            key={slide.image}
+            className={`absolute inset-0 transition-all duration-1800 ease-in-out ${
+              index === activeSlide
+                ? "scale-100 opacity-100"
+                : "scale-110 opacity-0"
+            }`}
+          >
             <img
-              src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=2200&q=85"
-              alt="Students learning technology in a modern classroom"
+              src={slide.image}
+              alt={slide.title}
               className="h-full w-full object-cover"
+              loading={index === 0 ? "eager" : "lazy"}
+              decoding="async"
             />
 
-            <div className="absolute inset-0 bg-[#050816]/70" />
-            <div className="absolute inset-0 bg-linear-to-br from-blue-950/80 via-transparent to-cyan-950/70" />
+            <div className="absolute inset-0 bg-slate-950/45" />
           </div>
+        ))}
+      </div>
 
-          {/* Atmospheric glow */}
-          <div className="absolute -left-40 top-10 h-96 w-96 rounded-full bg-blue-500/20 blur-[120px]" />
-          <div className="absolute -bottom-40 right-10 h-120 w-120 rounded-full bg-cyan-400/10 blur-[130px]" />
+      {/* Cinematic overlays */}
+      <div className="absolute inset-0 bg-linear-to-r from-slate-950/90 via-slate-950/45 to-slate-950/70" />
 
-          {/* Navigation */}
-          <div className="relative z-20 flex items-center justify-between px-10 py-8 xl:px-14">
-            <Link
-              href="/"
-              className="group inline-flex items-center gap-3"
-            >
-              <div className="grid h-12 w-12 place-items-center rounded-2xl border border-white/20 bg-white/95 shadow-2xl shadow-black/20 transition group-hover:-translate-y-0.5">
-                <img
-                  src="/edsec-logo.png"
-                  alt="EDSEC"
-                  className="h-9 w-auto object-contain"
-                />
-              </div>
+      <div className="absolute inset-0 bg-linear-to-t from-slate-950/90 via-transparent to-slate-950/30" />
 
-              <div>
-                <p className="font-bold tracking-wide text-white">
-                  EDSEC
-                </p>
+      {/* Ambient lights */}
+      <div className="pointer-events-none absolute -left-40 top-20 h-125 w-125 rounded-full bg-blue-500/20 blur-[120px] animate-pulse" />
 
-                <p className="text-xs text-white/50">
-                  Computer Training
-                </p>
-              </div>
-            </Link>
+      <div className="pointer-events-none absolute -right-40 bottom-0 h-125 w-125 rounded-full bg-cyan-400/10 blur-[120px]" />
 
-            <Link
-              href="/register"
-              className="rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-xl transition hover:bg-white/15"
-            >
-              Create account
-            </Link>
-          </div>
-
-          {/* 3D composition */}
-          <div className="relative z-10 flex min-h-[calc(100vh-112px)] items-center px-10 pb-16 pt-6 xl:px-14">
-            <div className="relative w-full max-w-3xl">
-              {/* Decorative perspective frame */}
-              <div className="absolute -inset-6 -rotate-3 rounded-[3rem] border border-white/10 bg-white/2.5 shadow-2xl shadow-black/30 backdrop-blur-sm" />
-
-              <div className="absolute -inset-2 rotate-1 rounded-[2.5rem] border border-blue-400/10 bg-blue-500/3" />
-
-              {/* Main image card */}
-              <div className="group relative aspect-[1.18/1] overflow-hidden rounded-4xl border border-white/15 bg-slate-900/50 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-md transition duration-700 hover:rotate-[0.5deg]">
-                <img
-                  src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1800&q=85"
-                  alt="Technology workspace"
-                  className="h-full w-full object-cover opacity-90 transition duration-700 group-hover:scale-105"
-                />
-
-                <div className="absolute inset-0 bg-linear-to-t from-[#050816] via-transparent to-blue-950/10" />
-
-                {/* Image label */}
-                <div className="absolute left-6 top-6 rounded-full border border-white/15 bg-black/25 px-4 py-2 text-xs font-semibold tracking-wide text-white backdrop-blur-xl">
-                  EDSEC LEARNING ENVIRONMENT
-                </div>
-
-                {/* Bottom message */}
-                <div className="absolute bottom-7 left-7 right-7">
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">
-                    Innovate. Educate. Elevate.
-                  </p>
-
-                  <h1 className="mt-3 max-w-xl text-4xl font-bold leading-tight tracking-tight text-white xl:text-5xl">
-                    Build skills that move you forward.
-                  </h1>
-                </div>
-              </div>
-
-              {/* Floating progress card */}
-              <div className="absolute -bottom-7 -right-7 z-20 w-64 rounded-2xl border border-white/15 bg-white/10 p-4 shadow-2xl shadow-black/40 backdrop-blur-2xl">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-white/50">
-                      LEARNING
-                    </p>
-
-                    <p className="mt-1 text-sm font-bold text-white">
-                      Your journey
-                    </p>
-                  </div>
-
-                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-400/15 text-sm font-bold text-cyan-300">
-                    01
-                  </div>
-                </div>
-
-                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10">
-                  <div className="h-full w-[72%] rounded-full bg-cyan-400" />
-                </div>
-
-                <p className="mt-2 text-xs text-white/40">
-                  Learn. Practice. Build.
-                </p>
-              </div>
-
-              {/* Floating course card */}
-              <div className="absolute -left-7 top-20 z-20 hidden w-48 rounded-2xl border border-white/15 bg-slate-950/65 p-4 shadow-2xl shadow-black/40 backdrop-blur-2xl xl:block">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-500/20 text-blue-300">
-                    ✦
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-white/40">
-                      SKILLS
-                    </p>
-
-                    <p className="text-sm font-semibold text-white">
-                      Technology
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {[
-                    "Web",
-                    "IT",
-                    "Cyber",
-                    "Design",
-                  ].map((item) => (
-                    <span
-                      key={item}
-                      className="rounded-full bg-white/5 px-2.5 py-1 text-[10px] font-medium text-white/60"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div className="relative z-10 min-h-screen">
         {/* =========================================================
-            LOGIN SIDE
-        ========================================================= */}
-        <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f8fafc] px-5 py-10 sm:px-8">
-          {/* Mobile atmospheric background */}
-          <div className="absolute -right-32 -top-32 h-80 w-80 rounded-full bg-blue-200/40 blur-3xl lg:hidden" />
-          <div className="absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-cyan-200/30 blur-3xl lg:hidden" />
-
-          <div className="relative z-10 w-full max-w-md">
-            {/* Mobile logo */}
-            <div className="mb-8 flex justify-center lg:hidden">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-3"
-              >
-                <div className="grid h-12 w-12 place-items-center rounded-2xl border border-slate-200 bg-white shadow-sm">
-                  <img
-                    src="/edsec-logo.png"
-                    alt="EDSEC"
-                    className="h-9 w-auto object-contain"
-                  />
-                </div>
-
-                <div>
-                  <p className="font-bold text-slate-950">
-                    EDSEC
-                  </p>
-
-                  <p className="text-xs text-slate-500">
-                    Computer Training
-                  </p>
-                </div>
-              </Link>
+            HEADER
+        ========================================================== */}
+        <header className="flex items-center justify-between px-6 py-6 sm:px-10 lg:px-14">
+          <Link
+            href="/"
+            className="group flex items-center gap-3"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-2xl transition-transform duration-300 group-hover:scale-105">
+              <Image
+                src="/edsec-logo.png"
+                alt="EDSEC ICT Institute"
+                width={42}
+                height={42}
+                className="h-9 w-auto object-contain"
+                priority
+              />
             </div>
 
-            {/* Login card */}
-            <div className="relative overflow-hidden rounded-4xl border border-slate-200/80 bg-white/90 p-7 shadow-[0_30px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-9">
-              {/* Decorative corner */}
-              <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blue-100/60 blur-2xl" />
+            <div>
+              <p className="text-lg font-bold tracking-tight text-white">
+                EDSEC
+              </p>
 
-              <div className="relative">
-                <div className="mb-8">
-                  <span className="inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.15em] text-blue-600">
-                    Student Portal
-                  </span>
+              <p className="text-xs text-white/60">
+                ICT Institute
+              </p>
+            </div>
+          </Link>
 
-                  <h2 className="mt-5 text-3xl font-bold tracking-tight text-slate-950">
-                    Welcome back.
+          <div className="hidden items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-xl sm:flex">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+            EDSEC ICT INSTITUTE
+          </div>
+        </header>
+
+        <div className="grid min-h-[calc(100vh-96px)] lg:grid-cols-[1fr_440px]">
+          {/* =======================================================
+              LEFT SIDE
+          ======================================================== */}
+          <section className="relative hidden min-h-[calc(100vh-96px)] items-center px-8 pb-12 pt-4 lg:flex xl:px-16">
+            <div className="max-w-4xl">
+              {/* Location */}
+              <div className="mb-6 flex items-center gap-3">
+                <span className="h-px w-10 bg-blue-400" />
+
+                <span className="text-xs font-bold tracking-[0.25em] text-blue-300">
+                  {currentSlide.location}
+                </span>
+              </div>
+
+              {/* Hero copy */}
+              <div className="max-w-2xl">
+                <p
+                  key={`eyebrow-${activeSlide}`}
+                  className="text-sm font-bold tracking-[0.2em] text-white/60"
+                >
+                  {currentSlide.eyebrow}
+                </p>
+
+                <h1
+                  key={`title-${activeSlide}`}
+                  className="mt-5 text-5xl font-black leading-[1.05] tracking-tight text-white xl:text-6xl"
+                >
+                  {currentSlide.title}
+                </h1>
+
+                <p
+                  key={`description-${activeSlide}`}
+                  className="mt-6 max-w-xl text-lg leading-8 text-white/70"
+                >
+                  {currentSlide.description}
+                </p>
+              </div>
+
+              {/* ===================================================
+                  3D PLATFORM PREVIEW
+              ==================================================== */}
+              <div
+                className="relative mt-10 h-67.5 w-full max-w-175"
+                style={{
+                  perspective: "1500px",
+                }}
+              >
+                {/* Learning path floating card */}
+                <div
+                  className="absolute -right-2 -top-8 z-30 rounded-2xl border border-white/20 bg-white/10 p-4 shadow-2xl backdrop-blur-xl"
+                  style={{
+                    animation:
+                      "floatOne 5s ease-in-out infinite",
+                  }}
+                >
+                  <p className="text-[9px] font-bold tracking-[0.2em] text-white/50">
+                    LEARNING PATH
+                  </p>
+
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="grid h-8 w-8 place-items-center rounded-lg bg-blue-500/30 text-sm text-blue-200">
+                      {"</>"}
+                    </span>
+
+                    <span className="text-xs font-semibold text-white">
+                      Web Development
+                    </span>
+                  </div>
+                </div>
+
+                {/* Main dashboard */}
+                <div
+                  className="absolute left-0 top-0 h-62.5 w-[min(100%,620px)] overflow-hidden rounded-3xl border border-white/20 bg-slate-950/75 shadow-[0_40px_100px_rgba(0,0,0,0.55)] backdrop-blur-xl transition-transform duration-300"
+                  style={{
+                    transform: previewTransform,
+                    transformStyle: "preserve-3d",
+                  }}
+                >
+                  {/* Browser bar */}
+                  <div className="flex h-11 items-center border-b border-white/10 bg-white/5 px-4">
+                    <div className="flex gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
+                    </div>
+
+                    <div className="mx-auto rounded-md bg-white/5 px-12 py-1 text-[9px] text-white/30">
+                      edsecict.com/student
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-[150px_1fr]">
+                    {/* Sidebar */}
+                    <div className="border-r border-white/10 p-4">
+                      <div className="flex items-center gap-2">
+                        <div className="grid h-7 w-7 place-items-center rounded-lg bg-blue-500 text-[9px] font-bold text-white">
+                          E
+                        </div>
+
+                        <span className="text-[10px] font-bold text-white">
+                          EDSEC
+                        </span>
+                      </div>
+
+                      <div className="mt-7 space-y-3">
+                        {[
+                          "Dashboard",
+                          "My Courses",
+                          "Lessons",
+                          "Projects",
+                        ].map((item, index) => (
+                          <div
+                            key={item}
+                            className={`rounded-lg px-2 py-2 text-[9px] ${
+                              index === 0
+                                ? "bg-blue-500/20 text-blue-300"
+                                : "text-white/40"
+                            }`}
+                          >
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Dashboard content */}
+                    <div className="p-5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-[9px] text-white/40">
+                            GOOD MORNING
+                          </p>
+
+                          <p className="mt-1 text-sm font-bold text-white">
+                            Keep building your skills.
+                          </p>
+                        </div>
+
+                        <div className="h-7 w-7 rounded-full bg-linear-to-br from-blue-400 to-cyan-300" />
+                      </div>
+
+                      {/* Stats */}
+                      <div className="mt-5 grid grid-cols-3 gap-3">
+                        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                          <p className="text-[8px] text-white/40">
+                            COURSES
+                          </p>
+
+                          <p className="mt-1 text-lg font-bold text-white">
+                            04
+                          </p>
+                        </div>
+
+                        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                          <p className="text-[8px] text-white/40">
+                            PROGRESS
+                          </p>
+
+                          <p className="mt-1 text-lg font-bold text-emerald-400">
+                            82%
+                          </p>
+                        </div>
+
+                        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                          <p className="text-[8px] text-white/40">
+                            PROJECTS
+                          </p>
+
+                          <p className="mt-1 text-lg font-bold text-blue-300">
+                            06
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Progress */}
+                      <div className="mt-4">
+                        <div className="flex justify-between">
+                          <p className="text-[9px] font-semibold text-white/60">
+                            Web Development
+                          </p>
+
+                          <p className="text-[9px] text-blue-300">
+                            82%
+                          </p>
+                        </div>
+
+                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                          <div className="h-full w-[82%] rounded-full bg-linear-to-r from-blue-500 to-cyan-300" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Courses floating card */}
+                <div
+                  className="absolute -bottom-5 right-5 z-30 rounded-2xl border border-white/15 bg-slate-950/80 p-4 shadow-2xl backdrop-blur-xl"
+                  style={{
+                    animation:
+                      "floatTwo 6s ease-in-out infinite",
+                  }}
+                >
+                  <p className="text-[9px] font-bold tracking-[0.15em] text-white/40">
+                    AVAILABLE COURSES
+                  </p>
+
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {courses.slice(0, 3).map((course) => (
+                      <span
+                        key={course}
+                        className="rounded-full bg-white/10 px-2 py-1 text-[8px] text-white/70"
+                      >
+                        {course}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Slideshow controls */}
+              <div className="mt-12 flex items-center gap-2">
+                {slides.map((slide, index) => (
+                  <button
+                    key={slide.image}
+                    type="button"
+                    aria-label={`Show slide ${index + 1}`}
+                    onClick={() => setActiveSlide(index)}
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                      activeSlide === index
+                        ? "w-10 bg-white"
+                        : "w-2 bg-white/30 hover:bg-white/60"
+                    }`}
+                  />
+                ))}
+
+                <span className="ml-3 text-xs text-white/40">
+                  {String(activeSlide + 1).padStart(2, "0")} /{" "}
+                  {String(slides.length).padStart(2, "0")}
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* =======================================================
+              LOGIN FORM
+          ======================================================== */}
+          <section className="flex min-h-[calc(100vh-96px)] items-center justify-center px-5 py-10 sm:px-8 lg:bg-slate-950/20 lg:backdrop-blur-[2px] lg:pr-12">
+            <div className="w-full max-w-md">
+              {/* Mobile heading */}
+              <div className="mb-7 lg:hidden">
+                <div className="mb-4 flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-blue-300">
+                  <span className="h-px w-8 bg-blue-400" />
+                  EDSEC ICT INSTITUTE
+                </div>
+
+                <h1 className="text-3xl font-black text-white">
+                  Welcome back.
+                </h1>
+
+                <p className="mt-2 text-sm leading-6 text-white/60">
+                  Continue your journey into technology.
+                </p>
+              </div>
+
+              {/* Glass card */}
+              <div className="rounded-[30px] border border-white/20 bg-white/12 p-7 shadow-[0_30px_100px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:p-9">
+                <div>
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-200">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    STUDENT PORTAL
+                  </div>
+
+                  <h2 className="text-3xl font-bold tracking-tight text-white">
+                    Sign in
                   </h2>
 
-                  <p className="mt-3 text-sm leading-6 text-slate-500">
-                    Sign in to continue learning,
-                    track your progress and build
-                    practical technology skills.
+                  <p className="mt-3 text-sm leading-6 text-white/60">
+                    Access your courses, lessons and projects.
                   </p>
                 </div>
-
-                {error && (
-                  <div
-                    role="alert"
-                    className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm leading-6 text-red-700"
-                  >
-                    {error}
-                  </div>
-                )}
 
                 <form
                   onSubmit={handleSubmit}
-                  className="space-y-5"
+                  className="mt-7 space-y-5"
                 >
                   {/* Email */}
                   <div>
                     <label
                       htmlFor="email"
-                      className="text-sm font-semibold text-slate-700"
+                      className="mb-2 block text-sm font-semibold text-white/80"
                     >
                       Email address
                     </label>
@@ -304,111 +540,151 @@ export default function LoginPage() {
                     <input
                       id="email"
                       type="email"
-                      autoComplete="email"
                       required
+                      autoComplete="email"
                       value={email}
                       onChange={(event) =>
                         setEmail(event.target.value)
                       }
                       placeholder="you@example.com"
-                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                      className="w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3.5 text-white outline-none transition placeholder:text-white/30 focus:border-blue-400 focus:bg-black/30 focus:ring-4 focus:ring-blue-500/10"
                     />
                   </div>
 
                   {/* Password */}
                   <div>
-                    <div className="flex items-center justify-between">
-                      <label
-                        htmlFor="password"
-                        className="text-sm font-semibold text-slate-700"
-                      >
-                        Password
-                      </label>
+                    <label
+                      htmlFor="password"
+                      className="mb-2 block text-sm font-semibold text-white/80"
+                    >
+                      Password
+                    </label>
 
-                      <Link
-                        href="/forgot-password"
-                        className="text-sm font-semibold text-blue-600 transition hover:text-blue-700"
+                    <div className="relative">
+                      <input
+                        id="password"
+                        type={
+                          showPassword
+                            ? "text"
+                            : "password"
+                        }
+                        required
+                        autoComplete="current-password"
+                        value={password}
+                        onChange={(event) =>
+                          setPassword(event.target.value)
+                        }
+                        placeholder="Enter your password"
+                        className="w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3.5 pr-20 text-white outline-none transition placeholder:text-white/30 focus:border-blue-400 focus:bg-black/30 focus:ring-4 focus:ring-blue-500/10"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowPassword(
+                            (current) => !current
+                          )
+                        }
+                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold text-white/50 transition hover:bg-white/10 hover:text-white"
                       >
-                        Forgot password?
-                      </Link>
+                        {showPassword ? "Hide" : "Show"}
+                      </button>
                     </div>
-
-                    <input
-                      id="password"
-                      type="password"
-                      autoComplete="current-password"
-                      required
-                      value={password}
-                      onChange={(event) =>
-                        setPassword(event.target.value)
-                      }
-                      placeholder="Enter your password"
-                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
-                    />
                   </div>
 
-                  {/* Session notice */}
-                  <div className="flex gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
-                    <div className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
-                      ✓
+                  {/* Error */}
+                  {message && (
+                    <div
+                      role="alert"
+                      className="rounded-xl border border-red-300/20 bg-red-500/10 px-4 py-3 text-sm leading-6 text-red-200"
+                    >
+                      {message}
                     </div>
-
-                    <p className="text-xs leading-5 text-blue-700">
-                      You will remain signed in on this
-                      device until you log out.
-                    </p>
-                  </div>
+                  )}
 
                   {/* Submit */}
                   <button
                     type="submit"
                     disabled={loading}
-                    className="group relative w-full overflow-hidden rounded-2xl bg-slate-950 px-6 py-4 font-semibold text-white shadow-xl shadow-slate-950/15 transition duration-300 hover:-translate-y-0.5 hover:bg-blue-600 hover:shadow-blue-600/20 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="group relative w-full overflow-hidden rounded-xl bg-blue-600 px-5 py-3.5 font-semibold text-white shadow-xl shadow-blue-900/30 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <span className="relative z-10">
                       {loading
                         ? "Signing in..."
-                        : "Sign in to EDSEC →"}
+                        : "Sign in to EDSEC"}
                     </span>
 
-                    <span className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                    <span className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                   </button>
                 </form>
 
                 {/* Register */}
-                <div className="mt-8 border-t border-slate-100 pt-7 text-center">
-                  <p className="text-sm text-slate-500">
-                    Don&apos;t have an EDSEC account?
-                  </p>
+                <div className="mt-7 border-t border-white/10 pt-6 text-center">
+                  <p className="text-sm text-white/50">
+                    Don&apos;t have an account?
 
+                    <Link
+                      href="/register"
+                      className="ml-1 font-semibold text-blue-300 hover:text-blue-200"
+                    >
+                      Create one
+                    </Link>
+                  </p>
+                </div>
+
+                {/* Back */}
+                <div className="mt-5 text-center">
                   <Link
-                    href="/register"
-                    className="mt-2 inline-flex font-semibold text-blue-600 transition hover:text-blue-700"
+                    href="/"
+                    className="text-sm font-medium text-white/40 transition hover:text-white"
                   >
-                    Create an account →
+                    ← Back to EDSEC
                   </Link>
                 </div>
               </div>
+
+              <p className="mt-5 text-center text-xs text-white/30">
+                EDSEC ICT Institute · Port Harcourt, Nigeria
+              </p>
             </div>
-
-            {/* Footer */}
-            <div className="mt-6 flex items-center justify-center gap-4 text-xs text-slate-400">
-              <Link
-                href="/"
-                className="transition hover:text-slate-700"
-              >
-                EDSEC
-              </Link>
-
-              <span>•</span>
-
-              <span>
-                Innovate. Educate. Elevate.
-              </span>
-            </div>
-          </div>
+          </section>
         </div>
-      </section>
+      </div>
+
+      <style jsx>{`
+        @keyframes floatOne {
+          0%,
+          100% {
+            transform: translate3d(0, 0, 70px) rotate(3deg);
+          }
+
+          50% {
+            transform: translate3d(0, -12px, 70px) rotate(1deg);
+          }
+        }
+
+        @keyframes floatTwo {
+          0%,
+          100% {
+            transform: translate3d(0, 0, 60px) rotate(-2deg);
+          }
+
+          50% {
+            transform: translate3d(0, 10px, 60px) rotate(-1deg);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          *,
+          *::before,
+          *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+            transition-duration: 0.001ms !important;
+          }
+        }
+      `}</style>
     </main>
   );
 }

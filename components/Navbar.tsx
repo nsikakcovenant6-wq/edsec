@@ -7,11 +7,17 @@ import AuthButtons from "@/components/AuthButtons";
 export default async function Navbar() {
   const user = await getCurrentUser();
 
+  /**
+   * Route users to the correct dashboard based on their role.
+   *
+   * ADMIN   → /admin
+   * STUDENT → /student/dashboard
+   */
   const dashboardHref =
     user?.role === "ADMIN"
       ? "/admin"
       : user?.role === "STUDENT"
-        ? "/student"
+        ? "/student/dashboard"
         : "/";
 
   return (
@@ -25,12 +31,12 @@ export default async function Navbar() {
         <Link
           href="/"
           className="flex items-center gap-3"
-          aria-label="EDSEC Computer Training Home"
+          aria-label="EDSEC ICT Institute Home"
         >
           <div className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white shadow-sm">
             <Image
               src="/edsec-logo.png"
-              alt="EDSEC Computer Training"
+              alt="EDSEC ICT Institute"
               width={46}
               height={46}
               priority
@@ -118,7 +124,6 @@ export default async function Navbar() {
             isLoggedIn={!!user}
             role={user?.role ?? null}
           />
-
         </nav>
 
         {/* =====================================================
@@ -145,7 +150,9 @@ export default async function Navbar() {
             </>
           ) : (
             <>
-              {/* MOBILE DASHBOARD */}
+              {/* =================================================
+                  MOBILE DASHBOARD
+              ================================================== */}
 
               <Link
                 href={dashboardHref}
@@ -160,7 +167,6 @@ export default async function Navbar() {
               />
             </>
           )}
-
         </div>
       </div>
     </header>
