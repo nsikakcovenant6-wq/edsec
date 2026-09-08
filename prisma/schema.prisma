@@ -5,21 +5,23 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id             String                 @id @default(cuid())
-  email          String                 @unique
-  passwordHash   String
-  firstName      String
-  lastName       String
-  phone          String?
-  avatarUrl      String?
-  role           UserRole               @default(STUDENT)
-  status         UserStatus             @default(ACTIVE)
-  createdAt      DateTime               @default(now())
-  updatedAt      DateTime               @updatedAt
-  lastLoginAt    DateTime?
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  avatarUrl    String?
+  role         UserRole   @default(STUDENT)
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  lastLoginAt  DateTime?
+
   announcements  Announcement[]
   applications   Application[]
   attendances    Attendance[]
@@ -47,7 +49,8 @@ model StudentProfile {
   studentNumber    String    @unique
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Application {
@@ -66,8 +69,9 @@ model Application {
   adminNotes         String?
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
-  applicant          User?             @relation(fields: [applicantId], references: [id])
-  course             Course?           @relation(fields: [courseId], references: [id])
+
+  applicant User?   @relation(fields: [applicantId], references: [id])
+  course    Course? @relation(fields: [courseId], references: [id])
 
   @@index([status])
   @@index([courseId])
@@ -75,9 +79,9 @@ model Application {
 }
 
 model Course {
-  id               String         @id @default(cuid())
+  id               String       @id @default(cuid())
   title            String
-  slug             String         @unique
+  slug             String       @unique
   shortDescription String
   description      String?
   imageUrl         String?
@@ -85,18 +89,19 @@ model Course {
   learningFormat   String?
   requirements     String?
   syllabus         String?
-  status           CourseStatus   @default(DRAFT)
-  featured         Boolean        @default(false)
-  displayOrder     Int            @default(0)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  applications     Application[]
-  assessments      Assessment[]
-  cohorts          Cohort[]
-  modules          CourseModule[]
-  enrollments      Enrollment[]
-  liveClasses      LiveClass[]
-  tests            Test[]
+  status           CourseStatus @default(DRAFT)
+  featured         Boolean      @default(false)
+  displayOrder     Int          @default(0)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  applications Application[]
+  assessments  Assessment[]
+  cohorts      Cohort[]
+  modules      CourseModule[]
+  enrollments  Enrollment[]
+  liveClasses  LiveClass[]
+  tests        Test[]
 
   @@index([status])
   @@index([featured])
@@ -112,15 +117,16 @@ model CourseModule {
   isPublished  Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons      Lesson[]
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
 
   @@index([courseId])
   @@index([displayOrder])
 }
 
 model Lesson {
-  id           String           @id @default(cuid())
+  id           String   @id @default(cuid())
   moduleId     String
   title        String
   slug         String
@@ -128,12 +134,13 @@ model Lesson {
   content      String?
   videoUrl     String?
   duration     Int?
-  displayOrder Int              @default(0)
-  isPublished  Boolean          @default(false)
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  module       CourseModule     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  progress     LessonProgress[]
+  displayOrder Int      @default(0)
+  isPublished  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  module   CourseModule     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress LessonProgress[]
 
   @@unique([moduleId, slug])
   @@index([moduleId])
@@ -142,16 +149,17 @@ model Lesson {
 }
 
 model Enrollment {
-  id             String                @id @default(cuid())
-  studentId      String
-  courseId       String
-  status         EnrollmentStatus      @default(ACTIVE)
-  progress       Int                   @default(0)
-  startedAt      DateTime              @default(now())
-  completedAt    DateTime?
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
-  cohortId       String?
+  id          String           @id @default(cuid())
+  studentId   String
+  courseId    String
+  status      EnrollmentStatus @default(ACTIVE)
+  progress    Int              @default(0)
+  startedAt   DateTime         @default(now())
+  completedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  cohortId    String?
+
   cohort         Cohort?               @relation(fields: [cohortId], references: [id])
   course         Course                @relation(fields: [courseId], references: [id], onDelete: Cascade)
   student        User                  @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -170,15 +178,16 @@ model Enrollment {
 }
 
 model LessonProgress {
-  id           String     @id @default(cuid())
+  id           String    @id @default(cuid())
   enrollmentId String
   lessonId     String
-  completed    Boolean    @default(false)
+  completed    Boolean   @default(false)
   completedAt  DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  lesson       Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lesson     Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([enrollmentId, lessonId])
   @@index([enrollmentId])
@@ -187,63 +196,67 @@ model LessonProgress {
 }
 
 model Test {
-  id          String        @id @default(cuid())
+  id          String     @id @default(cuid())
   courseId    String
   title       String
   description String?
   duration    Int?
-  status      TestStatus    @default(DRAFT)
+  status      TestStatus @default(DRAFT)
   publishedAt DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  questions   Question[]
-  course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  attempts    TestAttempt[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  questions Question[]
+  course    Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  attempts  TestAttempt[]
 
   @@index([courseId])
   @@index([status])
 }
 
 model Question {
-  id           String          @id @default(cuid())
+  id           String       @id @default(cuid())
   testId       String
   question     String
   type         QuestionType
-  points       Int             @default(1)
-  displayOrder Int             @default(0)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  options      AnswerOption[]
-  test         Test            @relation(fields: [testId], references: [id], onDelete: Cascade)
-  answers      StudentAnswer[]
+  points       Int          @default(1)
+  displayOrder Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  options AnswerOption[]
+  test    Test            @relation(fields: [testId], references: [id], onDelete: Cascade)
+  answers StudentAnswer[]
 
   @@index([testId])
   @@index([displayOrder])
 }
 
 model AnswerOption {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   questionId   String
   optionText   String
-  isCorrect    Boolean  @default(false)
-  displayOrder Int      @default(0)
-  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  isCorrect    Boolean @default(false)
+  displayOrder Int     @default(0)
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@index([questionId])
 }
 
 model TestAttempt {
-  id          String          @id @default(cuid())
+  id          String        @id @default(cuid())
   testId      String
   studentId   String
-  status      AttemptStatus   @default(IN_PROGRESS)
+  status      AttemptStatus @default(IN_PROGRESS)
   score       Float?
   totalPoints Int?
-  startedAt   DateTime        @default(now())
+  startedAt   DateTime      @default(now())
   submittedAt DateTime?
-  answers     StudentAnswer[]
-  student     User            @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  test        Test            @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  answers StudentAnswer[]
+  student User            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  test    Test            @relation(fields: [testId], references: [id], onDelete: Cascade)
 
   @@index([testId])
   @@index([studentId])
@@ -251,15 +264,16 @@ model TestAttempt {
 }
 
 model StudentAnswer {
-  id               String      @id @default(cuid())
+  id               String   @id @default(cuid())
   attemptId        String
   questionId       String
   selectedOptionId String?
   answerText       String?
   isCorrect        Boolean?
   pointsAwarded    Float?
-  attempt          TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  question         Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  attempt  TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@unique([attemptId, questionId])
   @@index([attemptId])
@@ -276,7 +290,8 @@ model Announcement {
   authorId    String?
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
-  author      User?              @relation(fields: [authorId], references: [id])
+
+  author User? @relation(fields: [authorId], references: [id])
 
   @@index([status])
   @@index([publishedAt])
@@ -299,9 +314,9 @@ model GalleryItem {
 }
 
 model StudentProject {
-  id           String                 @id @default(cuid())
+  id           String   @id @default(cuid())
   title        String
-  slug         String                 @unique
+  slug         String   @unique
   description  String
   imageUrl     String?
   studentName  String?
@@ -309,12 +324,13 @@ model StudentProject {
   technologies String?
   liveDemoUrl  String?
   githubUrl    String?
-  isFeatured   Boolean                @default(false)
-  isPublished  Boolean                @default(true)
-  displayOrder Int                    @default(0)
-  createdAt    DateTime               @default(now())
-  updatedAt    DateTime               @updatedAt
-  records      StudentProjectRecord[]
+  isFeatured   Boolean  @default(false)
+  isPublished  Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  records StudentProjectRecord[]
 
   @@index([isFeatured])
   @@index([isPublished])
@@ -374,7 +390,6 @@ model Payment {
   paidAt        DateTime?
   dueDate       DateTime?
 
-  // Notification / reminder tracking
   paymentNotificationSentAt DateTime?
   dueReminderSentAt         DateTime?
   overdueReminderSentAt     DateTime?
@@ -404,6 +419,7 @@ model Cohort {
   createdById String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+
   course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   createdBy   User?        @relation("CohortCreatedBy", fields: [createdById], references: [id])
   enrollments Enrollment[]
@@ -414,7 +430,7 @@ model Cohort {
 }
 
 model LiveClass {
-  id          String                @id @default(cuid())
+  id          String          @id @default(cuid())
   courseId    String
   createdById String?
   title       String
@@ -422,14 +438,15 @@ model LiveClass {
   scheduledAt DateTime
   duration    Int?
   meetingUrl  String
-  status      LiveClassStatus       @default(SCHEDULED)
-  isPublished Boolean               @default(false)
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
-  attendance  Attendance[]
-  course      Course                @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  createdBy   User?                 @relation("LiveClassCreatedBy", fields: [createdById], references: [id])
-  students    LiveClassEnrollment[]
+  status      LiveClassStatus @default(SCHEDULED)
+  isPublished Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  attendance Attendance[]
+  course     Course                @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdBy  User?                 @relation("LiveClassCreatedBy", fields: [createdById], references: [id])
+  students   LiveClassEnrollment[]
 
   @@index([courseId])
   @@index([scheduledAt])
@@ -438,12 +455,13 @@ model LiveClass {
 }
 
 model LiveClassEnrollment {
-  id           String     @id @default(cuid())
+  id           String   @id @default(cuid())
   liveClassId  String
   enrollmentId String
-  createdAt    DateTime   @default(now())
-  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  liveClass    LiveClass  @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  liveClass  LiveClass  @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
 
   @@unique([liveClassId, enrollmentId])
   @@index([liveClassId])
@@ -460,8 +478,9 @@ model Attendance {
   notes       String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
-  liveClass   LiveClass        @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
-  student     User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  liveClass LiveClass @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
+  student   User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([liveClassId, studentId])
   @@index([liveClassId])
@@ -480,8 +499,9 @@ model Assessment {
   status      AssessmentStatus @default(DRAFT)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
-  course      Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  grades      Grade[]
+
+  course Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  grades Grade[]
 
   @@index([courseId])
   @@index([type])
@@ -489,7 +509,7 @@ model Assessment {
 }
 
 model Grade {
-  id           String      @id @default(cuid())
+  id           String   @id @default(cuid())
   studentId    String
   assessmentId String
   enrollmentId String?
@@ -498,13 +518,14 @@ model Grade {
   grade        String?
   feedback     String?
   gradedById   String?
-  gradedAt     DateTime    @default(now())
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  assessment   Assessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id])
-  gradedBy     User?       @relation("GradeGradedBy", fields: [gradedById], references: [id])
-  student      User        @relation("GradeStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  gradedAt     DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assessment Assessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id])
+  gradedBy   User?       @relation("GradeGradedBy", fields: [gradedById], references: [id])
+  student    User        @relation("GradeStudent", fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, assessmentId])
   @@index([studentId])
@@ -513,24 +534,26 @@ model Grade {
 }
 
 model Achievement {
-  id          String               @id @default(cuid())
-  name        String               @unique
+  id          String   @id @default(cuid())
+  name        String   @unique
   description String?
   icon        String?
-  points      Int                  @default(0)
-  createdAt   DateTime             @default(now())
-  students    StudentAchievement[]
+  points      Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  students StudentAchievement[]
 }
 
 model StudentAchievement {
-  id            String      @id @default(cuid())
+  id            String   @id @default(cuid())
   studentId     String
   achievementId String
   enrollmentId  String?
-  earnedAt      DateTime    @default(now())
-  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
-  enrollment    Enrollment? @relation(fields: [enrollmentId], references: [id])
-  student       User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  earnedAt      DateTime @default(now())
+
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  enrollment  Enrollment? @relation(fields: [enrollmentId], references: [id])
+  student     User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, achievementId])
   @@index([studentId])
@@ -546,8 +569,9 @@ model StudentActivity {
   description  String?
   metadata     String?
   createdAt    DateTime     @default(now())
-  enrollment   Enrollment?  @relation(fields: [enrollmentId], references: [id])
-  student      User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id])
+  student    User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([enrollmentId])
@@ -556,20 +580,21 @@ model StudentActivity {
 }
 
 model StudentProjectRecord {
-  id          String          @id @default(cuid())
+  id          String        @id @default(cuid())
   studentId   String
   projectId   String?
   title       String
   description String?
   score       Float?
   feedback    String?
-  status      ProjectStatus   @default(PENDING)
+  status      ProjectStatus @default(PENDING)
   submittedAt DateTime?
   gradedAt    DateTime?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  project     StudentProject? @relation(fields: [projectId], references: [id])
-  student     User            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  project StudentProject? @relation(fields: [projectId], references: [id])
+  student User            @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([projectId])
