@@ -1,15 +1,17 @@
- 
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
 import {
   ArrowUpRight,
+  Award,
   BarChart3,
   BookOpen,
   BriefcaseBusiness,
   Check,
+  CheckCircle2,
   Code2,
   Cloud,
+  FileBadge2,
   GraduationCap,
   Headphones,
   Laptop,
@@ -21,8 +23,10 @@ import {
   Rocket,
   ShieldCheck,
   Sparkles,
+  Target,
   Users,
   Wrench,
+  Zap,
 } from "lucide-react";
 
 const featuredPrograms = [
@@ -134,6 +138,51 @@ const learningAreas = [
   },
 ];
 
+const whyChooseEdsec = [
+  {
+    number: "01",
+    title: "Practical Learning",
+    description:
+      "We focus on hands-on learning, practical exercises, projects, and real technology tools instead of theory alone.",
+    icon: Wrench,
+  },
+  {
+    number: "02",
+    title: "Career-Focused Skills",
+    description:
+      "Our programs are designed to help learners develop useful digital skills for employment, freelancing, business, and further growth.",
+    icon: Target,
+  },
+  {
+    number: "03",
+    title: "Project-Based Training",
+    description:
+      "Learners strengthen their knowledge by building practical projects they can use to demonstrate what they know.",
+    icon: Code2,
+  },
+  {
+    number: "04",
+    title: "Student Portal",
+    description:
+      "Students can access courses, monitor progress, take assessments, join classes, and manage their learning journey online.",
+    icon: MonitorPlay,
+  },
+  {
+    number: "05",
+    title: "Certificates",
+    description:
+      "Successful learners receive an EDSEC Certificate of Completion after completing the requirements of their training program.",
+    icon: Award,
+  },
+  {
+    number: "06",
+    title: "Supportive Community",
+    description:
+      "Students learn in an environment that encourages collaboration, creativity, questions, practice, and continuous improvement.",
+    icon: Users,
+  },
+];
+
 const services = [
   {
     number: "01",
@@ -242,15 +291,6 @@ const portalFeatures = [
   },
 ];
 
-/*
-|--------------------------------------------------------------------------
-| HERO SLIDESHOW
-|--------------------------------------------------------------------------
-| CSS-only slideshow.
-| No Hero3D.tsx
-| No Reveal.tsx
-*/
-
 const heroSlides = [
   {
     image:
@@ -288,6 +328,10 @@ export default function HomePage() {
   return (
     <main className="min-h-screen overflow-hidden bg-white text-slate-950">
       <style>{`
+        /* ============================================================
+           HERO
+        ============================================================ */
+
         @keyframes edsecHeroSlide {
           0% {
             opacity: 0;
@@ -373,15 +417,533 @@ export default function HomePage() {
           animation: edsecFloat 5s ease-in-out infinite;
         }
 
+        /* ============================================================
+           WHY EDSEC
+        ============================================================ */
+
+        @keyframes edsecWhyFloat {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+
+          50% {
+            transform: translateY(-6px);
+          }
+        }
+
+        .edsec-why-card:hover .edsec-why-icon {
+          transform: rotate(-4deg) scale(1.08);
+        }
+
+        .edsec-why-icon {
+          transition: transform 300ms ease;
+        }
+
+        /* ============================================================
+           CERTIFICATE 3D ANIMATION
+        ============================================================ */
+
+        .edsec-certificate-scene {
+          position: relative;
+          width: 100%;
+          height: 520px;
+          perspective: 1200px;
+          overflow: hidden;
+          border-radius: 32px;
+          background:
+            radial-gradient(
+              circle at 70% 25%,
+              rgba(59, 130, 246, 0.3),
+              transparent 30%
+            ),
+            radial-gradient(
+              circle at 20% 70%,
+              rgba(14, 165, 233, 0.18),
+              transparent 35%
+            ),
+            linear-gradient(145deg, #020617, #0f172a 50%, #172554);
+          box-shadow: 0 30px 80px rgba(15, 23, 42, 0.3);
+        }
+
+        .edsec-certificate-world {
+          position: absolute;
+          inset: 0;
+          transform-style: preserve-3d;
+          transform: rotateX(4deg) rotateY(-5deg);
+        }
+
+        .edsec-floor {
+          position: absolute;
+          left: 5%;
+          right: 5%;
+          bottom: 8%;
+          height: 42%;
+          border-radius: 50%;
+          background:
+            radial-gradient(
+              ellipse at center,
+              rgba(59, 130, 246, 0.2),
+              transparent 68%
+            );
+          transform: rotateX(65deg) translateZ(-80px);
+          border: 1px solid rgba(147, 197, 253, 0.12);
+        }
+
+        .edsec-certificate-card {
+          position: absolute;
+          width: 210px;
+          height: 140px;
+          border-radius: 14px;
+          background:
+            linear-gradient(135deg, #ffffff, #f8fafc);
+          color: #0f172a;
+          box-shadow:
+            0 25px 50px rgba(0, 0, 0, 0.25),
+            inset 0 0 0 1px rgba(59, 130, 246, 0.18);
+          transform-style: preserve-3d;
+          z-index: 8;
+        }
+
+        .edsec-certificate-card::before {
+          content: "";
+          position: absolute;
+          inset: 10px;
+          border: 2px solid rgba(37, 99, 235, 0.2);
+          border-radius: 8px;
+        }
+
+        .edsec-certificate-card::after {
+          content: "EDSEC";
+          position: absolute;
+          bottom: 11px;
+          right: 14px;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 0.16em;
+          color: #2563eb;
+        }
+
+        .edsec-certificate-title {
+          position: absolute;
+          top: 25px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 0.16em;
+          color: #2563eb;
+        }
+
+        .edsec-certificate-main {
+          position: absolute;
+          top: 48px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-size: 15px;
+          font-weight: 800;
+        }
+
+        .edsec-certificate-sub {
+          position: absolute;
+          top: 76px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-size: 8px;
+          color: #64748b;
+        }
+
+        .edsec-certificate-seal {
+          position: absolute;
+          left: 14px;
+          bottom: 10px;
+          display: flex;
+          width: 27px;
+          height: 27px;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          border: 2px solid #2563eb;
+          color: #2563eb;
+          font-size: 8px;
+          font-weight: 900;
+        }
+
+        @keyframes edsecCertificateOne {
+          0%,
+          15% {
+            opacity: 0;
+            transform:
+              translate3d(210px, -150px, 180px)
+              rotateY(28deg)
+              rotateZ(8deg)
+              scale(0.7);
+          }
+
+          25% {
+            opacity: 1;
+          }
+
+          48% {
+            opacity: 1;
+            transform:
+              translate3d(45px, 25px, 120px)
+              rotateY(-8deg)
+              rotateZ(-3deg)
+              scale(0.9);
+          }
+
+          58%,
+          100% {
+            opacity: 1;
+            transform:
+              translate3d(-35px, 118px, 80px)
+              rotateY(-5deg)
+              rotateZ(-4deg)
+              scale(0.72);
+          }
+        }
+
+        @keyframes edsecCertificateTwo {
+          0%,
+          28% {
+            opacity: 0;
+            transform:
+              translate3d(-230px, -100px, 140px)
+              rotateY(-30deg)
+              rotateZ(-8deg)
+              scale(0.65);
+          }
+
+          38% {
+            opacity: 1;
+          }
+
+          62% {
+            opacity: 1;
+            transform:
+              translate3d(50px, 12px, 160px)
+              rotateY(10deg)
+              rotateZ(4deg)
+              scale(0.9);
+          }
+
+          72%,
+          100% {
+            opacity: 1;
+            transform:
+              translate3d(-18px, 100px, 90px)
+              rotateY(4deg)
+              rotateZ(3deg)
+              scale(0.7);
+          }
+        }
+
+        @keyframes edsecCertificateThree {
+          0%,
+          43% {
+            opacity: 0;
+            transform:
+              translate3d(190px, 160px, 200px)
+              rotateY(35deg)
+              rotateZ(-12deg)
+              scale(0.65);
+          }
+
+          53% {
+            opacity: 1;
+          }
+
+          78% {
+            opacity: 1;
+            transform:
+              translate3d(35px, 20px, 180px)
+              rotateY(-5deg)
+              rotateZ(-2deg)
+              scale(0.88);
+          }
+
+          88%,
+          100% {
+            opacity: 1;
+            transform:
+              translate3d(5px, 90px, 100px)
+              rotateY(2deg)
+              rotateZ(2deg)
+              scale(0.68);
+          }
+        }
+
+        .edsec-certificate-one {
+          left: 50%;
+          top: 10%;
+          margin-left: -105px;
+          animation: edsecCertificateOne 9s ease-in-out infinite;
+        }
+
+        .edsec-certificate-two {
+          left: 50%;
+          top: 12%;
+          margin-left: -105px;
+          animation: edsecCertificateTwo 9s ease-in-out infinite;
+        }
+
+        .edsec-certificate-three {
+          left: 50%;
+          top: 13%;
+          margin-left: -105px;
+          animation: edsecCertificateThree 9s ease-in-out infinite;
+        }
+
+        /* ============================================================
+           STUDENT
+        ============================================================ */
+
+        @keyframes edsecStudentMove {
+          0%,
+          100% {
+            transform: translate3d(0, 0, 40px) rotateY(-4deg);
+          }
+
+          50% {
+            transform: translate3d(0, -8px, 40px) rotateY(4deg);
+          }
+        }
+
+        @keyframes edsecArmReceive {
+          0%,
+          20% {
+            transform: rotate(12deg);
+          }
+
+          45%,
+          65% {
+            transform: rotate(-12deg);
+          }
+
+          85%,
+          100% {
+            transform: rotate(12deg);
+          }
+        }
+
+        .edsec-student {
+          position: absolute;
+          left: 50%;
+          bottom: 12%;
+          width: 170px;
+          height: 245px;
+          margin-left: -85px;
+          transform-style: preserve-3d;
+          animation: edsecStudentMove 3.8s ease-in-out infinite;
+          z-index: 5;
+        }
+
+        .edsec-student-head {
+          position: absolute;
+          top: 0;
+          left: 50%;
+          width: 64px;
+          height: 64px;
+          margin-left: -32px;
+          border-radius: 50%;
+          background: linear-gradient(145deg, #f8c9a2, #c98562);
+          box-shadow: inset -8px -6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .edsec-student-hair {
+          position: absolute;
+          top: -3px;
+          left: 50%;
+          width: 66px;
+          height: 30px;
+          margin-left: -33px;
+          border-radius: 50% 50% 35% 35%;
+          background: #111827;
+        }
+
+        .edsec-student-body {
+          position: absolute;
+          top: 58px;
+          left: 50%;
+          width: 104px;
+          height: 105px;
+          margin-left: -52px;
+          border-radius: 24px 24px 14px 14px;
+          background: linear-gradient(145deg, #2563eb, #1d4ed8);
+          box-shadow:
+            inset -10px -10px 20px rgba(0, 0, 0, 0.12),
+            0 15px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .edsec-student-body::after {
+          content: "EDSEC";
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 38px;
+          text-align: center;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.12em;
+          color: white;
+        }
+
+        .edsec-student-arm {
+          position: absolute;
+          top: 70px;
+          width: 24px;
+          height: 95px;
+          border-radius: 999px;
+          background: #2563eb;
+          transform-origin: 50% 12px;
+        }
+
+        .edsec-student-arm.left {
+          left: 18px;
+          transform: rotate(12deg);
+          animation: edsecArmReceive 4s ease-in-out infinite;
+        }
+
+        .edsec-student-arm.right {
+          right: 18px;
+          transform: rotate(-12deg);
+          animation: edsecArmReceive 4s ease-in-out infinite reverse;
+        }
+
+        .edsec-student-hand {
+          position: absolute;
+          bottom: -9px;
+          left: 50%;
+          width: 25px;
+          height: 25px;
+          margin-left: -12.5px;
+          border-radius: 50%;
+          background: #e5a17c;
+        }
+
+        .edsec-student-leg {
+          position: absolute;
+          top: 151px;
+          width: 32px;
+          height: 82px;
+          border-radius: 0 0 16px 16px;
+          background: #111827;
+        }
+
+        .edsec-student-leg.left {
+          left: 49px;
+          transform: rotate(5deg);
+        }
+
+        .edsec-student-leg.right {
+          right: 49px;
+          transform: rotate(-5deg);
+        }
+
+        .edsec-student-shoe {
+          position: absolute;
+          bottom: -7px;
+          width: 48px;
+          height: 17px;
+          border-radius: 999px;
+          background: #020617;
+        }
+
+        .edsec-student-leg.left .edsec-student-shoe {
+          left: -9px;
+        }
+
+        .edsec-student-leg.right .edsec-student-shoe {
+          right: -9px;
+        }
+
+        /* ============================================================
+           FLOATING BADGES
+        ============================================================ */
+
+        @keyframes edsecBadgeFloat {
+          0%,
+          100% {
+            transform: translateY(0) rotate(0deg);
+          }
+
+          50% {
+            transform: translateY(-12px) rotate(2deg);
+          }
+        }
+
+        .edsec-floating-badge {
+          animation: edsecBadgeFloat 4s ease-in-out infinite;
+        }
+
+        .edsec-floating-badge.delay {
+          animation-delay: 1.4s;
+        }
+
+        /* ============================================================
+           REDUCED MOTION
+        ============================================================ */
+
         @media (prefers-reduced-motion: reduce) {
           .edsec-hero-slide,
           .edsec-hero-progress,
-          .edsec-float {
-            animation: none;
+          .edsec-float,
+          .edsec-certificate-card,
+          .edsec-student,
+          .edsec-student-arm,
+          .edsec-floating-badge {
+            animation: none !important;
           }
 
           .edsec-hero-slide:first-child {
             opacity: 1;
+          }
+
+          .edsec-certificate-one,
+          .edsec-certificate-two,
+          .edsec-certificate-three {
+            opacity: 1;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .edsec-certificate-scene {
+            height: 430px;
+          }
+
+          .edsec-certificate-card {
+            width: 175px;
+            height: 118px;
+          }
+
+          .edsec-certificate-one,
+          .edsec-certificate-two,
+          .edsec-certificate-three {
+            margin-left: -87.5px;
+          }
+
+          .edsec-certificate-title {
+            top: 20px;
+            font-size: 7px;
+          }
+
+          .edsec-certificate-main {
+            top: 40px;
+            font-size: 12px;
+          }
+
+          .edsec-certificate-sub {
+            top: 65px;
+            font-size: 7px;
+          }
+
+          .edsec-student {
+            transform: scale(0.82);
+            transform-origin: bottom center;
           }
         }
       `}</style>
@@ -389,6 +951,7 @@ export default function HomePage() {
       {/* ============================================================
           HERO
       ============================================================ */}
+
       <section className="relative isolate overflow-hidden bg-slate-950">
         <div className="absolute inset-0">
           {heroSlides.map((slide) => (
@@ -400,9 +963,7 @@ export default function HomePage() {
               />
 
               <div className="absolute inset-0 bg-slate-950/60" />
-
               <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-950/70 to-slate-950/20" />
-
               <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-slate-950/30" />
             </div>
           ))}
@@ -412,7 +973,7 @@ export default function HomePage() {
 
         <div className="relative mx-auto grid min-h-190 max-w-7xl items-center gap-12 px-6 py-24 sm:px-8 lg:grid-cols-[1.05fr_.95fr] lg:px-12">
           <div className="max-w-3xl text-white">
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md">
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-md">
               <Sparkles className="h-4 w-4 text-blue-300" />
               Practical ICT education
             </div>
@@ -464,7 +1025,7 @@ export default function HomePage() {
               {[
                 "Practical ICT training",
                 "Project-based learning",
-                "Career-focused skills",
+                "Certificate of Completion",
               ].map((item) => (
                 <div
                   key={item}
@@ -477,7 +1038,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* HERO INFORMATION PANEL */}
           <div className="relative hidden lg:block">
             <div className="edsec-float relative mx-auto max-w-md">
               <div className="overflow-hidden rounded-4xl border border-white/15 bg-white/10 p-3 shadow-2xl backdrop-blur-xl">
@@ -558,7 +1118,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* SLIDESHOW INDICATOR */}
         <div className="absolute bottom-7 left-1/2 z-20 flex w-[min(90%,420px)] -translate-x-1/2 gap-1.5">
           {heroSlides.map((slide) => (
             <div
@@ -574,6 +1133,7 @@ export default function HomePage() {
       {/* ============================================================
           STATS
       ============================================================ */}
+
       <section className="border-y border-slate-100 bg-slate-50">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-slate-200 px-6 sm:grid-cols-4 sm:px-8 lg:px-12">
           {stats.map((stat) => (
@@ -594,9 +1154,276 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================
+          WHY CHOOSE EDSEC
+      ============================================================ */}
+
+      <section className="relative overflow-hidden bg-slate-950 py-20 text-white sm:py-28">
+        <div className="absolute inset-0">
+          <div className="absolute left-0 top-0 h-100 w-100 rounded-full bg-blue-600/10 blur-3xl" />
+          <div className="absolute bottom-0 right-0 h-100 w-100 rounded-full bg-cyan-500/10 blur-3xl" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-400/10 px-4 py-2 text-sm font-semibold text-blue-300">
+              <Zap className="h-4 w-4" />
+              Why learners choose EDSEC
+            </div>
+
+            <h2 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              More than a classroom.
+              <span className="block text-blue-400">
+                We build technology careers.
+              </span>
+            </h2>
+
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-400">
+              EDSEC combines structured instruction, practical exercises,
+              projects, assessments, online learning, student support, and
+              certificates to create a complete learning experience.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {whyChooseEdsec.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={item.number}
+                  className="edsec-why-card group rounded-3xl border border-white/10 bg-white/5 p-7 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-blue-400/30 hover:bg-white/8"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-blue-400">
+                      {item.number}
+                    </span>
+
+                    <div className="edsec-why-icon flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                  </div>
+
+                  <h3 className="mt-10 text-xl font-bold">
+                    {item.title}
+                  </h3>
+
+                  <p className="mt-3 leading-7 text-slate-400">
+                    {item.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
+          CERTIFICATES
+      ============================================================ */}
+
+      <section className="bg-white py-20 sm:py-28">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+          <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+                <Award className="h-4 w-4" />
+                Earn your certificate
+              </div>
+
+              <h2 className="mt-5 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
+                Learn the skill.
+                <span className="block text-blue-600">
+                  Complete the journey.
+                </span>
+              </h2>
+
+              <p className="mt-6 text-lg leading-8 text-slate-600">
+                At EDSEC, successful learners receive an{" "}
+                <strong>EDSEC Certificate of Completion</strong> after
+                completing the requirements of their training program.
+              </p>
+
+              <div className="mt-8 space-y-4">
+                {[
+                  "Complete your selected training program",
+                  "Participate in practical learning and projects",
+                  "Complete required assessments",
+                  "Receive your EDSEC Certificate of Completion",
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+                    <span className="text-slate-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/certification"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-6 py-3.5 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-700"
+                >
+                  Learn About Certification
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+
+                <Link
+                  href="/apply"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-6 py-3.5 font-semibold text-slate-900 transition hover:border-blue-200 hover:bg-blue-50"
+                >
+                  Start Learning
+                </Link>
+              </div>
+            </div>
+
+            {/* 3D CERTIFICATE ANIMATION */}
+            <div className="edsec-certificate-scene">
+              <div className="absolute left-6 top-6 z-20">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold text-white backdrop-blur-md">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
+                  Achievement unlocked
+                </div>
+              </div>
+
+              <div className="absolute right-6 top-6 z-20 text-right">
+                <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+                  EDSEC
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  Learn • Build • Grow
+                </p>
+              </div>
+
+              <div className="edsec-certificate-world">
+                <div className="edsec-floor" />
+
+                {/* Certificate 1 */}
+                <div className="edsec-certificate-card edsec-certificate-one">
+                  <div className="edsec-certificate-title">
+                    CERTIFICATE OF COMPLETION
+                  </div>
+
+                  <div className="edsec-certificate-main">
+                    FULL-STACK
+                  </div>
+
+                  <div className="edsec-certificate-sub">
+                    WEB DEVELOPMENT
+                  </div>
+
+                  <div className="edsec-certificate-seal">
+                    ✓
+                  </div>
+                </div>
+
+                {/* Certificate 2 */}
+                <div className="edsec-certificate-card edsec-certificate-two">
+                  <div className="edsec-certificate-title">
+                    CERTIFICATE OF COMPLETION
+                  </div>
+
+                  <div className="edsec-certificate-main">
+                    CYBERSECURITY
+                  </div>
+
+                  <div className="edsec-certificate-sub">
+                    EDSEC ICT INSTITUTE
+                  </div>
+
+                  <div className="edsec-certificate-seal">
+                    ✓
+                  </div>
+                </div>
+
+                {/* Certificate 3 */}
+                <div className="edsec-certificate-card edsec-certificate-three">
+                  <div className="edsec-certificate-title">
+                    CERTIFICATE OF COMPLETION
+                  </div>
+
+                  <div className="edsec-certificate-main">
+                    DIGITAL SKILLS
+                  </div>
+
+                  <div className="edsec-certificate-sub">
+                    EDSEC ICT INSTITUTE
+                  </div>
+
+                  <div className="edsec-certificate-seal">
+                    ✓
+                  </div>
+                </div>
+
+                {/* Animated Student */}
+                <div className="edsec-student">
+                  <div className="edsec-student-head">
+                    <div className="edsec-student-hair" />
+                  </div>
+
+                  <div className="edsec-student-body" />
+
+                  <div className="edsec-student-arm left">
+                    <div className="edsec-student-hand" />
+                  </div>
+
+                  <div className="edsec-student-arm right">
+                    <div className="edsec-student-hand" />
+                  </div>
+
+                  <div className="edsec-student-leg left">
+                    <div className="edsec-student-shoe" />
+                  </div>
+
+                  <div className="edsec-student-leg right">
+                    <div className="edsec-student-shoe" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="edsec-floating-badge absolute bottom-8 left-7 z-20 rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/20 text-blue-300">
+                    <FileBadge2 className="h-5 w-5" />
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-slate-400">
+                      Achievement
+                    </p>
+
+                    <p className="text-sm font-bold text-white">
+                      Certificate earned
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="edsec-floating-badge delay absolute bottom-8 right-7 z-20 rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/15 text-green-300">
+                    <CheckCircle2 className="h-5 w-5" />
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-slate-400">
+                      Status
+                    </p>
+
+                    <p className="text-sm font-bold text-white">
+                      Completed
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
           ABOUT
       ============================================================ */}
-      <section className="bg-white py-20 sm:py-28">
+
+      <section className="bg-slate-50 py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
           <div className="grid gap-12 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
             <div>
@@ -610,8 +1437,9 @@ export default function HomePage() {
 
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
                 We combine structured learning, practical exercises,
-                technology projects, assessments, and supportive mentorship
-                to help learners develop skills they can actually use.
+                technology projects, assessments, supportive mentorship, and
+                digital learning tools to help learners develop skills they
+                can actually use.
               </p>
 
               <Link
@@ -670,7 +1498,8 @@ export default function HomePage() {
       {/* ============================================================
           FEATURED PROGRAMS
       ============================================================ */}
-      <section className="bg-slate-50 py-20 sm:py-28">
+
+      <section className="bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
           <div className="mb-12 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <div>
@@ -681,6 +1510,11 @@ export default function HomePage() {
               <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
                 Build skills that matter.
               </h2>
+
+              <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
+                Explore some of our most popular technology and digital-skills
+                programs.
+              </p>
             </div>
 
             <Link
@@ -739,9 +1573,10 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================
-          ALL PROGRAMS — 10 COURSES WITH PICTURES
+          ALL PROGRAMS
       ============================================================ */}
-      <section className="bg-white py-20 sm:py-28">
+
+      <section className="bg-slate-50 py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
@@ -801,6 +1636,7 @@ export default function HomePage() {
       {/* ============================================================
           HOW WE TEACH
       ============================================================ */}
+
       <section className="bg-slate-950 py-20 text-white sm:py-28">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
           <div className="max-w-2xl">
@@ -852,6 +1688,7 @@ export default function HomePage() {
       {/* ============================================================
           SERVICES
       ============================================================ */}
+
       <section className="bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
           <div className="mb-12">
@@ -906,6 +1743,7 @@ export default function HomePage() {
       {/* ============================================================
           STUDENT PORTAL
       ============================================================ */}
+
       <section className="bg-slate-50 py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
           <div className="overflow-hidden rounded-4xl bg-slate-950 p-7 text-white sm:p-10 lg:p-12">
@@ -979,6 +1817,7 @@ export default function HomePage() {
       {/* ============================================================
           VIRTUAL CLASS
       ============================================================ */}
+
       <section className="bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
           <div className="grid overflow-hidden rounded-4xl border border-slate-200 bg-white shadow-sm lg:grid-cols-2">
@@ -1015,15 +1854,16 @@ export default function HomePage() {
 
               <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Upcoming Class
+                  Learning Experience
                 </p>
 
                 <div className="mt-2 font-semibold text-slate-950">
-                  Full-Stack Web Development
+                  Flexible digital learning
                 </div>
 
                 <div className="mt-1 text-sm text-slate-500">
-                  Check your student portal for class details.
+                  Check your student portal for available classes and learning
+                  activities.
                 </div>
               </div>
 
@@ -1042,6 +1882,7 @@ export default function HomePage() {
       {/* ============================================================
           COMMUNITY
       ============================================================ */}
+
       <section className="bg-slate-50 py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
           <div className="mb-12 max-w-2xl">
@@ -1052,6 +1893,11 @@ export default function HomePage() {
             <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
               Learn. Create. Connect.
             </h2>
+
+            <p className="mt-5 text-lg leading-8 text-slate-600">
+              Become part of a growing learning community focused on
+              technology, creativity, collaboration, and growth.
+            </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
@@ -1102,6 +1948,7 @@ export default function HomePage() {
       {/* ============================================================
           CORPORATE TRAINING
       ============================================================ */}
+
       <section className="bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
           <div className="grid overflow-hidden rounded-4xl bg-slate-950 text-white lg:grid-cols-2">
@@ -1159,37 +2006,45 @@ export default function HomePage() {
       {/* ============================================================
           FINAL CTA
       ============================================================ */}
+
       <section className="relative overflow-hidden bg-slate-950 py-24 text-white sm:py-32">
         <div className="absolute inset-0">
           <div className="absolute left-1/2 top-1/2 h-125 w-125 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/20 blur-3xl" />
+
+          <div className="absolute left-10 top-10 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl" />
+
+          <div className="absolute bottom-10 right-10 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl" />
         </div>
 
         <div className="relative mx-auto max-w-4xl px-6 text-center sm:px-8">
-          <img
-            src="/edsec-logo.png"
-            alt="EDSEC ICT Institute"
-            className="mx-auto h-14 w-auto object-contain"
-          />
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-blue-300">
+            <GraduationCap className="h-8 w-8" />
+          </div>
 
           <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-blue-400">
             Start Your ICT Journey
           </p>
 
           <h2 className="mt-4 text-4xl font-bold tracking-tight sm:text-6xl">
-            Your next skill can change your future.
+            Learn today.
+            <span className="block text-blue-400">
+              Build your future tomorrow.
+            </span>
           </h2>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-400">
-            Start learning practical technology skills and take the next
-            step toward your goals.
+            Join EDSEC, develop practical technology skills, build real
+            projects, complete your training, and earn your EDSEC Certificate
+            of Completion.
           </p>
 
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href="/apply"
-              className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-3.5 font-semibold text-slate-950 transition hover:bg-blue-50"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:bg-blue-50"
             >
               Apply Now
+              <ArrowUpRight className="h-4 w-4" />
             </Link>
 
             <Link
@@ -1200,11 +2055,28 @@ export default function HomePage() {
             </Link>
 
             <Link
-              href="/login"
-              className="inline-flex items-center justify-center rounded-xl px-7 py-3.5 font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
+              href="/certification"
+              className="inline-flex items-center justify-center rounded-xl border border-blue-400/20 bg-blue-500/10 px-7 py-3.5 font-semibold text-blue-300 transition hover:bg-blue-500/20"
             >
-              Student Login
+              View Certification
             </Link>
+          </div>
+
+          <div className="mx-auto mt-10 flex max-w-xl flex-wrap justify-center gap-x-6 gap-y-3 text-sm text-slate-400">
+            <span className="inline-flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-blue-400" />
+              Practical learning
+            </span>
+
+            <span className="inline-flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-blue-400" />
+              Real projects
+            </span>
+
+            <span className="inline-flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-blue-400" />
+              Certificate of Completion
+            </span>
           </div>
         </div>
       </section>
