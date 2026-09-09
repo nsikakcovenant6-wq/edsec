@@ -130,6 +130,73 @@ export async function rejectApplication(
   }
 }
 
+export async function deleteApplication(
+  applicationId: string
+): Promise<ActionResult> {
+  const admin = await requireRole("ADMIN");
+
+  if (!admin) {
+    return {
+      success: false,
+      message: "Unauthorized.",
+    };
+  }
+
+  if (!applicationId || typeof applicationId !== "string") {
+    return {
+      success: false,
+      message: "Application ID is required.",
+    };
+  }
+
+  try {
+    const application = await prisma.application.findUnique({
+      where: {
+        id: applicationId,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        status: true,
+      },
+    });
+
+    if (!application) {
+      return {
+        success: false,
+        message: "Application not found or it has already been deleted.",
+      };
+    }
+
+    // Deleting an application must never delete the applicant, student
+    // account, profile, enrollment, or any other student records.
+    await prisma.application.delete({
+      where: {
+        id: application.id,
+      },
+    });
+
+    console.log("EDSEC APPLICATION DELETED:", {
+      applicationId: application.id,
+      applicantName: application.fullName,
+      previousStatus: application.status,
+      deletedBy: admin.id,
+    });
+
+    return {
+      success: true,
+      message: "Application deleted successfully.",
+    };
+  } catch (error) {
+    console.error("DELETE APPLICATION ERROR:", error);
+
+    return {
+      success: false,
+      message: "Unable to delete the application. Please try again.",
+    };
+  }
+}
+
 export async function approveAndEnroll(
   applicationId: string
 ): Promise<ActionResult> {
@@ -150,12 +217,6 @@ export async function approveAndEnroll(
   }
 
   try {
-    /*
-     * ---------------------------------------------------------
-     * 1. Get application
-     * ---------------------------------------------------------
-     */
-
     const application = await prisma.application.findUnique({
       where: {
         id: applicationId,
@@ -172,12 +233,6 @@ export async function approveAndEnroll(
         message: "Application not found.",
       };
     }
-
-    /*
-     * ---------------------------------------------------------
-     * 2. Validate application
-     * ---------------------------------------------------------
-     */
 
     if (application.status === "REJECTED") {
       return {
@@ -203,20 +258,7 @@ export async function approveAndEnroll(
     }
 
     const course = application.course;
-
-    /*
-     * ---------------------------------------------------------
-     * 3. Normalize email
-     * ---------------------------------------------------------
-     */
-
     const email = application.email.trim().toLowerCase();
-
-    /*
-     * ---------------------------------------------------------
-     * 4. Check whether the student already exists
-     * ---------------------------------------------------------
-     */
 
     const existingUser = await prisma.user.findUnique({
       where: {
@@ -227,12 +269,6 @@ export async function approveAndEnroll(
       },
     });
 
-    /*
-     * ---------------------------------------------------------
-     * 5. Prevent admin account from becoming student
-     * ---------------------------------------------------------
-     */
-
     if (existingUser && existingUser.role === "ADMIN") {
       return {
         success: false,
@@ -240,12 +276,6 @@ export async function approveAndEnroll(
           "This email already belongs to an administrator and cannot be enrolled as a student.",
       };
     }
-
-    /*
-     * ---------------------------------------------------------
-     * 6. Check existing enrollment
-     * ---------------------------------------------------------
-     */
 
     if (existingUser) {
       const existingEnrollment = await prisma.enrollment.findUnique({
@@ -278,14 +308,7 @@ export async function approveAndEnroll(
       }
     }
 
-    /*
-     * ---------------------------------------------------------
-     * 7. Generate credentials only for a new account
-     * ---------------------------------------------------------
-     */
-
     const isExistingStudent = Boolean(existingUser);
-
     const temporaryPassword = isExistingStudent
       ? undefined
       : generateTemporaryPassword();
@@ -294,45 +317,21 @@ export async function approveAndEnroll(
       ? await bcrypt.hash(temporaryPassword, 12)
       : undefined;
 
-    /*
-     * ---------------------------------------------------------
-     * 8. Student number
-     * ---------------------------------------------------------
-     */
-
     const studentNumber =
       existingUser?.studentProfile?.studentNumber ??
       (await generateStudentNumber());
-
-    /*
-     * ---------------------------------------------------------
-     * 9. Prepare applicant name
-     * ---------------------------------------------------------
-     */
 
     const nameParts = application.fullName
       .trim()
       .split(/\s+/)
       .filter(Boolean);
 
-    const applicationFirstName =
-      nameParts[0] || "EDSEC";
-
+    const applicationFirstName = nameParts[0] || "EDSEC";
     const applicationLastName =
       nameParts.slice(1).join(" ") || "Student";
 
-    /*
-     * ---------------------------------------------------------
-     * 10. Create student + profile + enrollment
-     * ---------------------------------------------------------
-     */
-
     const result = await prisma.$transaction(async (tx) => {
       let studentId: string;
-
-      /*
-       * EXISTING USER
-       */
 
       if (existingUser) {
         const updatedStudent = await tx.user.update({
@@ -340,16 +339,9 @@ export async function approveAndEnroll(
             id: existingUser.id,
           },
           data: {
-            firstName:
-              applicationFirstName || existingUser.firstName,
-
-            lastName:
-              applicationLastName || existingUser.lastName,
-
-            phone:
-              application.phone?.trim() ||
-              existingUser.phone,
-
+            firstName: applicationFirstName || existingUser.firstName,
+            lastName: applicationLastName || existingUser.lastName,
+            phone: application.phone?.trim() || existingUser.phone,
             role: "STUDENT",
             status: "ACTIVE",
           },
@@ -357,32 +349,19 @@ export async function approveAndEnroll(
 
         studentId = updatedStudent.id;
 
-        /*
-         * Create profile if the student doesn't have one.
-         */
-
         if (!existingUser.studentProfile) {
           await tx.studentProfile.create({
             data: {
               userId: studentId,
               studentNumber,
               dateOfBirth: application.dateOfBirth,
-              educationalLevel:
-                application.educationalLevel,
+              educationalLevel: application.educationalLevel,
             },
           });
         }
-      }
-
-      /*
-       * NEW USER
-       */
-
-      else {
+      } else {
         if (!passwordHash) {
-          throw new Error(
-            "Unable to generate the student's password."
-          );
+          throw new Error("Unable to generate the student's password.");
         }
 
         const newStudent = await tx.user.create({
@@ -404,17 +383,10 @@ export async function approveAndEnroll(
             userId: studentId,
             studentNumber,
             dateOfBirth: application.dateOfBirth,
-            educationalLevel:
-              application.educationalLevel,
+            educationalLevel: application.educationalLevel,
           },
         });
       }
-
-      /*
-       * -------------------------------------------------------
-       * Create enrollment
-       * -------------------------------------------------------
-       */
 
       const enrollment = await tx.enrollment.create({
         data: {
@@ -424,12 +396,6 @@ export async function approveAndEnroll(
           progress: 0,
         },
       });
-
-      /*
-       * -------------------------------------------------------
-       * Record student activity
-       * -------------------------------------------------------
-       */
 
       await tx.studentActivity.create({
         data: {
@@ -445,12 +411,6 @@ export async function approveAndEnroll(
           }),
         },
       });
-
-      /*
-       * -------------------------------------------------------
-       * Approve application
-       * -------------------------------------------------------
-       */
 
       await tx.application.update({
         where: {
@@ -468,12 +428,6 @@ export async function approveAndEnroll(
       };
     });
 
-    /*
-     * ---------------------------------------------------------
-     * 11. Log successful enrollment
-     * ---------------------------------------------------------
-     */
-
     console.log("EDSEC APPLICATION APPROVED:", {
       applicationId: application.id,
       studentId: result.studentId,
@@ -481,23 +435,10 @@ export async function approveAndEnroll(
       courseId: course.id,
     });
 
-    /*
-     * ---------------------------------------------------------
-     * 12. Return result
-     * ---------------------------------------------------------
-     */
-
     return {
       success: true,
-      message:
-        "Application approved and student successfully enrolled.",
-
-      /*
-       * Only return a temporary password when a brand-new
-       * student account was created.
-       */
+      message: "Application approved and student successfully enrolled.",
       temporaryPassword,
-
       studentNumber,
     };
   } catch (error) {

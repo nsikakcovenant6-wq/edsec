@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import {
   approveAndEnroll,
+  deleteApplication,
   markApplicationContacted,
   rejectApplication,
 } from "./actions";
@@ -46,9 +47,7 @@ export default function ApplicationActions({
 
   function handleContacted() {
     startTransition(async () => {
-      const response =
-        await markApplicationContacted(applicationId);
-
+      const response = await markApplicationContacted(applicationId);
       setResult(response);
 
       if (response.success) {
@@ -76,68 +75,86 @@ export default function ApplicationActions({
     });
   }
 
-  if (status === "APPROVED") {
-    return (
-      <div className="space-y-2">
-        <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-          Approved & Enrolled
-        </span>
-
-        {result && !result.success && (
-          <p className="text-xs text-red-600">
-            {result.message}
-          </p>
-        )}
-      </div>
+  function handleDelete() {
+    const confirmed = window.confirm(
+      "Delete this application permanently? This cannot be undone. The student's account, profile, enrollment, and other student records will NOT be deleted."
     );
-  }
 
-  if (status === "REJECTED") {
-    return (
-      <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
-        Rejected
-      </span>
-    );
+    if (!confirmed) {
+      return;
+    }
+
+    startTransition(async () => {
+      const response = await deleteApplication(applicationId);
+      setResult(response);
+
+      if (response.success) {
+        window.location.reload();
+      }
+    });
   }
 
   return (
     <div className="flex flex-wrap gap-2">
-      {status !== "CONTACTED" && (
-        <button
-          type="button"
-          disabled={isPending}
-          onClick={handleContacted}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isPending ? "Processing..." : "Mark Contacted"}
-        </button>
+      {status !== "APPROVED" && status !== "REJECTED" && (
+        <>
+          {status !== "CONTACTED" && (
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={handleContacted}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isPending ? "Processing..." : "Mark Contacted"}
+            </button>
+          )}
+
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleApprove}
+            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isPending ? "Processing..." : "Approve & Enroll"}
+          </button>
+
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleReject}
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Reject
+          </button>
+        </>
+      )}
+
+      {status === "APPROVED" && (
+        <span className="inline-flex rounded-full bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+          Approved & Enrolled
+        </span>
+      )}
+
+      {status === "REJECTED" && (
+        <span className="inline-flex rounded-full bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+          Rejected
+        </span>
       )}
 
       <button
         type="button"
         disabled={isPending}
-        onClick={handleApprove}
-        className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        onClick={handleDelete}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-white px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isPending ? "Processing..." : "Approve & Enroll"}
-      </button>
-
-      <button
-        type="button"
-        disabled={isPending}
-        onClick={handleReject}
-        className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Reject
+        {isPending ? "Deleting..." : "Delete"}
       </button>
 
       {result && (
         <div className="w-full">
           <p
             className={`text-xs ${
-              result.success
-                ? "text-emerald-600"
-                : "text-red-600"
+              result.success ? "text-emerald-600" : "text-red-600"
             }`}
           >
             {result.message}
@@ -145,9 +162,7 @@ export default function ApplicationActions({
 
           {result.success && result.studentNumber && (
             <div className="mt-2 rounded-lg bg-slate-50 p-3 text-xs">
-              <p className="font-semibold text-slate-900">
-                Student Number
-              </p>
+              <p className="font-semibold text-slate-900">Student Number</p>
 
               <p className="mt-1 font-mono text-slate-600">
                 {result.studentNumber}
@@ -166,8 +181,8 @@ export default function ApplicationActions({
               </p>
 
               <p className="mt-2 text-amber-700">
-                Give this password to the student securely.
-                They should change it after signing in.
+                Give this password to the student securely. They should change
+                it after signing in.
               </p>
             </div>
           )}
