@@ -1,18 +1,15 @@
 import Image from "next/image";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   ArrowLeft,
   ArrowRight,
-  ArrowRight,
   ArrowUpRight,
   Award,
   BarChart3,
   BriefcaseBusiness,
   Check,
-  ChevronDown,
   ChevronDown,
   Cloud,
   Code2,
@@ -2054,7 +2051,6 @@ export default async function CoursePage({
               </div>
             </section>
 
-            {/* CERTIFICATE OF COMPLETION */}
             <section className="relative mt-16 overflow-hidden rounded-[2.5rem] bg-slate-950 px-6 py-14 text-white sm:px-10 sm:py-16 lg:px-12">
               <div className="absolute -left-32 -top-32 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl" />
               <div className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-blue-600/10 blur-3xl" />
@@ -2191,10 +2187,12 @@ export default async function CoursePage({
 
                             <div className="edsec-certificate-badge relative grid h-14 w-14 place-items-center rounded-full border-[3px] border-amber-600 bg-linear-to-br from-yellow-100 to-amber-300 shadow-lg sm:h-20 sm:w-20">
                               <div className="absolute inset-1 rounded-full border border-amber-700/50" />
+
                               <Award
                                 size={23}
                                 className="text-amber-700 sm:h-8 sm:w-8"
                               />
+
                               <span className="absolute bottom-1 text-[5px] font-black uppercase tracking-wider text-amber-800 sm:text-[6px]">
                                 EDSEC
                               </span>
@@ -2202,6 +2200,7 @@ export default async function CoursePage({
 
                             <div className="text-right">
                               <div className="mb-1 ml-auto h-px w-20 bg-slate-500/50 sm:w-28" />
+
                               <p className="text-[6px] font-bold uppercase tracking-wider text-slate-500 sm:text-[8px]">
                                 Date Issued
                               </p>
@@ -2209,7 +2208,8 @@ export default async function CoursePage({
                           </div>
 
                           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap text-[5px] font-bold uppercase tracking-[0.2em] text-slate-400 sm:bottom-3 sm:text-[7px]">
-                            Certificate ID: EDSEC-{course.slug.slice(0, 8).toUpperCase()}-XXXX
+                            Certificate ID: EDSEC-
+                            {course.slug.slice(0, 8).toUpperCase()}-XXXX
                           </div>
                         </div>
                       </div>
@@ -2261,10 +2261,7 @@ export default async function CoursePage({
                 <div className="mt-6 h-px bg-white/20" />
 
                 <div className="mt-6 space-y-5">
-                  <OverviewItem
-                    label="Duration"
-                    value={displayDuration}
-                  />
+                  <OverviewItem label="Duration" value={displayDuration} />
                   <OverviewItem label="Level" value={visual.level} />
                   <OverviewItem label="Format" value={displayFormat} />
                   <OverviewItem
@@ -2307,214 +2304,126 @@ export default async function CoursePage({
 
                 <div className="mt-6 rounded-2xl bg-slate-50 p-4">
                   <div className="flex items-start gap-3">
-                    <Lightbulb
-                      size={19}
-                      className="mt-0.5 shrink-0 text-cyan-600"
-                    />
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cyan-100 text-cyan-700">
+                      <Lightbulb size={19} />
+                    </div>
 
-                    <p className="text-xs leading-5 text-slate-600">
-                      Not sure if this is the right program? Contact EDSEC and
-                      get guidance before you apply.
-                    </p>
+                    <div>
+                      <p className="text-sm font-black text-slate-900">
+                        Learn by doing
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Your training combines instruction, practice,
+                        projects and feedback.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            {relatedCourses.length > 0 && (
+              <div className="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/40">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-600">
+                  Explore more
+                </p>
+
+                <h3 className="mt-2 text-xl font-black text-slate-950">
+                  Related courses
+                </h3>
+
+                <div className="mt-5 space-y-4">
+                  {relatedCourses.map((relatedCourse) => {
+                    const relatedImage =
+                      relatedCourse.imageUrl || FALLBACK_IMAGE;
+
+                    return (
+                      <Link
+                        key={relatedCourse.id}
+                        href={`/courses/${relatedCourse.slug}`}
+                        className="group flex gap-4 rounded-2xl border border-slate-100 p-3 transition hover:border-cyan-200 hover:bg-cyan-50/40"
+                      >
+                        <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                          <Image
+                            src={relatedImage}
+                            alt={relatedCourse.title}
+                            fill
+                            sizes="96px"
+                            unoptimized={isExternalImage(relatedImage)}
+                            className="object-cover transition duration-500 group-hover:scale-105"
+                          />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="line-clamp-2 text-sm font-black leading-5 text-slate-900">
+                            {relatedCourse.title}
+                          </p>
+
+                          <p className="mt-1 text-xs text-slate-500">
+                            {relatedCourse.duration || "Flexible"}
+                          </p>
+
+                          <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-cyan-600">
+                            View course
+                            <ArrowRight
+                              size={13}
+                              className="transition-transform group-hover:translate-x-1"
+                            />
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                <Link
+                  href="/courses"
+                  className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-700"
+                >
+                  View all courses
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+            )}
           </aside>
         </div>
       </section>
 
-      <section className="bg-slate-950 px-5 py-20 text-white sm:py-24 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
-            <div>
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-400">
-                Why learn at EDSEC?
-              </p>
+      <section className="relative overflow-hidden bg-slate-50 px-5 py-20 sm:py-24 lg:px-8">
+        <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-cyan-100/60 blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-blue-100/60 blur-3xl" />
 
-              <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-5xl">
-                Training designed around your growth.
-              </h2>
-
-              <p className="mt-5 text-base leading-8 text-slate-400 sm:text-lg">
-                EDSEC combines structured teaching, practical exercises,
-                project work and career-focused development to help students
-                become confident technology users and professionals.
-              </p>
-
-              <Link
-                href={`/apply?course=${encodeURIComponent(course.slug)}`}
-                className="mt-8 inline-flex items-center gap-2 rounded-xl bg-cyan-500 px-6 py-4 font-bold text-slate-950 transition hover:bg-cyan-400"
-              >
-                Start your application
-                <ArrowUpRight size={18} />
-              </Link>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <WhyCard
-                number="01"
-                icon={<Laptop size={22} />}
-                title="Hands-On Learning"
-                description="Spend time practising skills instead of only listening to theory."
-              />
-
-              <WhyCard
-                number="02"
-                icon={<Rocket size={22} />}
-                title="Real Projects"
-                description="Build useful work that helps you understand what you are learning."
-              />
-
-              <WhyCard
-                number="03"
-                icon={<TrendingUp size={22} />}
-                title="Career Focus"
-                description="Connect technical learning to employment, freelance and business opportunities."
-              />
-
-              <WhyCard
-                number="04"
-                icon={<Users size={22} />}
-                title="Learning Community"
-                description="Learn alongside other students and develop confidence through collaboration."
-              />
-
-              <WhyCard
-                number="05"
-                icon={<Target size={22} />}
-                title="Structured Growth"
-                description="Progress from foundational concepts toward more challenging practical work."
-              />
-
-              <WhyCard
-                number="06"
-                icon={<Sparkles size={22} />}
-                title="Modern Skills"
-                description="Develop digital skills relevant to today's technology-driven economy."
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {relatedCourses.length > 0 && (
-        <section className="px-5 py-20 sm:py-24 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        <div className="relative mx-auto max-w-6xl">
+          <div className="overflow-hidden rounded-[2.5rem] bg-slate-950 p-8 text-white shadow-2xl sm:p-12 lg:p-14">
+            <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>
-                <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-600">
-                  Continue learning
+                <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-400">
+                  Ready to start?
                 </p>
 
-                <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-                  Other programs you may like.
+                <h2 className="mt-3 max-w-3xl text-3xl font-black tracking-tight sm:text-4xl">
+                  Build skills that can change what you can do.
                 </h2>
+
+                <p className="mt-4 max-w-2xl leading-7 text-slate-400">
+                  Take the next step and apply for{" "}
+                  <span className="font-bold text-white">
+                    {course.title}
+                  </span>
+                  .
+                </p>
               </div>
 
               <Link
-                href="/courses"
-                className="group inline-flex items-center gap-2 font-bold text-cyan-600 transition hover:text-cyan-700"
-              >
-                View all courses
-                <ArrowRight
-                  size={18}
-                  className="transition-transform group-hover:translate-x-1"
-                />
-              </Link>
-            </div>
-
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {relatedCourses.map((relatedCourse) => {
-                const relatedImage =
-                  relatedCourse.imageUrl || FALLBACK_IMAGE;
-
-                return (
-                  <Link
-                    key={relatedCourse.id}
-                    href={`/courses/${relatedCourse.slug}`}
-                    className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-cyan-200 hover:shadow-xl"
-                  >
-                    <div className="relative aspect-16/10 overflow-hidden bg-slate-100">
-                      <Image
-                        src={relatedImage}
-                        alt={relatedCourse.title}
-                        fill
-                        loading="lazy"
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        unoptimized={isExternalImage(relatedImage)}
-                        className="object-cover transition duration-700 group-hover:scale-110"
-                      />
-
-                      <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 to-transparent" />
-                    </div>
-
-                    <div className="p-6">
-                      <h3 className="text-xl font-black text-slate-950 transition group-hover:text-cyan-600">
-                        {relatedCourse.title}
-                      </h3>
-
-                      <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">
-                        {relatedCourse.shortDescription}
-                      </p>
-
-                      <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-5">
-                        <span className="text-sm font-bold text-slate-500">
-                          {relatedCourse.duration || "Flexible"}
-                        </span>
-
-                        <span className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-slate-700 transition group-hover:bg-cyan-500 group-hover:text-white">
-                          <ArrowUpRight size={17} />
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <section className="px-5 pb-20 pt-4 sm:pb-24 lg:px-8">
-        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2.5rem] bg-slate-950 px-7 py-16 text-center text-white sm:px-12 sm:py-20">
-          <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
-          <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-blue-600/10 blur-3xl" />
-
-          <div className="relative mx-auto max-w-3xl">
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-cyan-500 text-slate-950 shadow-xl shadow-cyan-950/30">
-              <GraduationCap size={30} />
-            </div>
-
-            <p className="mt-7 text-sm font-black uppercase tracking-[0.2em] text-cyan-400">
-              Your next step starts here
-            </p>
-
-            <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-5xl">
-              Ready to become better at {course.title}?
-            </h2>
-
-            <p className="mx-auto mt-5 max-w-2xl leading-7 text-slate-300">
-              Stop waiting for the perfect time. Start learning, practise your
-              skills, build real projects and take the next step toward your
-              goals with EDSEC.
-            </p>
-
-            <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link
                 href={`/apply?course=${encodeURIComponent(course.slug)}`}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-500 px-7 py-4 font-bold text-slate-950 transition hover:bg-cyan-400"
+                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-500 px-7 py-4 font-black text-slate-950 transition hover:-translate-y-1 hover:bg-cyan-400"
               >
-                Apply for {course.title}
-                <ArrowUpRight size={18} />
-              </Link>
-
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-7 py-4 font-bold text-white transition hover:bg-white/10"
-              >
-                Talk to EDSEC
-                <MessageCircle size={18} />
+                Apply for this course
+                <ArrowUpRight
+                  size={18}
+                  className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                />
               </Link>
             </div>
           </div>
@@ -2533,11 +2442,11 @@ function CourseBadge({
 }) {
   return (
     <span
-      className={
+      className={`rounded-full border px-4 py-2 text-xs font-bold backdrop-blur-md ${
         cyan
-          ? "rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-cyan-300 backdrop-blur-md"
-          : "rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md"
-      }
+          ? "border-cyan-400/20 bg-cyan-400/10 text-cyan-300"
+          : "border-white/10 bg-white/5 text-slate-300"
+      }`}
     >
       {children}
     </span>
@@ -2563,9 +2472,7 @@ function SectionIntro({
         {title}
       </h2>
 
-      <p className="mt-5 text-base leading-8 text-slate-600 sm:text-lg">
-        {text}
-      </p>
+      <p className="mt-4 text-base leading-8 text-slate-600">{text}</p>
     </div>
   );
 }
@@ -2589,7 +2496,7 @@ function SectionHeading({
         {title}
       </h2>
 
-      <p className="mt-3 leading-7 text-slate-600">{text}</p>
+      <p className="mt-4 text-base leading-7 text-slate-600">{text}</p>
     </div>
   );
 }
@@ -2604,16 +2511,24 @@ function InfoCard({
   items: string[];
 }) {
   return (
-    <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-7">
-      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-cyan-600 shadow-sm">
+    <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-cyan-50 text-cyan-600">
         {icon}
       </div>
 
-      <h3 className="mt-6 text-xl font-black text-slate-950">{title}</h3>
+      <h3 className="mt-5 text-xl font-black text-slate-950">{title}</h3>
 
       <div className="mt-5 space-y-3">
         {items.map((item) => (
-          <CheckItem key={item} text={item} />
+          <div key={item} className="flex items-start gap-3">
+            <Check
+              size={17}
+              className="mt-0.5 shrink-0 text-cyan-600"
+              strokeWidth={3}
+            />
+
+            <p className="text-sm leading-6 text-slate-600">{item}</p>
+          </div>
         ))}
       </div>
     </div>
@@ -2622,12 +2537,12 @@ function InfoCard({
 
 function CheckItem({ text }: { text: string }) {
   return (
-    <div className="flex items-start gap-3">
-      <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-cyan-100 text-cyan-700">
-        <Check size={14} strokeWidth={3} />
+    <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-cyan-50 text-cyan-600">
+        <Check size={15} strokeWidth={3} />
       </span>
 
-      <span className="text-sm font-semibold leading-6 text-slate-700">
+      <span className="pt-0.5 text-sm font-semibold leading-6 text-slate-700">
         {text}
       </span>
     </div>
@@ -2642,23 +2557,23 @@ function ProjectCard({
   title: string;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-cyan-200 hover:shadow-xl">
+    <div className="group rounded-3xl border border-slate-200 bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-cyan-200 hover:shadow-xl">
       <div className="flex items-center justify-between">
-        <div className="grid h-11 w-11 place-items-center rounded-xl bg-slate-950 text-sm font-black text-white">
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-slate-950 text-xs font-black text-white">
           {number}
-        </div>
+        </span>
 
         <ArrowUpRight
           size={20}
-          className="text-slate-300 transition group-hover:text-cyan-600"
+          className="text-slate-300 transition group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-cyan-600"
         />
       </div>
 
       <h3 className="mt-7 text-lg font-black text-slate-950">{title}</h3>
 
       <p className="mt-2 text-sm leading-6 text-slate-500">
-        A practical project designed to turn course knowledge into something
-        you can demonstrate.
+        A practical project designed to turn your learning into something
+        tangible.
       </p>
     </div>
   );
@@ -2672,17 +2587,17 @@ function ExperienceCard({
   title: string;
 }) {
   return (
-    <div className="flex gap-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-cyan-50 text-sm font-black text-cyan-700">
+    <div className="flex gap-4 rounded-3xl border border-slate-200 bg-white p-6">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cyan-50 text-xs font-black text-cyan-700">
         {String(number).padStart(2, "0")}
-      </div>
+      </span>
 
       <div>
-        <h3 className="font-black text-slate-950">{title}</h3>
+        <h3 className="text-base font-black text-slate-950">{title}</h3>
 
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          Learn through guided practice, feedback and application rather than
-          relying on theory alone.
+        <p className="mt-2 text-sm leading-6 text-slate-500">
+          Guided practical learning designed to help you understand and apply
+          the skill.
         </p>
       </div>
     </div>
@@ -2699,17 +2614,17 @@ function JourneyCard({
   description: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
-      <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full bg-cyan-50" />
+    <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-7 transition duration-300 hover:-translate-y-1 hover:border-cyan-200 hover:shadow-xl">
+      <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-cyan-50 blur-2xl" />
 
       <div className="relative">
-        <span className="inline-flex rounded-full bg-slate-950 px-3 py-1.5 text-xs font-black text-white">
+        <span className="inline-flex rounded-full bg-slate-950 px-3 py-1 text-xs font-black text-white">
           STAGE {stage}
         </span>
 
-        <h3 className="mt-6 text-xl font-black text-slate-950">{title}</h3>
+        <h3 className="mt-5 text-xl font-black text-slate-950">{title}</h3>
 
-        <p className="mt-3 text-sm leading-7 text-slate-600">
+        <p className="mt-2 text-sm leading-7 text-slate-600">
           {description}
         </p>
       </div>
@@ -2725,8 +2640,8 @@ function FaqItem({
   answer: string;
 }) {
   return (
-    <details className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-cyan-200">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-5 font-bold text-slate-900">
+    <details className="group rounded-2xl border border-slate-200 bg-white p-5">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-5 text-sm font-black text-slate-950">
         <span>{question}</span>
 
         <ChevronDown
