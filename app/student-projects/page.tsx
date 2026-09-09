@@ -1,299 +1,336 @@
-/* eslint-disable @next/next/no-img-element */
+// app/student-projects/page.tsx
+
+import Image from "next/image";
 import Link from "next/link";
+import {
+  ArrowUpRight,
+  Code2,
+  ExternalLink,
+  GitBranch,
+  Layers3,
+  Sparkles,
+} from "lucide-react";
+import { prisma } from "@/app/lib/prisma";
 
-const projects = [
-  {
-    title: "EDSEC Learning Platform",
-    category: "Full-Stack Development",
-    description:
-      "A modern learning platform with course management, student accounts, applications, and an administrative system.",
-    tech: ["Next.js", "TypeScript", "PostgreSQL"],
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1400&q=80",
-  },
-  {
-    title: "Secure Network Monitor",
-    category: "Cybersecurity",
-    description:
-      "A practical cybersecurity project focused on monitoring network activity and identifying suspicious behaviour.",
-    tech: ["Networking", "Security", "Linux"],
-    image:
-      "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1400&q=80",
-  },
-  {
-    title: "Student Finance Dashboard",
-    category: "Data Analysis",
-    description:
-      "An interactive dashboard designed to turn financial information into useful visual insights.",
-    tech: ["Python", "SQL", "Data"],
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1400&q=80",
-  },
-  {
-    title: "Modern Brand Experience",
-    category: "UI/UX Design",
-    description:
-      "A complete digital interface created around user experience, accessibility, visual hierarchy, and responsive design.",
-    tech: ["Figma", "UI/UX", "Prototyping"],
-    image:
-      "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=1400&q=80",
-  },
-  {
-    title: "Small Business Network",
-    category: "IT Support & Networking",
-    description:
-      "A practical network design showing how computers, routers, switches, and shared resources can work together.",
-    tech: ["Networking", "Windows", "Hardware"],
-    image:
-      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80",
-  },
-  {
-    title: "Digital Campaign System",
-    category: "Digital Marketing",
-    description:
-      "A digital marketing project covering campaign planning, audience targeting, content strategy, and performance tracking.",
-    tech: ["Marketing", "Analytics", "Content"],
-    image:
-      "https://images.unsplash.com/photo-1557838923-2985c318be48?auto=format&fit=crop&w=1400&q=80",
-  },
-];
+function isExternalImage(url: string) {
+  return /^https?:\/\//i.test(url);
+}
 
-export default function StudentProjectsPage() {
+function getTechnologies(value: string | null) {
+  if (!value) return [];
+
+  return value
+    .split(/[,|\n]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Student Projects | EDSEC ICT INSTITUTE",
+  description:
+    "Explore practical projects built by EDSEC ICT INSTITUTE students.",
+};
+
+export default async function StudentProjectsPage() {
+  const [projects, activeCourses] = await Promise.all([
+    prisma.studentProject.findMany({
+      where: {
+        isPublished: true,
+      },
+      orderBy: [
+        {
+          isFeatured: "desc",
+        },
+        {
+          displayOrder: "asc",
+        },
+        {
+          createdAt: "desc",
+        },
+      ],
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        imageUrl: true,
+        studentName: true,
+        courseName: true,
+        technologies: true,
+        liveDemoUrl: true,
+        githubUrl: true,
+        isFeatured: true,
+      },
+    }),
+    prisma.course.count({
+      where: {
+        status: "ACTIVE",
+      },
+    }),
+  ]);
+
   return (
     <main className="min-h-screen bg-white">
-      {/* HERO */}
-      <section className="relative overflow-hidden border-b border-slate-200 bg-slate-950">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_30%,rgba(37,99,235,0.22),transparent_30%),radial-gradient(circle_at_85%_70%,rgba(14,165,233,0.15),transparent_30%)]" />
+      <section className="relative overflow-hidden bg-slate-950">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl" />
+          <div className="absolute -bottom-40 left-1/4 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
 
-        <div className="relative mx-auto max-w-7xl px-5 py-24 lg:px-8 lg:py-32">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-400/10 px-4 py-2 text-sm font-medium text-blue-300">
-              <span className="h-2 w-2 rounded-full bg-blue-400" />
-              Student Projects
+          <div className="absolute right-[12%] top-1/2 hidden h-64 w-64 -translate-y-1/2 rotate-12 rounded-[3rem] border border-blue-400/10 bg-blue-500/5 lg:block" />
+
+          <div className="absolute right-[18%] top-1/2 hidden h-44 w-44 -translate-y-1/2 rotate-45 rounded-3xl border border-white/10 bg-white/[0.02] lg:block" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
+          <div className="max-w-4xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300">
+              <Sparkles className="h-4 w-4" />
+              Student Showcase
             </div>
 
-            <h1 className="mt-7 text-5xl font-bold tracking-[-0.04em] text-white sm:text-6xl">
-              Learning becomes
+            <h1 className="mt-7 text-5xl font-bold tracking-tighter text-white sm:text-6xl lg:text-7xl">
+              Students learn by
               <span className="block text-blue-400">
-                real when you build.
+                building real things.
               </span>
             </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-400">
-              Explore practical projects created through EDSEC training.
-              Students learn by solving problems, building useful products,
-              and turning their knowledge into real-world experience.
+            <p className="mt-7 max-w-3xl text-lg leading-8 text-slate-400 sm:text-xl">
+              Explore practical projects created by EDSEC learners as they
+              turn technology concepts into websites, applications, designs,
+              data solutions, and other digital products.
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/courses"
-                className="rounded-xl bg-blue-600 px-6 py-3.5 text-center font-semibold text-white transition hover:bg-blue-500"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-500"
               >
-                Explore Courses
+                Explore courses
+                <ArrowUpRight className="h-4 w-4" />
               </Link>
 
               <Link
                 href="/apply"
-                className="rounded-xl border border-slate-700 px-6 py-3.5 text-center font-semibold text-white transition hover:bg-white/5"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-700 px-6 py-3.5 font-semibold text-white transition hover:bg-white/5"
               >
-                Start Learning
+                Start learning
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* INTRO */}
-      <section className="bg-white py-20">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-                Build your portfolio
-              </p>
+      <section className="border-b border-slate-200 bg-slate-50">
+        <div className="mx-auto grid max-w-7xl gap-px px-5 sm:grid-cols-3 lg:px-8">
+          <div className="bg-slate-50 py-8 sm:px-6">
+            <p className="text-3xl font-bold text-slate-950">
+              {projects.length}
+            </p>
+            <p className="mt-1 text-sm text-slate-500">
+              Published student projects
+            </p>
+          </div>
 
-              <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
-                From classroom knowledge to practical work.
-              </h2>
-            </div>
+          <div className="bg-slate-50 py-8 sm:px-6">
+            <p className="text-3xl font-bold text-slate-950">
+              {activeCourses}
+            </p>
+            <p className="mt-1 text-sm text-slate-500">
+              Active learning programs
+            </p>
+          </div>
 
-            <p className="max-w-2xl text-lg leading-8 text-slate-600">
-              Every project is an opportunity to practise what you have
-              learned, solve a real problem, collaborate with others, and
-              create something you can confidently show to the world.
+          <div className="bg-slate-50 py-8 sm:px-6">
+            <p className="text-3xl font-bold text-slate-950">01</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Principle: learn, practice, build
             </p>
           </div>
         </div>
       </section>
 
-      {/* PROJECTS */}
-      <section className="bg-slate-50 py-20">
+      <section className="py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="mb-12 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-                Project showcase
-              </p>
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+              The work
+            </p>
 
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-                What students can build
-              </h2>
-            </div>
+            <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
+              Built during the learning journey.
+            </h2>
 
-            <p className="max-w-md text-sm leading-6 text-slate-500">
-              Projects span development, cybersecurity, design, data,
-              networking, and digital business.
+            <p className="mt-5 text-lg leading-8 text-slate-600">
+              These projects represent the practical side of technology
+              education at EDSEC.
             </p>
           </div>
 
-          {/* PROJECT GRID */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => (
-              <article
-                key={project.title}
-                className="group overflow-hidden rounded-3xl border border-slate-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-100/40"
+          {projects.length === 0 ? (
+            <div className="mt-12 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-blue-100 text-blue-600">
+                <Layers3 className="h-6 w-6" />
+              </div>
+
+              <h3 className="mt-5 text-xl font-semibold text-slate-950">
+                Projects are being prepared.
+              </h3>
+
+              <p className="mx-auto mt-2 max-w-lg leading-7 text-slate-600">
+                Student projects will appear here as they are published by
+                EDSEC.
+              </p>
+
+              <Link
+                href="/courses"
+                className="mt-7 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
               >
-                {/* PROJECT IMAGE */}
-                <div className="relative h-56 overflow-hidden bg-slate-200">
-                  <img
-                    src={project.image}
-                    alt={project.title}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-110"
-                  />
+                Explore courses
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-12 grid gap-7 md:grid-cols-2 lg:grid-cols-3">
+              {projects.map((project) => {
+                const technologies = getTechnologies(project.technologies);
+                const image = project.imageUrl;
 
-                  {/* IMAGE OVERLAY */}
-                  <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-950/10 to-transparent" />
+                return (
+                  <article
+                    key={project.id}
+                    className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-2xl hover:shadow-slate-200/60"
+                  >
+                    <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
+                      {image ? (
+                        <Image
+                          src={image}
+                          alt={project.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                          unoptimized={isExternalImage(image)}
+                          className="object-cover transition duration-700 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900">
+                          <Code2 className="h-14 w-14 text-blue-400/70" />
+                        </div>
+                      )}
 
-                  {/* CATEGORY */}
-                  <div className="absolute bottom-5 left-5">
-                    <span className="rounded-full border border-white/20 bg-slate-950/60 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
-                      {project.category}
-                    </span>
-                  </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
 
-                  {/* EXPLORE */}
-                  <div className="absolute right-5 top-5 translate-y-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white opacity-0 backdrop-blur-md transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                    Explore
-                  </div>
-                </div>
+                      {project.isFeatured && (
+                        <div className="absolute left-4 top-4 rounded-full border border-white/10 bg-slate-950/80 px-3 py-1.5 text-xs font-semibold text-blue-300 backdrop-blur">
+                          Featured project
+                        </div>
+                      )}
+                    </div>
 
-                {/* CONTENT */}
-                <div className="p-7">
-                  <h3 className="text-xl font-semibold text-slate-950">
-                    {project.title}
-                  </h3>
+                    <div className="p-6">
+                      <div className="flex flex-wrap gap-2">
+                        {project.courseName && (
+                          <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                            {project.courseName}
+                          </span>
+                        )}
+                      </div>
 
-                  <p className="mt-3 text-sm leading-7 text-slate-600">
-                    {project.description}
-                  </p>
+                      <h3 className="mt-4 text-2xl font-bold tracking-tight text-slate-950">
+                        {project.title}
+                      </h3>
 
-                  {/* TECHNOLOGIES */}
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {project.tech.map((technology) => (
-                      <span
-                        key={technology}
-                        className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600"
-                      >
-                        {technology}
-                      </span>
-                    ))}
-                  </div>
+                      <p className="mt-3 line-clamp-3 leading-7 text-slate-600">
+                        {project.description}
+                      </p>
 
-                  {/* FOOTER */}
-                  <div className="mt-7 flex items-center justify-between border-t border-slate-100 pt-5">
-                    <span className="text-sm font-medium text-slate-400">
-                      Student showcase
-                    </span>
+                      {project.studentName && (
+                        <p className="mt-5 text-sm text-slate-500">
+                          Built by{" "}
+                          <span className="font-semibold text-slate-800">
+                            {project.studentName}
+                          </span>
+                        </p>
+                      )}
 
-                    <span className="font-semibold text-blue-600 transition group-hover:translate-x-1">
-                      View project →
-                    </span>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+                      {technologies.length > 0 && (
+                        <div className="mt-5 flex flex-wrap gap-2">
+                          {technologies.slice(0, 6).map((technology) => (
+                            <span
+                              key={technology}
+                              className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-slate-600"
+                            >
+                              {technology}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {(project.liveDemoUrl || project.githubUrl) && (
+                        <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-5">
+                          {project.liveDemoUrl && (
+                            <a
+                              href={project.liveDemoUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              Live project
+                            </a>
+                          )}
+
+                          {project.githubUrl && (
+                            <a
+                              href={project.githubUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                            >
+                              <GitBranch className="h-4 w-4" />
+                              Source
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* PROJECT EXPERIENCE */}
-      <section className="border-y border-slate-100 bg-white py-20">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="grid gap-10 lg:grid-cols-3">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-                Learn by doing
-              </p>
-
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
-                Build skills through real projects.
-              </h2>
-            </div>
-
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-7">
-              <div className="text-3xl font-bold text-blue-600">
-                01
-              </div>
-
-              <h3 className="mt-5 text-xl font-bold text-slate-950">
-                Learn
-              </h3>
-
-              <p className="mt-3 text-sm leading-7 text-slate-600">
-                Understand the tools, concepts and technologies required to
-                solve practical problems.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-7">
-              <div className="text-3xl font-bold text-blue-600">
-                02
-              </div>
-
-              <h3 className="mt-5 text-xl font-bold text-slate-950">
-                Build
-              </h3>
-
-              <p className="mt-3 text-sm leading-7 text-slate-600">
-                Turn your knowledge into useful applications, designs,
-                dashboards, networks and digital solutions.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="bg-white py-24">
+      <section className="bg-slate-950 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl px-5 text-center lg:px-8">
-          <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-blue-50 text-2xl font-bold text-blue-600">
-            ✦
-          </div>
-
-          <h2 className="mt-7 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
-            Build something worth showing.
-          </h2>
-
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-            Join EDSEC and turn the skills you learn into practical projects,
-            experience, and a portfolio you can be proud of.
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-400">
+            Build your own
           </p>
 
-          <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+          <h2 className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl">
+            Your project could be next.
+          </h2>
+
+          <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-400">
+            Choose a program, develop practical skills, and turn what you
+            learn into work you can show.
+          </p>
+
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href="/courses"
-              className="rounded-xl bg-blue-600 px-7 py-3.5 font-semibold text-white transition hover:bg-blue-700"
+              className="rounded-xl bg-blue-600 px-7 py-3.5 font-semibold text-white transition hover:bg-blue-500"
             >
-              Explore Courses
+              View courses
             </Link>
 
             <Link
-              href="/contact"
-              className="rounded-xl border border-slate-300 px-7 py-3.5 font-semibold text-slate-900 transition hover:bg-slate-50"
+              href="/apply"
+              className="rounded-xl border border-slate-700 px-7 py-3.5 font-semibold text-white transition hover:bg-white/5"
             >
-              Contact EDSEC
+              Apply to EDSEC
             </Link>
           </div>
         </div>

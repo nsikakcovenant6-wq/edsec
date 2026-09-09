@@ -3,14 +3,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/auth";
 
-function normalizeText(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+function parseDate(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
+}
+
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 export async function POST(request: Request) {
@@ -34,9 +42,9 @@ export async function POST(request: Request) {
         ? body.phone.trim()
         : "";
 
-    const courseName =
-      typeof body.courseName === "string"
-        ? body.courseName.trim()
+    const courseId =
+      typeof body.courseId === "string"
+        ? body.courseId.trim()
         : "";
 
     const dateOfBirth =
@@ -64,10 +72,6 @@ export async function POST(request: Request) {
         ? body.additionalInfo.trim()
         : "";
 
-    // ---------------------------------------------------------
-    // VALIDATION
-    // ---------------------------------------------------------
-
     if (!fullName) {
       return NextResponse.json(
         {
@@ -88,6 +92,16 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!isValidEmail(email)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Please enter a valid email address.",
+        },
+        { status: 400 }
+      );
+    }
+
     if (!phone) {
       return NextResponse.json(
         {
@@ -98,7 +112,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!courseName) {
+    if (!courseId) {
       return NextResponse.json(
         {
           success: false,
@@ -108,43 +122,72 @@ export async function POST(request: Request) {
       );
     }
 
-    // ---------------------------------------------------------
-    // FIND COURSE
-    // ---------------------------------------------------------
-
-    const courses = await prisma.course.findMany({
+    const course = await prisma.course.findUnique({
+      where: {
+        id: courseId,
+      },
       select: {
         id: true,
         title: true,
+        slug: true,
         status: true,
       },
     });
 
-    const requestedCourse = normalizeText(courseName);
-
-    const course = courses.find(
-      (item) => normalizeText(item.title) === requestedCourse
-    );
-
     if (!course) {
       console.error("APPLICATION_COURSE_NOT_FOUND", {
-        submittedCourse: courseName,
-        availableCourses: courses.map((item) => item.title),
+        courseId,
       });
 
       return NextResponse.json(
         {
           success: false,
           message:
-            "The selected course could not be found in EDSEC's course database. Please select another course.",
+            "The selected course could not be found. Please refresh the page and select the course again.",
         },
         { status: 400 }
       );
     }
 
-    // ---------------------------------------------------------
-    // CREATE APPLICATION
-    // ---------------------------------------------------------
+    if (course.status !== "ACTIVE") {
+      console.error("APPLICATION_COURSE_NOT_ACTIVE", {
+        courseId: course.id,
+        courseTitle: course.title,
+        status: course.status,
+      });
+
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "This course is currently unavailable for applications. Please select another course.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const parsedDateOfBirth = parseDate(dateOfBirth);
+    const parsedPreferredStartDate = parseDate(preferredStartDate);
+
+    if (dateOfBirth && !parsedDateOfBirth) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Please enter a valid date of birth.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (preferredStartDate && !parsedPreferredStartDate) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Please enter a valid preferred start date.",
+        },
+        { status: 400 }
+      );
+    }
 
     const application = await prisma.application.create({
       data: {
@@ -156,22 +199,11 @@ export async function POST(request: Request) {
 
         courseId: course.id,
 
-        dateOfBirth: dateOfBirth
-          ? new Date(dateOfBirth)
-          : null,
-
-        educationalLevel:
-          educationalLevel || null,
-
-        preferredFormat:
-          preferredFormat || null,
-
-        preferredStartDate: preferredStartDate
-          ? new Date(preferredStartDate)
-          : null,
-
-        additionalInfo:
-          additionalInfo || null,
+        dateOfBirth: parsedDateOfBirth,
+        educationalLevel: educationalLevel || null,
+        preferredFormat: preferredFormat || null,
+        preferredStartDate: parsedPreferredStartDate,
+        additionalInfo: additionalInfo || null,
 
         status: "PENDING",
       },
@@ -185,6 +217,8 @@ export async function POST(request: Request) {
       id: application.id,
       fullName: application.fullName,
       email: application.email,
+      phone: application.phone,
+      courseId: application.courseId,
       course: application.course?.title,
     });
 
@@ -193,7 +227,15 @@ export async function POST(request: Request) {
         success: true,
         message:
           "Your application has been submitted successfully. The EDSEC team will review it and contact you with the next steps.",
-        application,
+        application: {
+          id: application.id,
+          fullName: application.fullName,
+          email: application.email,
+          phone: application.phone,
+          course: application.course?.title ?? course.title,
+          status: application.status,
+          createdAt: application.createdAt,
+        },
       },
       { status: 201 }
     );

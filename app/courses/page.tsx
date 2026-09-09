@@ -1,121 +1,36 @@
 /* eslint-disable @next/next/no-img-element */
-
 import Link from "next/link";
+import { prisma } from "@/app/lib/prisma";
 
-const courses = [
-  {
-    title: "Full-Stack Web Development",
-    slug: "full-stack-web-development",
-    description:
-      "Learn to build modern websites and complete web applications from frontend to backend.",
-    image:
-      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1400&q=85",
-    duration: "6 Months",
-    level: "Beginner to Advanced",
-    category: "Development",
-  },
-  {
-    title: "Cybersecurity",
-    slug: "cybersecurity",
-    description:
-      "Build practical cybersecurity skills including security fundamentals, networking, threats, and protection.",
-    image:
-      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=85",
-    duration: "6 Months",
-    level: "Beginner to Intermediate",
-    category: "Technology",
-  },
-  {
-    title: "Graphic Design",
-    slug: "graphic-design",
-    description:
-      "Learn professional graphic design, branding, digital graphics, and visual communication.",
-    image:
-      "https://images.unsplash.com/photo-1559028012-481c04fa702d?auto=format&fit=crop&w=1400&q=85",
-    duration: "3 Months",
-    level: "Beginner to Advanced",
-    category: "Creative",
-  },
-  {
-    title: "Data Analysis",
-    slug: "data-analysis",
-    description:
-      "Learn how to transform raw data into useful insights using modern data analysis tools.",
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1400&q=85",
-    duration: "4 Months",
-    level: "Beginner to Intermediate",
-    category: "Data",
-  },
-  {
-    title: "Digital Marketing",
-    slug: "digital-marketing",
-    description:
-      "Learn modern digital marketing strategies, social media, advertising, content, and analytics.",
-    image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1400&q=85",
-    duration: "3 Months",
-    level: "Beginner",
-    category: "Business",
-  },
-  {
-    title: "IT Support & Networking",
-    slug: "it-support-networking",
-    description:
-      "Develop practical skills in computer troubleshooting, networking, systems, and IT support.",
-    image:
-      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=85",
-    duration: "4 Months",
-    level: "Beginner to Intermediate",
-    category: "IT",
-  },
-  {
-    title: "UI/UX Design",
-    slug: "ui-ux-design",
-    description:
-      "Learn how to design beautiful, accessible, and user-friendly digital experiences.",
-    image:
-      "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=1400&q=85",
-    duration: "3 Months",
-    level: "Beginner to Advanced",
-    category: "Design",
-  },
-  {
-    title: "Microsoft Office Professional",
-    slug: "microsoft-office-professional",
-    description:
-      "Master Word, Excel, PowerPoint and essential productivity tools for school and work.",
-    image:
-      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=85",
-    duration: "2 Months",
-    level: "Beginner to Advanced",
-    category: "Productivity",
-  },
-  {
-    title: "Cloud Computing",
-    slug: "cloud-computing",
-    description:
-      "Build practical cloud skills and learn how modern applications, servers, storage, and infrastructure operate in the cloud.",
-    image:
-      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1400&q=85",
-    duration: "4 Months",
-    level: "Beginner to Advanced",
-    category: "Cloud & Infrastructure",
-  },
-  {
-    title: "Virtual Assistant",
-    slug: "virtual-assistant",
-    description:
-      "Develop professional remote-work skills including administration, communication, scheduling, productivity tools, and client support.",
-    image:
-      "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1400&q=85",
-    duration: "3 Months",
-    level: "Beginner to Intermediate",
-    category: "Remote Work",
-  },
-];
+export const dynamic = "force-dynamic";
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  const courses = await prisma.course.findMany({
+    where: {
+      status: "ACTIVE",
+    },
+    orderBy: [
+      {
+        displayOrder: "asc",
+      },
+      {
+        title: "asc",
+      },
+    ],
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      shortDescription: true,
+      description: true,
+      imageUrl: true,
+      duration: true,
+      learningFormat: true,
+      featured: true,
+      displayOrder: true,
+    },
+  });
+
   return (
     <main className="min-h-screen bg-white text-slate-900">
       {/* HERO */}
@@ -172,7 +87,7 @@ export default function CoursesPage() {
 
             {/* HERO STATS */}
             <div className="mt-14 grid max-w-2xl grid-cols-2 gap-6 border-t border-white/10 pt-8 sm:grid-cols-4">
-              <HeroStat value="10+" label="Programs" />
+              <HeroStat value={`${courses.length}+`} label="Programs" />
               <HeroStat value="100%" label="Practical" />
               <HeroStat value="Real" label="Projects" />
               <HeroStat value="Career" label="Focused" />
@@ -205,7 +120,7 @@ export default function CoursesPage() {
               </p>
             </div>
 
-            <div className="hidden rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 sm:block">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
               <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Available Programs
               </p>
@@ -217,105 +132,135 @@ export default function CoursesPage() {
           </div>
 
           {/* COURSE GRID */}
-          <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((course, index) => (
-              <article
-                key={course.slug}
-                className="group relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition duration-500 hover:-translate-y-2 hover:border-cyan-200 hover:shadow-2xl hover:shadow-cyan-100/50"
+          {courses.length > 0 ? (
+            <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+              {courses.map((course, index) => (
+                <article
+                  key={course.id}
+                  className="group relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition duration-500 hover:-translate-y-2 hover:border-cyan-200 hover:shadow-2xl hover:shadow-cyan-100/50"
+                >
+                  <Link href={`/courses/${course.slug}`}>
+                    {/* IMAGE */}
+                    <div className="relative aspect-16/10 overflow-hidden bg-slate-100">
+                      {course.imageUrl ? (
+                        <img
+                          src={course.imageUrl}
+                          alt={`${course.title} course`}
+                          loading={index === 0 ? "eager" : "lazy"}
+                          fetchPriority={index === 0 ? "high" : "auto"}
+                          decoding="async"
+                          className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-900 via-blue-950 to-cyan-900">
+                          <span className="px-6 text-center text-2xl font-black text-white">
+                            {course.title}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* IMAGE GRADIENT */}
+                      <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-950/10 to-transparent" />
+
+                      {/* COURSE NUMBER */}
+                      <div className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-slate-950/60 text-xs font-black text-white backdrop-blur-md">
+                        {String(index + 1).padStart(2, "0")}
+                      </div>
+
+                      {/* STATUS */}
+                      {course.featured && (
+                        <div className="absolute right-4 top-4">
+                          <span className="rounded-full border border-white/20 bg-white/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-900 shadow-sm backdrop-blur">
+                            Featured
+                          </span>
+                        </div>
+                      )}
+
+                      {/* IMAGE BOTTOM */}
+                      <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-wider text-cyan-300">
+                            EDSEC Program
+                          </p>
+
+                          <p className="mt-1 text-sm font-semibold text-white">
+                            Start building your skills
+                          </p>
+                        </div>
+
+                        <div className="grid h-10 w-10 translate-y-3 place-items-center rounded-full bg-cyan-500 text-lg font-bold text-white opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                          →
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* CONTENT */}
+                    <div className="p-6">
+                      <h3 className="text-xl font-black tracking-tight text-slate-950 transition-colors duration-300 group-hover:text-cyan-600">
+                        {course.title}
+                      </h3>
+
+                      <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
+                        {course.shortDescription}
+                      </p>
+
+                      {/* COURSE DETAILS */}
+                      <div className="mt-6 grid grid-cols-2 gap-4 border-t border-slate-100 pt-5">
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                            Duration
+                          </p>
+
+                          <p className="mt-1.5 text-sm font-bold text-slate-800">
+                            {course.duration ?? "Flexible"}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                            Format
+                          </p>
+
+                          <p className="mt-1.5 text-sm font-bold text-slate-800">
+                            {course.learningFormat ?? "Practical Training"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* LINK */}
+                      <div className="mt-6 flex items-center justify-between">
+                        <span className="text-sm font-bold text-cyan-600">
+                          Explore program
+                        </span>
+
+                        <span className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-slate-700 transition-all duration-300 group-hover:bg-cyan-500 group-hover:text-white">
+                          →
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-slate-200 bg-slate-50 px-6 py-16 text-center">
+              <h3 className="text-2xl font-black text-slate-950">
+                Courses are being prepared.
+              </h3>
+
+              <p className="mx-auto mt-3 max-w-xl text-slate-600">
+                Our training programs will appear here as soon as they are
+                published.
+              </p>
+
+              <Link
+                href="/contact"
+                className="mt-7 inline-flex rounded-full bg-slate-950 px-6 py-3 font-bold text-white transition hover:bg-cyan-600"
               >
-                <Link href={`/courses/${course.slug}`}>
-                  {/* IMAGE */}
-                  <div className="relative aspect-16/10 overflow-hidden bg-slate-100">
-                    <img
-                      src={course.image}
-                      alt={`${course.title} course`}
-                      loading={index === 0 ? "eager" : "lazy"}
-                      fetchPriority={index === 0 ? "high" : "auto"}
-                      decoding="async"
-                      className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-110"
-                    />
-
-                    {/* IMAGE GRADIENT */}
-                    <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-950/10 to-transparent" />
-
-                    {/* COURSE NUMBER */}
-                    <div className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-slate-950/60 text-xs font-black text-white backdrop-blur-md">
-                      {String(index + 1).padStart(2, "0")}
-                    </div>
-
-                    {/* CATEGORY */}
-                    <div className="absolute right-4 top-4">
-                      <span className="rounded-full border border-white/20 bg-white/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-900 shadow-sm backdrop-blur">
-                        {course.category}
-                      </span>
-                    </div>
-
-                    {/* IMAGE BOTTOM */}
-                    <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-cyan-300">
-                          EDSEC Program
-                        </p>
-
-                        <p className="mt-1 text-sm font-semibold text-white">
-                          Start building your skills
-                        </p>
-                      </div>
-
-                      <div className="grid h-10 w-10 translate-y-3 place-items-center rounded-full bg-cyan-500 text-lg font-bold text-white opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                        →
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CONTENT */}
-                  <div className="p-6">
-                    <h3 className="text-xl font-black tracking-tight text-slate-950 transition-colors duration-300 group-hover:text-cyan-600">
-                      {course.title}
-                    </h3>
-
-                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
-                      {course.description}
-                    </p>
-
-                    {/* COURSE DETAILS */}
-                    <div className="mt-6 grid grid-cols-2 gap-4 border-t border-slate-100 pt-5">
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                          Duration
-                        </p>
-
-                        <p className="mt-1.5 text-sm font-bold text-slate-800">
-                          {course.duration}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                          Level
-                        </p>
-
-                        <p className="mt-1.5 text-sm font-bold text-slate-800">
-                          {course.level}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* LINK */}
-                    <div className="mt-6 flex items-center justify-between">
-                      <span className="text-sm font-bold text-cyan-600">
-                        Explore program
-                      </span>
-
-                      <span className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-slate-700 transition-all duration-300 group-hover:bg-cyan-500 group-hover:text-white">
-                        →
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              </article>
-            ))}
-          </div>
+                Contact EDSEC
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -502,7 +447,9 @@ function LearningCard({
 
       <h3 className="mt-6 text-lg font-black text-white">{title}</h3>
 
-      <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-400">
+        {description}
+      </p>
     </div>
   );
 }
@@ -528,7 +475,9 @@ function Feature({
 
       <h3 className="mt-6 text-xl font-black text-slate-950">{title}</h3>
 
-      <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
+      <p className="mt-3 text-sm leading-7 text-slate-600">
+        {description}
+      </p>
     </div>
   );
 }
