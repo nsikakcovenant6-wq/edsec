@@ -127,7 +127,7 @@ const courses = [
   },
   {
     title: "IT Support & Networking",
-    slug: "it-support-and-networking",
+    slug: "it-support-networking",
     shortDescription:
       "Learn computer hardware, troubleshooting, operating systems, networking and IT support fundamentals.",
     description:
@@ -139,6 +139,36 @@ const courses = [
     status: "ACTIVE" as const,
     featured: true,
     displayOrder: 8,
+  },
+  {
+    title: "Cloud Computing",
+    slug: "cloud-computing",
+    shortDescription:
+      "Build practical cloud skills and learn how modern applications, servers, storage, and infrastructure operate in the cloud.",
+    description:
+      "Understand modern cloud technology and learn how applications, storage, servers, databases, and services operate in the cloud.",
+    duration: "4 Months",
+    learningFormat: "On-site / Online / Hybrid",
+    requirements:
+      "Basic computer literacy. Basic networking knowledge is helpful but not required.",
+    status: "ACTIVE" as const,
+    featured: true,
+    displayOrder: 9,
+  },
+  {
+    title: "Virtual Assistant",
+    slug: "virtual-assistant",
+    shortDescription:
+      "Develop professional remote-work skills including administration, communication, scheduling, productivity tools, and client support.",
+    description:
+      "Build professional remote-work skills for supporting businesses, entrepreneurs, executives, and online teams.",
+    duration: "3 Months",
+    learningFormat: "On-site / Online / Hybrid",
+    requirements:
+      "Basic computer literacy, good communication skills, and willingness to learn professional digital tools.",
+    status: "ACTIVE" as const,
+    featured: true,
+    displayOrder: 10,
   },
 ];
 
@@ -172,9 +202,16 @@ async function main() {
 
   const totalCourses = await prisma.course.count();
 
+  const activeCourses = await prisma.course.count({
+    where: {
+      status: "ACTIVE",
+    },
+  });
+
   console.log("");
   console.log("✅ EDSEC course seeding completed.");
   console.log(`📚 Total courses in database: ${totalCourses}`);
+  console.log(`🟢 Active courses: ${activeCourses}`);
 }
 
 main()
