@@ -23,11 +23,6 @@ export default async function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5 lg:px-8">
-
-        {/* =====================================================
-            LOGO
-        ====================================================== */}
-
         <Link
           href="/"
           className="flex items-center gap-3"
@@ -48,64 +43,43 @@ export default async function Navbar() {
             <p className="text-base font-bold tracking-tight text-slate-950">
               EDSEC
             </p>
-
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
               ICT INSTITUTE
             </p>
           </div>
         </Link>
 
-        {/* =====================================================
-            DESKTOP NAVIGATION
-        ====================================================== */}
-
         <nav className="hidden items-center gap-6 lg:flex">
-
-          <Link
-            href="/"
-            className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-          >
+          <Link href="/" className="text-sm font-medium text-slate-600 transition hover:text-blue-600">
             Home
           </Link>
 
-          <Link
-            href="/courses"
-            className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-          >
+          <Link href="/courses" className="text-sm font-medium text-slate-600 transition hover:text-blue-600">
             Courses
           </Link>
 
           <Link
-            href="/student-projects"
-            className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
+            href="/launch-promo"
+            className="rounded-full bg-blue-50 px-3.5 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
           >
+            🚨 Launch Promo
+          </Link>
+
+          <Link href="/student-projects" className="text-sm font-medium text-slate-600 transition hover:text-blue-600">
             Projects
           </Link>
 
-          <Link
-            href="/gallery"
-            className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-          >
+          <Link href="/gallery" className="text-sm font-medium text-slate-600 transition hover:text-blue-600">
             Gallery
           </Link>
 
-          <Link
-            href="/services"
-            className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-          >
+          <Link href="/services" className="text-sm font-medium text-slate-600 transition hover:text-blue-600">
             Services
           </Link>
 
-          <Link
-            href="/contact"
-            className="text-sm font-medium text-slate-600 transition hover:text-blue-600"
-          >
+          <Link href="/contact" className="text-sm font-medium text-slate-600 transition hover:text-blue-600">
             Contact
           </Link>
-
-          {/* =================================================
-              DASHBOARD
-          ================================================== */}
 
           {user && (
             <Link
@@ -116,31 +90,27 @@ export default async function Navbar() {
             </Link>
           )}
 
-          {/* =================================================
-              AUTHENTICATION
-          ================================================== */}
-
           <AuthButtons
             isLoggedIn={!!user}
             role={user?.role ?? null}
           />
         </nav>
 
-        {/* =====================================================
-            MOBILE NAVIGATION
-        ====================================================== */}
-
         <div className="flex items-center gap-2 lg:hidden">
-
           {!user ? (
             <>
+              <Link
+                href="/launch-promo"
+                className="rounded-xl bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
+              >
+                Promo
+              </Link>
               <Link
                 href="/login"
                 className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600"
               >
                 Login
               </Link>
-
               <Link
                 href="/register"
                 className="rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
@@ -150,21 +120,19 @@ export default async function Navbar() {
             </>
           ) : (
             <>
-              {/* =================================================
-                  MOBILE DASHBOARD
-              ================================================== */}
-
+              <Link
+                href="/launch-promo"
+                className="rounded-xl bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
+              >
+                Promo
+              </Link>
               <Link
                 href={dashboardHref}
                 className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
                 Dashboard
               </Link>
-
-              <AuthButtons
-                isLoggedIn={true}
-                role={user.role ?? null}
-              />
+              <AuthButtons isLoggedIn={true} role={user.role ?? null} />
             </>
           )}
         </div>
