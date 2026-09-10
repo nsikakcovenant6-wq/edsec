@@ -28,14 +28,8 @@ function whatsappUrl(message = "Hello EDSEC, I need help with an enquiry.") {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
-/**
- * EDSEC AI is intentionally a first-line information assistant, not a general chatbot.
- * Anything account-specific, transactional, complaint-related, corporate, or otherwise
- * beyond normal public information is escalated to EDSEC WhatsApp before calling the AI.
- */
 function requiresHumanSupport(message: string) {
   const text = message.toLowerCase();
-
   const humanPatterns = [
     /\b(my|i)\b.{0,30}\b(balance|owe|payment|receipt|invoice|account|enrollment|enrolment|student number|student id|progress|grade|result|lesson|class|attendance|certificate)\b/,
     /\b(pay|paid|payment|refund|charge|transfer|transaction|bank|account)\b/,
@@ -48,13 +42,11 @@ function requiresHumanSupport(message: string) {
     /\b(when is my|what is my|where is my|how much do i|have i been|am i)\b/,
     /\b(i want to (speak|talk|contact)|contact (someone|staff|edsec))\b/,
   ];
-
   return humanPatterns.some((pattern) => pattern.test(text));
 }
 
 async function getPublicContext() {
-  const courses = await prisma.course.findMany({
-    where: { status: "PUBLISHED" },
+  const allCourses = await prisma.course.findMany({
     orderBy: { displayOrder: "asc" },
     select: {
       title: true,
@@ -64,8 +56,13 @@ async function getPublicContext() {
       learningFormat: true,
       requirements: true,
       slug: true,
+      status: true,
     },
   });
+
+  // Keep this compatible with the repository's current CourseStatus enum while
+  // ensuring drafts are never exposed to the public AI when a published status exists.
+  const courses = allCourses.filter((course) => String(course.status).toUpperCase() === "PUBLISHED");
 
   return {
     institute: "EDSEC ICT INSTITUTE",
@@ -95,7 +92,6 @@ async function getPublicContext() {
 
 function extractOutputText(data: any) {
   if (typeof data?.output_text === "string" && data.output_text.trim()) return data.output_text.trim();
-
   const parts: string[] = [];
   for (const item of data?.output ?? []) {
     for (const content of item?.content ?? []) {
@@ -118,32 +114,23 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const message = typeof body?.message === "string" ? body.message.trim() : "";
-
     if (!message) return NextResponse.json({ error: "Please enter a question." }, { status: 400 });
     if (message.length > MAX_MESSAGE_LENGTH) {
-      return NextResponse.json(
-        { error: `Please keep your question under ${MAX_MESSAGE_LENGTH} characters.` },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: `Please keep your question under ${MAX_MESSAGE_LENGTH} characters.` }, { status: 400 });
     }
 
-    // Keep complicated/private/transactional matters with a real EDSEC team member.
-    if (requiresHumanSupport(message)) {
-      return NextResponse.json(supportResponse(message));
-    }
+    if (requiresHumanSupport(message)) return NextResponse.json(supportResponse(message));
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({
-        answer:
-          "EDSEC AI is temporarily unavailable. Please chat with EDSEC on WhatsApp and the team will help you.",
+        answer: "EDSEC AI is temporarily unavailable. Please chat with EDSEC on WhatsApp and the team will help you.",
         needsWhatsApp: true,
         whatsappUrl: whatsappUrl(`Hello EDSEC, I need help with this enquiry: ${message}`),
       });
     }
 
     const context = await getPublicContext();
-
     const instructions = `You are EDSEC AI, the official basic-information assistant for EDSEC ICT INSTITUTE in Oyigbo, Rivers State, Nigeria.
 
 IMPORTANT SCOPE:
@@ -188,16 +175,8 @@ ${JSON.stringify(context, null, 2)}`;
 
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        instructions,
-        input: message,
-        max_output_tokens: 350,
-      }),
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: MODEL, instructions, input: message, max_output_tokens: 350 }),
     });
 
     if (!response.ok) {
@@ -207,9 +186,7 @@ ${JSON.stringify(context, null, 2)}`;
 
     const data = await response.json();
     const answer = extractOutputText(data);
-
     if (!answer) return NextResponse.json(supportResponse(message));
-
     return NextResponse.json({ answer, needsWhatsApp: false });
   } catch (error) {
     console.error("EDSEC AI request failed:", error);
