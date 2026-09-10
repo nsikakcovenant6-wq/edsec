@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import LaunchPromoBanner from "@/components/LaunchPromoBanner";
+import EdsecAI from "@/components/EdsecAI";
 
 export const metadata: Metadata = {
   title: {
@@ -39,6 +40,7 @@ export default function RootLayout({
         <Footer />
 
         <WhatsAppButton />
+        <EdsecAI />
       </body>
     </html>
   );
