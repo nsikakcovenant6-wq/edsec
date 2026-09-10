@@ -9,7 +9,7 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with EDSEC on WhatsApp"
-      className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-xl font-bold text-white shadow-xl transition hover:scale-105 hover:bg-green-400"
+      className="fixed bottom-5 left-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-xl font-bold text-white shadow-xl transition hover:scale-105 hover:bg-green-400 sm:bottom-6 sm:left-6"
     >
       WA
     </a>
