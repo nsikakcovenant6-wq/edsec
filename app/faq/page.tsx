@@ -138,6 +138,28 @@ export default async function FAQPage() {
       ],
     },
     {
+      category: "School digital platforms",
+      items: [
+        { question: "How much does the EDSEC school platform cost?", answer: "The standard platform is ₦250,000 one-time setup and ₦25,000 per month for agreed care and management. Additional integrations, domain costs and third-party fees may be billed separately." },
+        { question: "How long does a school implementation take?", answer: "Timing depends on school size, available records, custom requirements and acceptance testing. EDSEC provides a schedule after discovery." },
+        { question: "Will teachers and administrators be trained?", answer: "Yes. Staff onboarding and practical training are part of the agreed implementation scope." },
+        { question: "Who owns the school's data?", answer: "The school retains ownership of its institutional records. Access, exports, retention and handover arrangements should be recorded in the signed agreement." },
+        { question: "How do you protect student records?", answer: "The platform is designed with role-based permissions, secure authentication and backup procedures. Each school deployment must pass agreed security and restore testing before launch." },
+        { question: "Is it suitable for a small school?", answer: "Yes. Configuration and infrastructure needs are discussed based on the school's actual size and operations." },
+        { question: "Can schools outside Nigeria enquire?", answer: "Yes. EDSEC welcomes international enquiries. Final pricing, service arrangements and local requirements are confirmed individually." },
+        { question: "What does the monthly fee cover?", answer: "Agreed routine maintenance, hosting administration, backups, updates, bug fixes and operational support. Service levels are defined in the agreement." },
+      ],
+    },
+    {
+      category: "Business websites and consultations",
+      items: [
+        { question: "Can EDSEC build a website or software for my business?", answer: "Yes. EDSEC can discuss your goals, features, integrations and budget before preparing a project-specific proposal." },
+        { question: "How much does a business website cost?", answer: "Website and custom software costs depend on the scope and required features. Request a quotation for accurate pricing." },
+        { question: "Can I request a free online or physical consultation?", answer: "Yes. Visit the Book Free Consultation page, choose online or physical, and enter your preferred date, time zone, contact details and requirements. Appointments are confirmed by EDSEC, not automatically booked." },
+        { question: "Can EDSEC maintain my existing website?", answer: "EDSEC can assess the existing technology and access before confirming whether maintenance or redevelopment is suitable." },
+      ],
+    },
+    {
       category: "Support & applications",
       items: [
         {
@@ -175,8 +197,8 @@ export default async function FAQPage() {
             </h1>
 
             <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-400 sm:text-xl">
-              Find answers about EDSEC programs, applications, learning,
-              projects, student services, and certification.
+              Find answers about EDSEC training, school management platforms,
+              business websites, consultations, support, and certification.
             </p>
           </div>
         </div>
