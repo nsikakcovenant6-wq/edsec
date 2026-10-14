@@ -1685,6 +1685,26 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* FEATURED SCHOOL PLATFORM */}
+      <section className="bg-gradient-to-b from-blue-50 to-white py-20 sm:py-28">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+          <div className="grid overflow-hidden rounded-4xl bg-slate-950 text-white shadow-2xl lg:grid-cols-2">
+            <div className="relative min-h-95 lg:min-h-130">
+              <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1400&q=85" alt="Students learning at school" className="absolute inset-0 h-full w-full object-cover"/>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent"/>
+              <div className="absolute bottom-7 left-7 rounded-2xl border border-white/30 bg-slate-950/70 px-5 py-3 text-sm font-bold backdrop-blur-md">School website • CBT • Results • Payments</div>
+            </div>
+            <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-14">
+              <span className="w-fit rounded-full border border-blue-400/40 bg-blue-500/20 px-4 py-2 text-xs font-bold uppercase tracking-widest text-sky-300">Featured EDSEC solution</span>
+              <h2 className="mt-6 text-4xl font-extrabold tracking-tight sm:text-5xl">Transform your school with one digital platform.</h2>
+              <p className="mt-6 text-lg leading-8 text-slate-300">A professional school website, online admissions, parent and student portals, JAMB-style CBT, report cards, school fees and attendance management — built around your school's needs.</p>
+              <div className="mt-7 grid grid-cols-2 gap-4"><div className="rounded-2xl bg-white/10 p-5"><p className="text-sm text-slate-300">One-time setup</p><p className="mt-2 text-2xl font-extrabold">₦250,000</p></div><div className="rounded-2xl bg-white/10 p-5"><p className="text-sm text-slate-300">Monthly care</p><p className="mt-2 text-2xl font-extrabold">₦25,000</p></div></div>
+              <Link href="/school-management-system" className="mt-8 inline-flex w-fit items-center gap-2 rounded-xl bg-blue-600 px-7 py-4 font-bold text-white transition hover:bg-blue-500">Explore School Digital Platform <ArrowUpRight className="h-5 w-5"/></Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ============================================================
           SERVICES
       ============================================================ */}
