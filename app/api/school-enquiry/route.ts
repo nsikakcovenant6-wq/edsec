@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { sendEdsecEmail } from "@/app/lib/email";
 import { randomUUID } from "node:crypto";
+import { prisma } from "@/app/lib/prisma";
 export const runtime="nodejs";
 const schema=z.object({
  kind:z.enum(["school","consultation"]),
@@ -35,8 +36,10 @@ export async function POST(request:Request){
   if(v.kind==="consultation"&&new Date(v.date+"T23:59:59Z").getTime()<Date.now())return NextResponse.json({message:"Please choose a future meeting date."},{status:400});
   const id=randomUUID().slice(0,8).toUpperCase();
   const lines=[`Reference: EDSEC-${id}`,`Type: ${v.kind==="school"?"School platform enquiry":"Consultation request"}`,`Client category: ${clean(v.audience)}`,`Meeting format: ${clean(v.meetingMode)}`,`Meeting location: ${clean(v.meetingLocation||"To be arranged")}`,`Name: ${clean(v.name)}`,`Email: ${clean(v.email)}`,`Phone: ${clean(v.phone)}`,`School/organisation: ${clean(v.school)}`,`Country: ${clean(v.country)}`,`Students: ${clean(v.students||"Not specified")}`,`Preferred date: ${clean(v.date||"Not specified")}`,`Preferred time: ${clean(v.time||"Not specified")}`,`Timezone: ${clean(v.timezone||"Not specified")}`,`Requirements:\n${v.requirements}`];
+  // Persist first: a mail outage must not silently lose a legitimate enquiry.
+  await prisma.salesLead.create({data:{reference:"EDSEC-"+id,category:v.kind==="school"?"SCHOOL":v.audience.toUpperCase(),contactName:v.name,email:v.email,phone:v.phone,organization:v.school,country:v.country,requirements:v.requirements,meetingMode:v.meetingMode,meetingLocation:v.meetingLocation,preferredDate:v.date,preferredTime:v.time,timezone:v.timezone}});
   const result=await sendEdsecEmail({to:process.env.EDSEC_ENQUIRY_TO||"edseceducation@gmail.com",subject:`[EDSEC-${id}] ${v.kind==="school"?"School platform enquiry":"Consultation request"} — ${clean(v.school)}`,text:lines.join("\n"),html:`<pre style="font:14px/1.6 Arial,sans-serif;white-space:pre-wrap">${lines.join("\n").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</pre>`});
-  if(!result.sent)return NextResponse.json({message:"Online enquiries are temporarily unavailable. Please contact EDSEC via WhatsApp or email."},{status:503});
+  if(!result.sent)return NextResponse.json({success:true,reference:"EDSEC-"+id,message:"Your request has been received by EDSEC. Email notification is pending; our team will review it."});
   return NextResponse.json({success:true,reference:`EDSEC-${id}`,message:"Your request was sent to EDSEC. A consultation time is a preference, not a confirmed booking."});
  }catch(error){console.error("EDSEC_ENQUIRY_FAILED",error);return NextResponse.json({message:"We could not send your request. Please try again or contact EDSEC directly."},{status:500});}
 }
