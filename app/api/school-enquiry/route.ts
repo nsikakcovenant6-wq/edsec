@@ -37,9 +37,16 @@ export async function POST(request:Request){
   const id=randomUUID().slice(0,8).toUpperCase();
   const lines=[`Reference: EDSEC-${id}`,`Type: ${v.kind==="school"?"School platform enquiry":"Consultation request"}`,`Client category: ${clean(v.audience)}`,`Meeting format: ${clean(v.meetingMode)}`,`Meeting location: ${clean(v.meetingLocation||"To be arranged")}`,`Name: ${clean(v.name)}`,`Email: ${clean(v.email)}`,`Phone: ${clean(v.phone)}`,`School/organisation: ${clean(v.school)}`,`Country: ${clean(v.country)}`,`Students: ${clean(v.students||"Not specified")}`,`Preferred date: ${clean(v.date||"Not specified")}`,`Preferred time: ${clean(v.time||"Not specified")}`,`Timezone: ${clean(v.timezone||"Not specified")}`,`Requirements:\n${v.requirements}`];
   // Persist first: a mail outage must not silently lose a legitimate enquiry.
+  let stored=false;
+  try {
   await prisma.salesLead.create({data:{reference:"EDSEC-"+id,category:v.kind==="school"?"SCHOOL":v.audience.toUpperCase(),contactName:v.name,email:v.email,phone:v.phone,organization:v.school,country:v.country,requirements:v.requirements,meetingMode:v.meetingMode,meetingLocation:v.meetingLocation,preferredDate:v.date,preferredTime:v.time,timezone:v.timezone}});
+    stored=true;
+  } catch (dbError) {
+    console.error("EDSEC_LEAD_STORAGE_FAILED",dbError);
+  }
   const result=await sendEdsecEmail({to:process.env.EDSEC_ENQUIRY_TO||"edseceducation@gmail.com",subject:`[EDSEC-${id}] ${v.kind==="school"?"School platform enquiry":"Consultation request"} — ${clean(v.school)}`,text:lines.join("\n"),html:`<pre style="font:14px/1.6 Arial,sans-serif;white-space:pre-wrap">${lines.join("\n").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</pre>`});
-  if(!result.sent)return NextResponse.json({success:true,reference:"EDSEC-"+id,message:"Your request has been received by EDSEC. Email notification is pending; our team will review it."});
-  return NextResponse.json({success:true,reference:`EDSEC-${id}`,message:"Your request was sent to EDSEC. A consultation time is a preference, not a confirmed booking."});
+  if(!result.sent&&!stored)return NextResponse.json({message:"We could not save or deliver your enquiry. Please contact EDSEC directly."},{status:503});
+  if(!result.sent)return NextResponse.json({success:true,reference:"EDSEC-"+id,message:"Your request was saved. Email notification is pending."});
+  return NextResponse.json({success:true,reference:`EDSEC-${id}`,message:stored?"Your request was saved and sent to EDSEC. A consultation time is a preference, not a confirmed booking.":"Your request was emailed to EDSEC. A consultation time is a preference, not a confirmed booking."});
  }catch(error){console.error("EDSEC_ENQUIRY_FAILED",error);return NextResponse.json({message:"We could not send your request. Please try again or contact EDSEC directly."},{status:500});}
 }
