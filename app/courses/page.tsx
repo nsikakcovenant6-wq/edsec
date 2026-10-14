@@ -26,6 +26,7 @@ export default async function CoursesPage() {
       imageUrl: true,
       duration: true,
       learningFormat: true,
+      price: true,
       featured: true,
       displayOrder: true,
     },
@@ -227,6 +228,10 @@ export default async function CoursesPage() {
                         </div>
                       </div>
 
+                      <div className="mt-5 rounded-xl bg-blue-50 px-4 py-3">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-blue-600">Course fee</p>
+                        <p className="mt-1 text-lg font-black text-blue-950">{course.price != null ? new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(Number(course.price)) : "Confirm with admissions"}</p>
+                      </div>
                       {/* LINK */}
                       <div className="mt-6 flex items-center justify-between">
                         <span className="text-sm font-bold text-cyan-600">
@@ -264,6 +269,17 @@ export default async function CoursesPage() {
         </div>
       </section>
 
+      <section className="bg-blue-50 px-6 py-16">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-2 lg:items-center">
+          <div><p className="text-sm font-black uppercase tracking-widest text-blue-700">Plan your training</p><h2 className="mt-3 text-3xl font-black text-slate-950">Everything you need before applying.</h2><p className="mt-4 leading-7 text-slate-600">Select a course to see its duration, learning format, learning outcomes, practice projects and admission details. Course fees come from the active EDSEC catalogue. Current start dates, weekly schedules and certificate conditions should be confirmed with admissions.</p></div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Link href="/apply" className="rounded-xl bg-blue-600 px-5 py-4 text-center font-bold text-white hover:bg-blue-700">Apply for a course →</Link>
+            <Link href="/student-projects" className="rounded-xl border border-blue-200 bg-white px-5 py-4 text-center font-bold text-blue-700 hover:bg-blue-100">Explore student projects →</Link>
+            <Link href="/consultation" className="rounded-xl border border-blue-200 bg-white px-5 py-4 text-center font-bold text-blue-700 hover:bg-blue-100">Ask about schedules →</Link>
+            <Link href="/faq" className="rounded-xl border border-blue-200 bg-white px-5 py-4 text-center font-bold text-blue-700 hover:bg-blue-100">Training FAQs →</Link>
+          </div>
+        </div>
+      </section>
       {/* FEATURED LEARNING PATHS */}
       <section className="overflow-hidden bg-slate-950 px-6 py-20 text-white sm:py-24">
         <div className="mx-auto max-w-7xl">
