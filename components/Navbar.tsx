@@ -58,13 +58,6 @@ export default async function Navbar() {
             Courses
           </Link>
 
-          <Link
-            href="/launch-promo"
-            className="rounded-full bg-blue-50 px-3.5 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
-          >
-            🚨 Launch Promo
-          </Link>
-
           <Link href="/student-projects" className="text-sm font-medium text-slate-600 transition hover:text-blue-600">
             Projects
           </Link>
@@ -103,12 +96,6 @@ export default async function Navbar() {
           {!user ? (
             <>
               <Link
-                href="/launch-promo"
-                className="rounded-xl bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
-              >
-                Promo
-              </Link>
-              <Link
                 href="/login"
                 className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600"
               >
@@ -123,12 +110,6 @@ export default async function Navbar() {
             </>
           ) : (
             <>
-              <Link
-                href="/launch-promo"
-                className="rounded-xl bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
-              >
-                Promo
-              </Link>
               <Link
                 href={dashboardHref}
                 className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
