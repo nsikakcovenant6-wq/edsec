@@ -26,7 +26,6 @@ export default async function CoursesPage() {
       imageUrl: true,
       duration: true,
       learningFormat: true,
-      price: true,
       featured: true,
       displayOrder: true,
     },
@@ -230,7 +229,7 @@ export default async function CoursesPage() {
 
                       <div className="mt-5 rounded-xl bg-blue-50 px-4 py-3">
                         <p className="text-[10px] font-black uppercase tracking-wider text-blue-600">Course fee</p>
-                        <p className="mt-1 text-lg font-black text-blue-950">{course.price != null ? new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(Number(course.price)) : "Confirm with admissions"}</p>
+                        <p className="mt-1 text-sm font-bold text-blue-950">Contact admissions for current fees</p>
                       </div>
                       {/* LINK */}
                       <div className="mt-6 flex items-center justify-between">
