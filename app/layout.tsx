@@ -4,7 +4,6 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import LaunchPromoBanner from "@/components/LaunchPromoBanner";
 import EdsecAI from "@/components/EdsecAI";
 
 export const metadata: Metadata = {
@@ -33,7 +32,6 @@ export default function RootLayout({
       <body className="bg-slate-950 text-white antialiased">
         <Navbar />
 
-        <LaunchPromoBanner />
 
         {children}
 
