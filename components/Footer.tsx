@@ -17,6 +17,7 @@ const companyLinks = [
   { label: "Services", href: "/services" },
   { label: "Corporate Training", href: "/corporate-training" },
   { label: "Contact", href: "/contact" },
+  { label: "FAQs", href: "/faq" },
   { label: "Book Free Consultation", href: "/consultation" },
 ];
 
