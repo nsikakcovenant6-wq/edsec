@@ -1701,6 +1701,7 @@ export default function HomePage() {
               <div className="mt-7 grid grid-cols-2 gap-4"><div className="rounded-2xl bg-white/10 p-5"><p className="text-sm text-slate-300">One-time setup</p><p className="mt-2 text-2xl font-extrabold">₦250,000</p></div><div className="rounded-2xl bg-white/10 p-5"><p className="text-sm text-slate-300">Monthly care</p><p className="mt-2 text-2xl font-extrabold">₦25,000</p></div></div>
               <Link href="/school-management-system" className="mt-8 inline-flex w-fit items-center gap-2 rounded-xl bg-blue-600 px-7 py-4 font-bold text-white transition hover:bg-blue-500">Explore School Digital Platform <ArrowUpRight className="h-5 w-5"/></Link>
               <Link href="/school-management-system/demo" className="mt-3 inline-flex w-fit items-center gap-2 rounded-xl border border-white/30 px-7 py-4 font-bold text-white transition hover:bg-white/10">Try Interactive Demo <ArrowUpRight className="h-5 w-5"/></Link>
+              <Link href="/school-portfolio" className="mt-3 inline-flex w-fit items-center gap-2 text-sm font-bold text-sky-300 transition hover:text-white">View PAJEB Project Showcase <ArrowUpRight className="h-4 w-4"/></Link>
             </div>
           </div>
         </div>
