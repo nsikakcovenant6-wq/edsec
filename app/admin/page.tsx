@@ -5,6 +5,7 @@ import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/auth";
 
 const adminSections = [
+  { title: "Sales & Enquiries", description: "Track leads, quotations, follow-ups and conversions from schools and businesses.", href: "/admin/sales", icon: "corporate" },
   {
     title: "Applications",
     description:
