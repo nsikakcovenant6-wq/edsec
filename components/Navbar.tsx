@@ -140,6 +140,7 @@ export default async function Navbar() {
           )}
         </div>
       </div>
+      <div className="border-t border-blue-100 bg-blue-50/90 px-5 py-2.5"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold sm:text-sm"><span className="hidden text-blue-800 sm:inline">Explore EDSEC solutions:</span><Link href="/school-management-system/demo" className="rounded-full bg-blue-600 px-4 py-1.5 font-bold text-white hover:bg-blue-700">Try School Demo →</Link><Link href="/school-management-system" className="text-blue-800 hover:underline">School Management System</Link><Link href="/services" className="text-slate-700 hover:underline">Business Services</Link></div></div>
     </header>
   );
 }
