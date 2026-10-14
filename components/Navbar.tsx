@@ -77,6 +77,8 @@ export default async function Navbar() {
             Services
           </Link>
 
+          <Link href="/school-management-system" className="rounded-full bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition hover:bg-blue-700">School Platform</Link>
+
           <Link href="/contact" className="text-sm font-medium text-slate-600 transition hover:text-blue-600">
             Contact
           </Link>
@@ -97,6 +99,7 @@ export default async function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2 lg:hidden">
+          <Link href="/school-management-system" className="rounded-lg bg-blue-600 px-2.5 py-2 text-xs font-bold text-white">Schools</Link>
           {!user ? (
             <>
               <Link
