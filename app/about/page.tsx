@@ -207,6 +207,43 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* PEOPLE, HISTORY & PROOF */}
+      <section className="bg-blue-50 py-20 sm:py-24">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Our story</p>
+          <h2 className="mt-4 text-4xl font-bold tracking-tight text-slate-950">Rooted in practical ICT education.</h2>
+          <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-700">EDSEC ICT Institute traces its work in technology training to 2020, serving learners and organisations in the Port Harcourt area. Our focus has grown from practical digital skills education to technology solutions for schools and businesses, including websites, software and ICT support.</p>
+          <div className="mt-9 grid gap-5 sm:grid-cols-3">
+            <div className="rounded-2xl bg-white p-7 shadow-sm"><p className="text-3xl font-black text-blue-700">2020</p><p className="mt-2 text-sm font-semibold text-slate-700">Year EDSEC began operating</p></div>
+            <div className="rounded-2xl bg-white p-7 shadow-sm"><p className="text-3xl font-black text-blue-700">500+</p><p className="mt-2 text-sm font-semibold text-slate-700">Learners trained, as reported by EDSEC</p></div>
+            <div className="rounded-2xl bg-white p-7 shadow-sm"><p className="text-3xl font-black text-blue-700">50+</p><p className="mt-2 text-sm font-semibold text-slate-700">Training computers, as reported by EDSEC</p></div>
+          </div>
+          <p className="mt-4 text-xs text-slate-600">Institute-provided figures; supporting records and independently verified impact statistics can be added when available.</p>
+        </div>
+      </section>
+      <section className="py-20 sm:py-24">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Leadership & team</p>
+          <h2 className="mt-4 text-4xl font-bold tracking-tight text-slate-950">The people behind EDSEC.</h2>
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm"><div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-2xl font-black text-blue-700">M</div><p className="mt-6 text-sm font-bold uppercase tracking-widest text-blue-700">Chief Executive Officer</p><h3 className="mt-2 text-2xl font-bold text-slate-950">Mr. Mmekan</h3><p className="mt-4 leading-7 text-slate-600">Provides leadership for EDSEC ICT Institute's training and technology-service activities. A verified full biography and official portrait will be published when supplied and approved.</p></article>
+            <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm"><div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-100 text-2xl font-black text-cyan-700">ICT</div><p className="mt-6 text-sm font-bold uppercase tracking-widest text-blue-700">Instructors & development team</p><h3 className="mt-2 text-2xl font-bold text-slate-950">Teaching, building and supporting technology</h3><p className="mt-4 leading-7 text-slate-600">EDSEC reports a team of five instructors and staff. The team supports hands-on digital skills training, practical projects and technology services. Individual profiles and photographs will be added with their approval.</p></article>
+          </div>
+        </div>
+      </section>
+      <section className="bg-slate-50 py-20 sm:py-24">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Our facilities & work</p>
+          <h2 className="mt-4 text-4xl font-bold tracking-tight text-slate-950">Learning spaces and real projects.</h2>
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            <div className="rounded-2xl bg-white p-7"><h3 className="text-xl font-bold text-slate-950">Hands-on computer training</h3><p className="mt-3 leading-7 text-slate-600">EDSEC reports a computer-equipped training environment and classroom capacity for around 30 learners at a time.</p></div>
+            <div className="rounded-2xl bg-white p-7"><h3 className="text-xl font-bold text-slate-950">School digital systems</h3><p className="mt-3 leading-7 text-slate-600">Explore the PAJEB school management project scope, including admissions, CBT workflows, results and parent portals.</p><Link href="/school-portfolio" className="mt-5 inline-block font-bold text-blue-700 hover:underline">View project showcase →</Link></div>
+            <div className="rounded-2xl bg-white p-7"><h3 className="text-xl font-bold text-slate-950">Technology services</h3><p className="mt-3 leading-7 text-slate-600">Websites, software solutions, ICT support and corporate training tailored to organisational needs.</p><Link href="/services" className="mt-5 inline-block font-bold text-blue-700 hover:underline">Explore services →</Link></div>
+          </div>
+          <p className="mt-7 text-sm leading-7 text-slate-600">We publish genuine facility photographs, named team profiles, client testimonials and partnership logos only with suitable permission and verification. No partnership is implied by outreach or an introductory meeting.</p>
+          <div className="mt-8 flex flex-wrap gap-3"><Link href="/gallery" className="rounded-xl bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700">Explore EDSEC gallery</Link><Link href="/consultation" className="rounded-xl border border-blue-200 px-6 py-3 font-bold text-blue-700 hover:bg-blue-50">Book a consultation</Link></div>
+        </div>
+      </section>
       {/* MISSION */}
       <section className="border-y border-slate-200 bg-slate-50 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
