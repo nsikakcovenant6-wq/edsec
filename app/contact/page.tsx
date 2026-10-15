@@ -25,6 +25,8 @@ const contactDetails = {
   hours: "Monday – Saturday, 8:00 AM – 5:00 PM",
 };
 
+export const metadata = { title: "Contact EDSEC ICT Institute | Courses & Services", description: "Contact EDSEC ICT Institute in Port Harcourt about training, school platforms, websites and technology services." };
+
 export default async function ContactPage({searchParams}:{searchParams:Promise<{sent?:string}>}) {
   const {sent}=await searchParams;
   return (
