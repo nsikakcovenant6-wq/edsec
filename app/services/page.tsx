@@ -286,6 +286,7 @@ export default function ServicesPage() {
             together.
           </p>
 
+          <Link href="/consultation" className="mt-8 mr-3 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-7 py-3.5 font-semibold text-white transition hover:bg-blue-800">Request a consultation <ArrowRight className="h-4 w-4" /></Link>
           <Link
             href="/contact"
             className="mt-8 inline-flex items-center gap-2 rounded-xl bg-slate-950 px-7 py-3.5 font-semibold text-white transition hover:bg-slate-800"
