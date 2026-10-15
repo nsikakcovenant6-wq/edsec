@@ -121,6 +121,25 @@ export default async function Navbar() {
           )}
         </div>
       </div>
+      <nav className="border-t border-slate-100 bg-white px-5 py-3 lg:hidden" aria-label="Mobile site navigation">
+        <details className="group">
+          <summary className="cursor-pointer rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-900">Browse EDSEC pages</summary>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-sm font-medium text-slate-700">
+            <Link href="/" className="rounded-lg bg-slate-50 p-3">Home</Link>
+            <Link href="/courses" className="rounded-lg bg-slate-50 p-3">Courses</Link>
+            <Link href="/about" className="rounded-lg bg-slate-50 p-3">About</Link>
+            <Link href="/services" className="rounded-lg bg-slate-50 p-3">Services</Link>
+            <Link href="/school-management-system" className="rounded-lg bg-slate-50 p-3">School Platform</Link>
+            <Link href="/school-management-system/demo" className="rounded-lg bg-slate-50 p-3">School Demo</Link>
+            <Link href="/corporate-training" className="rounded-lg bg-slate-50 p-3">Corporate Training</Link>
+            <Link href="/gallery" className="rounded-lg bg-slate-50 p-3">Gallery</Link>
+            <Link href="/student-projects" className="rounded-lg bg-slate-50 p-3">Projects</Link>
+            <Link href="/faq" className="rounded-lg bg-slate-50 p-3">FAQ</Link>
+            <Link href="/contact" className="rounded-lg bg-slate-50 p-3">Contact</Link>
+            <Link href="/apply" className="rounded-lg bg-blue-600 p-3 text-white">Apply Now</Link>
+          </div>
+        </details>
+      </nav>
       <div className="border-t border-blue-100 bg-blue-50/90 px-5 py-2.5"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold sm:text-sm"><span className="hidden text-blue-800 sm:inline">Explore EDSEC solutions:</span><Link href="/school-management-system/demo" className="rounded-full bg-blue-600 px-4 py-1.5 font-bold text-white hover:bg-blue-700">Try School Demo →</Link><Link href="/school-management-system" className="text-blue-800 hover:underline">School Management System</Link><Link href="/school-portfolio" className="text-blue-800 hover:underline">School Portfolio</Link><Link href="/services" className="text-slate-700 hover:underline">Business Services</Link></div></div>
     </header>
   );
