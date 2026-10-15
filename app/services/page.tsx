@@ -112,7 +112,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ServicesPage() {
   const published = await prisma.serviceOffering.findMany({where:{isPublished:true},orderBy:[{displayOrder:"asc"},{createdAt:"asc"}]}).catch(() => []);
-  const displayServices = published.length ? published.map((item)=>({title:item.title,description:item.description,features:item.features.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean),image:item.imageUrl||"",icon:Code2})) : services;
+  const displayServices = published.length ? published.map((item)=>({title:item.title,description:item.description,features:item.features.split(new RegExp("\\r?\\n")).map(s=>s.trim()).filter(Boolean),image:item.imageUrl||"",icon:Code2})) : services;
   return (
     <main className="min-h-screen bg-white text-slate-950">
       {/* HERO */}
