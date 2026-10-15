@@ -42,6 +42,8 @@ const milestones = [
   },
 ];
 
+export const metadata = { title: "About EDSEC ICT Institute | Practical Technology Education", description: "Learn about EDSEC ICT Institute, its practical training approach, values and opportunities for students and organizations." };
+
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-white">
