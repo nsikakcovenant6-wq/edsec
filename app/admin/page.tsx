@@ -245,6 +245,8 @@ export default async function AdminDashboardPage() {
     totalTests,
     publishedTests,
     corporateInquiryCount,
+    newSalesLeads,
+    openSalesLeads,
     pendingPayments,
     totalPayments,
     upcomingClasses,
@@ -306,6 +308,9 @@ export default async function AdminDashboardPage() {
         },
       },
     }),
+
+    prisma.salesLead.count({where:{status:"NEW"}}),
+    prisma.salesLead.count({where:{status:{in:["NEW","CONTACTED","IN_PROGRESS","QUOTED"]}}}),
 
     prisma.payment.count({
       where: {
@@ -672,6 +677,14 @@ export default async function AdminDashboardPage() {
           />
 
           <StatCard
+            value={String(newSalesLeads)}
+            label="New Sales Enquiries"
+            description={`${openSalesLeads} enquiries need follow-up · Open sales dashboard`}
+            href="/admin/sales"
+            icon="corporate"
+            highlight={newSalesLeads > 0}
+          />
+          <StatCard
             value={String(corporateInquiryCount)}
             label="Corporate Inquiries"
             description="Open corporate requests"
@@ -741,6 +754,13 @@ export default async function AdminDashboardPage() {
           />
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <QuickAction
+              href="/admin/sales"
+              title="Sales & Enquiries"
+              description="See new enquiries, contact clients, prepare quotations and schedule follow-ups."
+              icon="corporate"
+              badge={newSalesLeads > 0 ? `${newSalesLeads} new` : undefined}
+            />
             <QuickAction
               href="/admin/applications"
               title="Review Applications"
