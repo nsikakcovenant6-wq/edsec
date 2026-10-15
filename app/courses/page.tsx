@@ -4,10 +4,15 @@ import { prisma } from "@/app/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export default async function CoursesPage() {
+export const metadata = { title: "Practical ICT Courses | EDSEC ICT Institute", description: "Explore practical technology courses, training formats and enrolment opportunities at EDSEC ICT Institute." };
+
+export default async function CoursesPage({searchParams}:{searchParams:Promise<{q?:string}>}) {
+  const {q} = await searchParams;
+  const search = (q || "").trim().slice(0,80);
   const courses = await prisma.course.findMany({
     where: {
       status: "ACTIVE",
+      ...(search ? { OR: [{title:{contains:search,mode:"insensitive" as const}},{shortDescription:{contains:search,mode:"insensitive" as const}}] } : {}),
     },
     orderBy: [
       {
@@ -131,6 +136,12 @@ export default async function CoursesPage() {
             </div>
           </div>
 
+          <form action="/courses" method="GET" className="mb-8 flex flex-col gap-3 sm:flex-row">
+            <label htmlFor="course-search" className="sr-only">Search courses</label>
+            <input id="course-search" name="q" type="search" defaultValue={search} placeholder="Search courses by name or topic" className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-950 focus:border-blue-500 focus:outline-none" />
+            <button type="submit" className="rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800">Search courses</button>
+            {search && <Link href="/courses#courses" className="self-center text-sm font-semibold text-blue-700">Clear search</Link>}
+          </form>
           {/* COURSE GRID */}
           {courses.length > 0 ? (
             <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
