@@ -4,11 +4,12 @@ import { prisma } from "@/app/lib/prisma";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Blog & Technology Insights", description: "Read EDSEC ICT Institute updates, learning tips and practical technology articles." };
 
-export default async function BlogPage({searchParams}:{searchParams:Promise<{q?:string}>}) {
-  const {q} = await searchParams;
+export default async function BlogPage({searchParams}:{searchParams:Promise<{q?:string;category?:string}>}) {
+  const {q,category} = await searchParams;
+  const selectedCategory=(category||"").trim().slice(0,80);
   const search=(q||"").trim().slice(0,80);
   const posts=await prisma.blogPost.findMany({
-    where:{status:"PUBLISHED", ...(search?{OR:[{title:{contains:search,mode:"insensitive" as const}},{excerpt:{contains:search,mode:"insensitive" as const}}]}:{})},
+    where:{status:"PUBLISHED", ...(selectedCategory?{category:selectedCategory}:{}), ...(search?{OR:[{title:{contains:search,mode:"insensitive" as const}},{excerpt:{contains:search,mode:"insensitive" as const}}]}:{})},
     orderBy:[{publishedAt:"desc"},{createdAt:"desc"}],
     take:60,
     select:{id:true,title:true,slug:true,excerpt:true,category:true,coverImageUrl:true,authorName:true,publishedAt:true,createdAt:true},
@@ -23,7 +24,7 @@ export default async function BlogPage({searchParams}:{searchParams:Promise<{q?:
       <form action="/blog" className="mb-9 flex flex-wrap gap-3">
         <label htmlFor="blog-search" className="sr-only">Search blog posts</label>
         <input id="blog-search" name="q" type="search" defaultValue={search} placeholder="Search articles" className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3"/>
-        <button className="rounded-xl bg-blue-700 px-5 py-3 font-bold text-white">Search</button>
+        <label htmlFor="blog-category" className="sr-only">Article category</label><input id="blog-category" name="category" defaultValue={selectedCategory} placeholder="Category (optional)" className="rounded-xl border border-slate-300 bg-white px-4 py-3"/><button className="rounded-xl bg-blue-700 px-5 py-3 font-bold text-white">Search</button>
         {search&&<Link href="/blog" className="self-center font-semibold text-blue-700">Clear</Link>}
       </form>
       {posts.length===0?<div className="rounded-2xl border bg-white p-10 text-center"><h2 className="text-xl font-bold">No articles found</h2><p className="mt-3 text-slate-600">{search?"Try another search term.":"New articles will appear here when published by EDSEC."}</p></div>:
