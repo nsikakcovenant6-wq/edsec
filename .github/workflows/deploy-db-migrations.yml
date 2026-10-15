@@ -19,6 +19,22 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      - name: Verify migration connection configuration
+        env:
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: |
+          node - <<'NODE'
+          const raw = process.env.DIRECT_URL;
+          if (!raw) { console.error("DIRECT_URL repository secret is missing."); process.exit(1); }
+          let url;
+          try { url = new URL(raw); } catch { console.error("DIRECT_URL is not a valid PostgreSQL URL."); process.exit(1); }
+          if (!["postgres:", "postgresql:"].includes(url.protocol)) { console.error("DIRECT_URL must use PostgreSQL."); process.exit(1); }
+          if (url.port === "6543") {
+            console.error("DIRECT_URL points to Supabase transaction pooler (port 6543). Use the direct connection or session pooler on port 5432 for Prisma migrations.");
+            process.exit(1);
+          }
+          console.log("Migration URL configuration checked (credentials and host hidden).");
+          NODE
       - name: Apply pending migrations
         run: npx prisma migrate deploy
         env:
