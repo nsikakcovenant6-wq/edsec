@@ -105,6 +105,8 @@ const services = [
   },
 ];
 
+export const metadata = { title: "ICT Services & Software Solutions | EDSEC", description: "Explore website development, custom software, IT support, branding, digital marketing and corporate training services from EDSEC." };
+
 export default function ServicesPage() {
   return (
     <main className="min-h-screen bg-white text-slate-950">
