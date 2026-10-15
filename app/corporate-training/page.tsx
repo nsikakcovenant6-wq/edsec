@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { submitCorporateInquiry } from "./actions";
 
+export const metadata = { title: "Corporate ICT Training | EDSEC ICT Institute", description: "Practical ICT training for businesses, schools and organizations, with tailored learning programs and enquiries." };
+
 export default function CorporateTrainingPage() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
