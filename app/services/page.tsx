@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
+import { prisma } from "@/app/lib/prisma";
 import {
   Code2,
   MonitorCog,
@@ -107,7 +108,11 @@ const services = [
 
 export const metadata = { title: "ICT Services & Software Solutions | EDSEC", description: "Explore website development, custom software, IT support, branding, digital marketing and corporate training services from EDSEC." };
 
-export default function ServicesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ServicesPage() {
+  const published = await prisma.serviceOffering.findMany({where:{isPublished:true},orderBy:[{displayOrder:"asc"},{createdAt:"asc"}]});
+  const displayServices = published.length ? published.map((item)=>({title:item.title,description:item.description,features:item.features.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean),image:item.imageUrl||"",icon:Code2})) : services;
   return (
     <main className="min-h-screen bg-white text-slate-950">
       {/* HERO */}
@@ -170,7 +175,7 @@ export default function ServicesPage() {
         </div>
 
         <div className="mt-12 grid gap-7 md:grid-cols-2 lg:grid-cols-3">
-          {services.map((service) => {
+          {displayServices.map((service) => {
             const Icon = service.icon;
 
             return (
@@ -180,12 +185,12 @@ export default function ServicesPage() {
               >
                 {/* SERVICE IMAGE */}
                 <div className="relative aspect-16/10 overflow-hidden bg-slate-100">
-                  <img
+                  {service.image ? <img
                     src={service.image}
                     alt={service.title}
                     loading="lazy"
                     className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-110"
-                  />
+                  /> : <div className="h-full w-full bg-gradient-to-br from-slate-900 to-blue-800" />}
 
                   <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 via-slate-950/10 to-transparent" />
 
