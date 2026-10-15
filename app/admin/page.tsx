@@ -589,6 +589,10 @@ export default async function AdminDashboardPage() {
 
           <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:p-10">
             <div className="max-w-3xl">
+              <Link href="/admin/settings" className="mb-6 flex items-center gap-4">
+                {user.avatarUrl ? <img src={user.avatarUrl} alt="Admin profile" className="h-24 w-24 rounded-2xl object-cover" /> : <span className="grid h-24 w-24 place-items-center rounded-2xl bg-blue-600 text-3xl text-white">{adminName.charAt(0)}</span>}
+                <span className="text-lg font-bold text-white">{adminName}</span>
+              </Link>
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
 
