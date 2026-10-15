@@ -247,6 +247,7 @@ export default async function AdminDashboardPage() {
     corporateInquiryCount,
     newSalesLeads,
     openSalesLeads,
+    dueSalesFollowUps,
     pendingPayments,
     totalPayments,
     upcomingClasses,
@@ -311,6 +312,7 @@ export default async function AdminDashboardPage() {
 
     prisma.salesLead.count({where:{status:"NEW"}}),
     prisma.salesLead.count({where:{status:{in:["NEW","CONTACTED","IN_PROGRESS","QUOTED"]}}}),
+    prisma.salesLead.count({where:{status:{in:["NEW","CONTACTED","IN_PROGRESS","QUOTED"]},nextFollowUpAt:{lte:now}}}),
 
     prisma.payment.count({
       where: {
@@ -528,7 +530,7 @@ export default async function AdminDashboardPage() {
 
               <div className="mt-3 flex flex-wrap items-end gap-x-4 gap-y-1">
                 <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                  {greeting}, MR.MMEKAN
+                  {greeting}, {adminName}
                 </h1>
 
                 <span className="mb-1 hidden text-sm text-slate-400 sm:block">
@@ -542,7 +544,7 @@ export default async function AdminDashboardPage() {
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
                 Here is your operational overview of students, admissions,
-                learning, payments, and EDSEC activities.
+                learning, payments, and enquiries requiring follow-up.
               </p>
             </div>
 
@@ -698,6 +700,13 @@ export default async function AdminDashboardPage() {
         ======================================================== */}
 
         <section className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <MiniStat
+            label="Sales Follow-ups Due"
+            value={dueSalesFollowUps}
+            href="/admin/sales"
+            icon="corporate"
+            alert={dueSalesFollowUps > 0}
+          />
           <MiniStat
             label="Payments Attention"
             value={pendingPayments}
