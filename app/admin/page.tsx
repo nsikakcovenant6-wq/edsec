@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -548,7 +549,11 @@ export default async function AdminDashboardPage() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/admin/settings" aria-label="Edit administrator profile" className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 hover:bg-slate-50">
+                {user.avatarUrl ? <img src={user.avatarUrl} alt="Admin profile" className="h-10 w-10 rounded-full object-cover" /> : <span className="grid h-10 w-10 place-items-center rounded-full bg-blue-100 font-bold text-blue-700">{adminName.charAt(0)}</span>}
+                <span className="text-sm font-semibold text-slate-700">My profile</span>
+              </Link>
               <Link
                 href="/"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
