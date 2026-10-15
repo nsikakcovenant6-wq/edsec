@@ -9,8 +9,8 @@ async function submitContact(formData: FormData) {
   const email = String(formData.get("email") || "").trim();
   const subject = String(formData.get("subject") || "").trim();
   const message = String(formData.get("message") || "").trim();
-  if (name.length < 2 || name.length > 120 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || subject.length < 3 || subject.length > 180 || message.length < 10 || message.length > 5000) throw new Error("Please provide a valid name, email, subject and message.");
-  await prisma.salesLead.create({ data: { reference: `CONTACT-${crypto.randomUUID().slice(0, 8).toUpperCase()}`, category: "CONTACT", contactName: name, email, phone: "", organization: "General website enquiry", requirements: `Subject: ${subject}\\n\\n${message}` } });
+  if (name.length < 2 || name.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || subject.length < 3 || subject.length > 180 || message.length < 10 || message.length > 5000) throw new Error("Please provide a valid name, email, subject and message.");
+  await prisma.salesLead.create({ data: { reference: `CONTACT-${crypto.randomUUID().slice(0, 8).toUpperCase()}`, category: "CONTACT", contactName: name, email, phone: "", organization: "General website enquiry", requirements: `Subject: ${subject}\n\n${message}` } });
   revalidatePath("/admin/sales");
   revalidatePath("/admin");
   redirect("/contact?sent=1");
