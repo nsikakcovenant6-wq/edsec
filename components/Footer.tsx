@@ -5,6 +5,7 @@ const platformLinks = [
   { label: "Courses", href: "/courses" },
   { label: "Student Projects", href: "/student-projects" },
   { label: "Gallery", href: "/gallery" },
+  { label: "Blog", href: "/blog" },
   { label: "School Platform", href: "/school-management-system" },
   { label: "School Demo", href: "/school-management-system/demo" },
   { label: "School Portfolio", href: "/school-portfolio" },
