@@ -1,4 +1,21 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { prisma } from "@/app/lib/prisma";
+
+async function submitContact(formData: FormData) {
+  "use server";
+  const name = String(formData.get("name") || "").trim();
+  const email = String(formData.get("email") || "").trim();
+  const subject = String(formData.get("subject") || "").trim();
+  const message = String(formData.get("message") || "").trim();
+  if (name.length < 2 || name.length > 120 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || subject.length < 3 || subject.length > 180 || message.length < 10 || message.length > 5000) throw new Error("Please provide a valid name, email, subject and message.");
+  await prisma.salesLead.create({ data: { reference: `CONTACT-${crypto.randomUUID().slice(0, 8).toUpperCase()}`, category: "CONTACT", contactName: name, email, phone: "", organization: "General website enquiry", requirements: `Subject: ${subject}\\n\\n${message}` } });
+  revalidatePath("/admin/sales");
+  revalidatePath("/admin");
+  redirect("/contact?sent=1");
+}
+
 
 const contactDetails = {
   phone: "+234 814 213 7101",
@@ -8,11 +25,12 @@ const contactDetails = {
   hours: "Monday – Saturday, 8:00 AM – 5:00 PM",
 };
 
-export default function ContactPage() {
+export default async function ContactPage({searchParams}:{searchParams:Promise<{sent?:string}>}) {
+  const {sent}=await searchParams;
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       {/* Hero */}
-      <section className="border-b border-white/10 bg-linear-to-brom-cyan-500/[0.08] to-transparent">
+      <section className="border-b border-white/10 bg-linear-to-br from-cyan-500/[0.08] to-transparent">
         <div className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12">
           <div className="max-w-3xl">
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
@@ -136,7 +154,8 @@ export default function ContactPage() {
               </p>
             </div>
 
-            <form className="mt-8 space-y-5">
+            {sent === "1" && <p role="status" className="mt-5 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-200">Your message has been received by EDSEC. Our team will review your enquiry.</p>}
+            <form action={submitContact} className="mt-8 space-y-5">
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label
@@ -219,8 +238,7 @@ export default function ContactPage() {
               </button>
 
               <p className="text-center text-xs text-slate-500">
-                We&apos;ll connect this form to the EDSEC admin dashboard
-                later so enquiries can be managed without changing code.
+                Your enquiry will be saved securely for the EDSEC team to review.
               </p>
             </form>
           </div>
@@ -245,7 +263,7 @@ export default function ContactPage() {
               </p>
 
               <p className="mt-1 text-sm text-slate-500">
-                Google Maps integration will be added here.
+                For directions, contact EDSEC and our team will share the training centre location.
               </p>
             </div>
           </div>
