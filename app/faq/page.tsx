@@ -138,6 +138,15 @@ export default async function FAQPage() {
       ],
     },
     {
+      category: "Course fees and payments",
+      items: [
+        { question: "Where can I see a course fee?", answer: "Open the relevant course page or contact EDSEC to confirm the current fee before making a payment." },
+        { question: "Can I pay for training in instalments?", answer: "Payment arrangements depend on the course and current EDSEC policy. Ask the admissions team to confirm the available options in writing." },
+        { question: "How do I obtain a payment receipt?", answer: "Where supported, registered students can access their payment records and receipts through the student portal. Contact EDSEC if a receipt is missing." },
+        { question: "What should I do if a payment is not reflected?", answer: "Keep the payment reference and contact EDSEC support. Do not repeatedly pay while a transaction is being verified." },
+      ],
+    },
+    {
       category: "School digital platforms",
       items: [
         { question: "How much does the EDSEC school platform cost?", answer: "The standard platform is ₦250,000 one-time setup and ₦25,000 per month for agreed care and management. Additional integrations, domain costs and third-party fees may be billed separately." },
