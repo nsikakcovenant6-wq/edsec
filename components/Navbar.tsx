@@ -62,6 +62,8 @@ export default async function Navbar() {
             Projects
           </Link>
 
+          <Link href="/blog" className="text-sm font-medium text-slate-600 transition hover:text-blue-600">Blog</Link>
+
           <Link href="/gallery" className="text-sm font-medium text-slate-600 transition hover:text-blue-600">
             Gallery
           </Link>
@@ -133,6 +135,7 @@ export default async function Navbar() {
             <Link href="/school-management-system/demo" className="rounded-lg bg-slate-50 p-3">School Demo</Link>
             <Link href="/corporate-training" className="rounded-lg bg-slate-50 p-3">Corporate Training</Link>
             <Link href="/gallery" className="rounded-lg bg-slate-50 p-3">Gallery</Link>
+            <Link href="/blog" className="rounded-lg bg-slate-50 p-3">Blog</Link>
             <Link href="/student-projects" className="rounded-lg bg-slate-50 p-3">Projects</Link>
             <Link href="/faq" className="rounded-lg bg-slate-50 p-3">FAQ</Link>
             <Link href="/contact" className="rounded-lg bg-slate-50 p-3">Contact</Link>
