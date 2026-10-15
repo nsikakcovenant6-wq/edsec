@@ -11,6 +11,8 @@ async function submitContact(formData: FormData) {
   const subject = String(formData.get("subject") || "").trim();
   const message = String(formData.get("message") || "").trim();
   if (name.length < 2 || name.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || subject.length < 3 || subject.length > 180 || message.length < 10 || message.length > 5000) throw new Error("Please provide a valid name, email, subject and message.");
+  const recent = await prisma.salesLead.count({ where: { category: "CONTACT", email, createdAt: { gte: new Date(Date.now() - 15 * 60 * 1000) } } });
+  if (recent >= 3) throw new Error("Too many messages submitted. Please try again in 15 minutes or contact EDSEC by phone.");
   await prisma.salesLead.create({ data: { reference: `CONTACT-${crypto.randomUUID().slice(0, 8).toUpperCase()}`, category: "CONTACT", contactName: name, email, phone: "", organization: "General website enquiry", requirements: `Subject: ${subject}\n\n${message}` } });
   revalidatePath("/admin/sales");
   revalidatePath("/admin");
