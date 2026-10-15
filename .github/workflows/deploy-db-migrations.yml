@@ -17,7 +17,7 @@ jobs:
       - name: Validate Prisma schema
         run: npx prisma validate
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DIRECT_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
       - name: Verify migration connection configuration
         env:
@@ -40,10 +40,10 @@ jobs:
         timeout-minutes: 5
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DIRECT_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
       - name: Confirm migration status
         run: npx prisma migrate status
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DIRECT_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
