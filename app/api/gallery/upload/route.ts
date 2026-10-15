@@ -114,6 +114,12 @@ export async function POST(request: Request) {
     }
 
     const extension = getExtension(file.name);
+    const expectedExtensions: Record<string,string[]> = {
+      "image/jpeg":[".jpg",".jpeg"],"image/png":[".png"],"image/webp":[".webp"],"image/gif":[".gif"]
+    };
+    if (!expectedExtensions[file.type]?.includes(extension)) {
+      return NextResponse.json({success:false,message:"File extension does not match the image type."},{status:400});
+    }
 
     const safeOriginalName = sanitizeFileName(
       file.name.replace(extension, ""),
