@@ -6,7 +6,7 @@ permissions:
 jobs:
   migrate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 7
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,9 +33,11 @@ jobs:
             console.error("DIRECT_URL points to Supabase transaction pooler (port 6543). Use the direct connection or session pooler on port 5432 for Prisma migrations.");
             process.exit(1);
           }
-          console.log("Migration URL configuration checked (credentials and host hidden).");
+          console.log("Migration endpoint:", url.hostname + ":" + (url.port || "5432"));
+          console.log("Migration URL configuration checked (credentials hidden).");
           NODE
       - name: Apply pending migrations
+        timeout-minutes: 5
         run: npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
