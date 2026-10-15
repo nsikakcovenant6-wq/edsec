@@ -77,6 +77,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.7,
     },
+    { url: `${baseUrl}/blog`, changeFrequency: "weekly", priority: 0.7 },
     {
       url: `${baseUrl}/apply`,
       lastModified: new Date(),
