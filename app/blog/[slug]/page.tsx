@@ -4,6 +4,13 @@ import { prisma } from "@/app/lib/prisma";
 
 export const dynamic="force-dynamic";
 
+export async function generateMetadata({params}:{params:Promise<{slug:string}>}) {
+  const {slug}=await params;
+  const post=await prisma.blogPost.findFirst({where:{slug,status:"PUBLISHED"},select:{title:true,excerpt:true}});
+  if(!post)return {title:"Article not found | EDSEC"};
+  return {title:post.title,description:post.excerpt||`Read ${post.title} on EDSEC Insights.`};
+}
+
 export default async function BlogArticle({params}:{params:Promise<{slug:string}>}) {
   const {slug}=await params;
   const post=await prisma.blogPost.findFirst({where:{slug,status:"PUBLISHED"}});
