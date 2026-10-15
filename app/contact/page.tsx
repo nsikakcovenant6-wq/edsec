@@ -5,6 +5,7 @@ import { prisma } from "@/app/lib/prisma";
 
 async function submitContact(formData: FormData) {
   "use server";
+  if (String(formData.get("website") || "").trim()) redirect("/contact?sent=1");
   const name = String(formData.get("name") || "").trim();
   const email = String(formData.get("email") || "").trim();
   const subject = String(formData.get("subject") || "").trim();
@@ -158,6 +159,7 @@ export default async function ContactPage({searchParams}:{searchParams:Promise<{
 
             {sent === "1" && <p role="status" className="mt-5 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-200">Your message has been received by EDSEC. Our team will review your enquiry.</p>}
             <form action={submitContact} className="mt-8 space-y-5">
+              <div aria-hidden="true" className="absolute -left-[10000px] h-px w-px overflow-hidden"><label htmlFor="contact-website">Leave this field empty</label><input id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" /></div>
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label
