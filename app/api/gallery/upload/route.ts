@@ -108,6 +108,10 @@ export async function POST(request: Request) {
 
     const { supabaseUrl, publishableKey } =
       getSupabaseConfig();
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceRoleKey) {
+      return NextResponse.json({success:false,message:"Gallery storage credentials are not configured."},{status:503});
+    }
 
     const extension = getExtension(file.name);
 
@@ -115,7 +119,7 @@ export async function POST(request: Request) {
       file.name.replace(extension, ""),
     );
 
-    const uniqueName = `${Date.now()}-${cryptoRandomId()}-${safeOriginalName || "gallery-image"}${extension}`;
+    const uniqueName = `${Date.now()}-${crypto.randomUUID()}-${safeOriginalName || "gallery-image"}${extension}`;
 
     /*
      * Store images inside:
@@ -133,7 +137,7 @@ export async function POST(request: Request) {
     const uploadResponse = await fetch(uploadUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${publishableKey}`,
+        Authorization: `Bearer ${serviceRoleKey}`,
         apikey: publishableKey,
         "Content-Type": file.type,
         "x-upsert": "false",
@@ -195,8 +199,3 @@ export async function POST(request: Request) {
   }
 }
 
-function cryptoRandomId() {
-  return Math.random()
-    .toString(36)
-    .slice(2, 10);
-}
