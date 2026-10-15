@@ -6,102 +6,6 @@ import Link from "next/link";
 
 import { prisma } from "@/app/lib/prisma";
 
-const unsplashGalleryItems = [
-  {
-    title: "Practical Computer Training",
-    category: "Training",
-    image:
-      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=85",
-    description:
-      "A practical learning environment where students develop essential digital and computer skills.",
-  },
-  {
-    title: "Technology & Development",
-    category: "Technology",
-    image:
-      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1400&q=85",
-    description:
-      "Collaborative technology environments designed for learning, innovation and problem solving.",
-  },
-  {
-    title: "Students Learning Technology",
-    category: "Students",
-    image:
-      "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1400&q=85",
-    description:
-      "Students working together, sharing ideas and building confidence with technology.",
-  },
-  {
-    title: "Creative Design Training",
-    category: "Design",
-    image:
-      "https://images.unsplash.com/photo-1559028012-481c04fa702d?auto=format&fit=crop&w=1400&q=85",
-    description:
-      "Creative digital environments where students explore design, graphics and visual communication.",
-  },
-  {
-    title: "Cybersecurity & Networking",
-    category: "Cybersecurity",
-    image:
-      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=85",
-    description:
-      "Practical technology training inspired by modern networking, infrastructure and cybersecurity environments.",
-  },
-  {
-    title: "Technology Workshop",
-    category: "Workshop",
-    image:
-      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1400&q=85",
-    description:
-      "Interactive workshops where learners collaborate, experiment and solve real-world problems.",
-  },
-  {
-    title: "Student Project Development",
-    category: "Projects",
-    image:
-      "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1400&q=85",
-    description:
-      "Project-focused learning that encourages students to turn ideas into practical digital solutions.",
-  },
-  {
-    title: "Modern Learning Environment",
-    category: "Learning",
-    image:
-      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=85",
-    description:
-      "A modern, collaborative environment designed to inspire learning, creativity and innovation.",
-  },
-];
-
-function GalleryImage({
-  image,
-  title,
-}: {
-  image: string;
-  title: string;
-}) {
-  return (
-    <div className="group relative aspect-4/3 overflow-hidden bg-slate-200">
-      <img
-        src={image}
-        alt={title}
-        loading="lazy"
-        className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-110"
-      />
-
-      <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 via-transparent to-transparent opacity-80" />
-
-      <div className="absolute left-5 top-5 rounded-full border border-white/30 bg-slate-950/60 px-3 py-1 text-[10px] font-bold tracking-[0.2em] text-white backdrop-blur-md">
-        EDSEC
-      </div>
-
-      <div className="absolute bottom-5 right-5 translate-y-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-white opacity-0 backdrop-blur-md transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-        Explore
-      </div>
-    </div>
-  );
-}
-
 function DatabaseGalleryImage({
   image,
   title,
@@ -171,65 +75,11 @@ export default async function GalleryPage() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-            Explore the technology, creativity,
+            Explore authentic photographs of EDSEC training, creativity,
             collaboration and practical learning
             experience that inspires the EDSEC
             community.
           </p>
-        </div>
-      </section>
-
-      {/* UNSPLASH / FEATURED GALLERY */}
-      <section className="px-6 py-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-12 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
-                Inside EDSEC
-              </p>
-
-              <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-                Our learning experience
-              </h2>
-            </div>
-
-            <p className="max-w-md text-sm leading-6 text-slate-500">
-              Practical learning, technology,
-              creativity and collaboration —
-              inspired by modern technology
-              environments.
-            </p>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {unsplashGalleryItems.map(
-              (item) => (
-                <article
-                  key={item.title}
-                  className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-2xl"
-                >
-                  <GalleryImage
-                    image={item.image}
-                    title={item.title}
-                  />
-
-                  <div className="p-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
-                      {item.category}
-                    </p>
-
-                    <h3 className="mt-2 text-lg font-semibold text-slate-900">
-                      {item.title}
-                    </h3>
-
-                    <p className="mt-2 text-sm leading-6 text-slate-500">
-                      {item.description}
-                    </p>
-                  </div>
-                </article>
-              ),
-            )}
-          </div>
         </div>
       </section>
 
