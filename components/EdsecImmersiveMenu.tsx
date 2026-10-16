@@ -6,7 +6,7 @@ import {useEffect,useState} from "react";
 const links=[["Home","/"],["Courses","/courses"],["Services","/services"],["About","/about"],["School Platform","/school-management-system"],["School Demo","/school-management-system/demo"],["Corporate Training","/corporate-training"],["Certification","/certification"],["Projects","/student-projects"],["Gallery","/gallery"],["Blog","/blog"],["Contact","/contact"],["Apply Now","/apply"]];
 export default function EdsecImmersiveMenu(){
  const [open,setOpen]=useState(false);
- const [mode,setMode]=useState("globe");
+ const [mode,setMode]=useState("sidebar");
  const pathname=usePathname();
  useEffect(()=>{setOpen(false)},[pathname]);
  useEffect(()=>{if(!open)return;const old=document.body.style.overflow;document.body.style.overflow="hidden";const key=(e:KeyboardEvent)=>{if(e.key==="Escape")setOpen(false)};window.addEventListener("keydown",key);return()=>{document.body.style.overflow=old;window.removeEventListener("keydown",key)}},[open]);
