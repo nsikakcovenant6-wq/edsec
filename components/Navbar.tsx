@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { getCurrentUser } from "@/app/lib/auth";
 import AuthButtons from "@/components/AuthButtons";
+import EdsecImmersiveMenu from "@/components/EdsecImmersiveMenu";
 
 export default async function Navbar() {
   const user = await getCurrentUser();
@@ -49,6 +50,7 @@ export default async function Navbar() {
           </div>
         </Link>
 
+        <div className="hidden lg:block"><EdsecImmersiveMenu /></div>
         <nav className="hidden items-center gap-6 lg:flex">
           <Link href="/" className="text-sm font-medium text-slate-600 transition hover:text-blue-600">
             Home
@@ -94,6 +96,7 @@ export default async function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2 lg:hidden">
+          <EdsecImmersiveMenu />
           <Link href="/school-management-system" className="rounded-lg bg-blue-600 px-2.5 py-2 text-xs font-bold text-white">Schools</Link>
           {!user ? (
             <>
