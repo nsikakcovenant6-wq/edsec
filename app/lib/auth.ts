@@ -5,11 +5,13 @@ import { prisma } from "@/app/lib/prisma";
 
 const SESSION_COOKIE = "edsec_session";
 
-const SESSION_SECRET = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
-if (!SESSION_SECRET && process.env.NODE_ENV === "production") {
-  throw new Error("AUTH_SECRET or NEXTAUTH_SECRET must be configured in production");
+function getSessionSecret(): string {
+  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+  if (!secret && process.env.NODE_ENV === "production") {
+    throw new Error("AUTH_SECRET or NEXTAUTH_SECRET must be configured in production");
+  }
+  return secret || "edsec-development-secret-change-this";
 }
-const effectiveSessionSecret = SESSION_SECRET || "edsec-development-secret-change-this";
 
 export type UserRole = "ADMIN" | "STUDENT";
 
@@ -43,7 +45,7 @@ function base64UrlDecode(value: string) {
 
 function createSignature(payload: string) {
   return crypto
-    .createHmac("sha256", effectiveSessionSecret)
+    .createHmac("sha256", getSessionSecret())
     .update(payload)
     .digest("base64")
     .replace(/\+/g, "-")
