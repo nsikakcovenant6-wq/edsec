@@ -4,8 +4,19 @@ import Image from "next/image";
 import {usePathname} from "next/navigation";
 import {useEffect, useRef, useState} from "react";
 
+function sceneForPath(path: string) {
+  if (path === "/") return "globe";
+  if (path.startsWith("/courses") || path.startsWith("/certification")) return "campus";
+  if (path.startsWith("/services") || path.startsWith("/school-management-system")) return "robot";
+  if (path.startsWith("/gallery") || path.startsWith("/student-projects")) return "portal";
+  if (path.startsWith("/blog")) return "books";
+  if (path.startsWith("/contact")) return "rocket";
+  return "globe";
+}
+
 export default function EdsecPageTransition() {
   const pathname = usePathname();
+  const scene = sceneForPath(pathname);
   const previousPath = useRef<string | null>(null);
   const [active, setActive] = useState(false);
   const [sequence, setSequence] = useState(0);
@@ -28,10 +39,15 @@ export default function EdsecPageTransition() {
 
   if (!active) return null;
   return (
-    <div key={sequence} className="edsec-route-overlay" role="status" aria-live="polite" aria-label="EDSEC page transition">
+    <div key={sequence} className={`edsec-route-overlay edsec-scene-${scene}`} role="status" aria-live="polite" aria-label="EDSEC page transition">
       <div className="edsec-route-aura" aria-hidden="true" />
       <div className="edsec-route-stars" aria-hidden="true" />
       <div className="edsec-route-stage">
+        {scene === "campus" && <div className="edsec-scene-campus" aria-hidden="true"><div className="edsec-campus-roof" /><div className="edsec-campus-sign">EDSEC</div><div className="edsec-campus-door" /><div className="edsec-campus-windows" /><div className="edsec-campus-people"><i /><i /><i /></div></div>}
+        {scene === "robot" && <div className="edsec-scene-robot" aria-hidden="true"><div className="edsec-robot-head"><i /><i /></div><div className="edsec-robot-body">EDSEC</div><div className="edsec-robot-arms" /><div className="edsec-robot-legs" /></div>}
+        {scene === "portal" && <div className="edsec-scene-portal" aria-hidden="true"><span /><span /><span /></div>}
+        {scene === "books" && <div className="edsec-scene-books" aria-hidden="true"><span /><span /><span /></div>}
+        {scene === "rocket" && <div className="edsec-scene-rocket" aria-hidden="true">🚀</div>}
         <div className="edsec-route-globe" aria-hidden="true"><div className="edsec-route-globe-latitude" /><div className="edsec-route-globe-longitude" /><div className="edsec-route-globe-longitude edsec-route-globe-longitude-alt" /></div>
         <div className="edsec-route-satellite" aria-hidden="true"><span className="edsec-route-satellite-core" /><span className="edsec-route-satellite-wing" /></div>
         <div className="edsec-route-orbit edsec-route-orbit-one" aria-hidden="true" />
