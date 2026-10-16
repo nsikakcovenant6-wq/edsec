@@ -69,14 +69,14 @@ button {
   }
 }
 
-.edsec-route-overlay{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;pointer-events:none;overflow:hidden;background:radial-gradient(circle at center,#1d4ed8,#020617);animation:edsec-transition-curtain 1.85s ease both}
-.edsec-route-aura{position:absolute;width:70vmin;height:70vmin;border-radius:50%;background:radial-gradient(circle,#38bdf855,transparent 70%);filter:blur(20px);animation:edsec-transition-glow 1.7s ease both}
-.edsec-route-stars{position:absolute;inset:0;background-image:radial-gradient(#ffffff88 1px,transparent 1px);background-size:36px 36px;opacity:.16;animation:edsec-transition-stars 1.8s ease both}
+.edsec-route-overlay{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;pointer-events:none;overflow:hidden;background:radial-gradient(circle at center,#1d4ed8,#020617);animation:edsec-transition-curtain 4s ease both}
+.edsec-route-aura{position:absolute;width:70vmin;height:70vmin;border-radius:50%;background:radial-gradient(circle,#38bdf855,transparent 70%);filter:blur(20px);animation:edsec-transition-glow 3.5s ease both}
+.edsec-route-stars{position:absolute;inset:0;background-image:radial-gradient(#ffffff88 1px,transparent 1px);background-size:36px 36px;opacity:.16;animation:edsec-transition-stars 3.8s ease both}
 .edsec-route-stage{position:relative;width:260px;height:260px;display:flex;align-items:center;justify-content:center;flex-direction:column;perspective:1000px}
-.edsec-route-emblem{position:relative;z-index:2;width:126px;height:126px;display:grid;place-items:center;border:1px solid #ffffff66;border-radius:28px;background:#ffffff26;backdrop-filter:blur(20px);box-shadow:0 24px 70px #38bdf855,inset 0 1px #ffffff77;animation:edsec-transition-spin 1.55s cubic-bezier(.2,.8,.2,1) both}
+.edsec-route-emblem{position:relative;z-index:2;width:126px;height:126px;display:grid;place-items:center;border:1px solid #ffffff66;border-radius:28px;background:#ffffff26;backdrop-filter:blur(20px);box-shadow:0 24px 70px #38bdf855,inset 0 1px #ffffff77;animation:edsec-transition-spin 3.2s cubic-bezier(.2,.8,.2,1) both}
 .edsec-route-orbit{position:absolute;width:210px;height:210px;top:7px;left:25px;border:2px solid #7dd3fc88;border-radius:50%;box-shadow:0 0 22px #38bdf844}
-.edsec-route-orbit-one{animation:edsec-transition-orbit-a 1.7s linear both}
-.edsec-route-orbit-two{animation:edsec-transition-orbit-b 1.7s linear both}
+.edsec-route-orbit-one{animation:edsec-transition-orbit-a 3.8s linear both}
+.edsec-route-orbit-two{animation:edsec-transition-orbit-b 3.8s linear both}
 .edsec-route-title{position:relative;z-index:2;margin-top:18px;color:white;font-size:24px;font-weight:900;letter-spacing:.3em}
 .edsec-route-subtitle{position:relative;z-index:2;margin-top:8px;color:#bae6fd;font-size:9px;letter-spacing:.14em}
 @keyframes edsec-transition-curtain{0%{opacity:0}18%{opacity:1}75%{opacity:1}100%{opacity:0}}
@@ -87,11 +87,11 @@ button {
 @keyframes edsec-transition-stars{from{transform:scale(.7);opacity:0}to{transform:scale(1.4);opacity:.18}}
 @media(prefers-reduced-motion:reduce){.edsec-route-overlay{display:none}}
 
-.edsec-route-globe{position:absolute;top:9px;left:27px;width:206px;height:206px;border-radius:50%;background:radial-gradient(circle at 30% 26%,#93c5fd99,#2563eb44 44%,#02061799 75%);border:1px solid #7dd3fc88;box-shadow:inset -20px -16px 32px #02061799,0 0 50px #38bdf855;transform-style:preserve-3d;animation:edsec-globe-turn 1.8s ease-in-out both}
+.edsec-route-globe{position:absolute;top:9px;left:27px;width:206px;height:206px;border-radius:50%;background:radial-gradient(circle at 30% 26%,#93c5fd99,#2563eb44 44%,#02061799 75%);border:1px solid #7dd3fc88;box-shadow:inset -20px -16px 32px #02061799,0 0 50px #38bdf855;transform-style:preserve-3d;animation:edsec-globe-turn 3.8s ease-in-out both}
 .edsec-route-globe-latitude{position:absolute;inset:29% 0;border-top:1px solid #bae6fd88;border-bottom:1px solid #bae6fd88;border-radius:50%}
 .edsec-route-globe-longitude{position:absolute;inset:0 30%;border-left:1px solid #bae6fd99;border-right:1px solid #bae6fd99;border-radius:50%}
 .edsec-route-globe-longitude-alt{transform:rotateY(65deg)}
-.edsec-route-satellite{position:absolute;z-index:4;top:0;left:0;width:260px;height:260px;animation:edsec-satellite-flight 1.8s cubic-bezier(.3,.2,.7,.8) both}
+.edsec-route-satellite{position:absolute;z-index:4;top:0;left:0;width:260px;height:260px;animation:edsec-satellite-flight 3.8s cubic-bezier(.3,.2,.7,.8) both}
 .edsec-route-satellite-core{position:absolute;top:7px;left:118px;width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#e0f2fe,#38bdf8);box-shadow:0 0 20px #38bdf8}
 .edsec-route-satellite-wing{position:absolute;top:13px;left:96px;width:68px;height:11px;background:linear-gradient(90deg,#2563eb,#e0f2fe 30%,#2563eb 70%,#93c5fd);border:1px solid #bae6fd}
 @keyframes edsec-globe-turn{from{transform:rotateY(-35deg) rotateZ(-12deg) scale(.6);opacity:0}35%{opacity:1}to{transform:rotateY(200deg) rotateZ(8deg) scale(1);opacity:.9}}
