@@ -68,3 +68,21 @@ button {
     scroll-behavior: auto !important;
   }
 }
+
+.edsec-route-overlay{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;pointer-events:none;overflow:hidden;background:radial-gradient(circle at center,#1d4ed8,#020617);animation:edsec-transition-curtain 1.05s ease both}
+.edsec-route-aura{position:absolute;width:70vmin;height:70vmin;border-radius:50%;background:radial-gradient(circle,#38bdf855,transparent 70%);filter:blur(20px);animation:edsec-transition-glow 1s ease both}
+.edsec-route-stars{position:absolute;inset:0;background-image:radial-gradient(#ffffff88 1px,transparent 1px);background-size:36px 36px;opacity:.16;animation:edsec-transition-stars 1s ease both}
+.edsec-route-stage{position:relative;width:260px;height:260px;display:flex;align-items:center;justify-content:center;flex-direction:column;perspective:1000px}
+.edsec-route-emblem{position:relative;z-index:2;width:126px;height:126px;display:grid;place-items:center;border:1px solid #ffffff66;border-radius:28px;background:#ffffff26;backdrop-filter:blur(20px);box-shadow:0 24px 70px #38bdf855,inset 0 1px #ffffff77;animation:edsec-transition-spin .95s cubic-bezier(.2,.8,.2,1) both}
+.edsec-route-orbit{position:absolute;width:210px;height:210px;top:7px;left:25px;border:2px solid #7dd3fc88;border-radius:50%;box-shadow:0 0 22px #38bdf844}
+.edsec-route-orbit-one{animation:edsec-transition-orbit-a .95s linear both}
+.edsec-route-orbit-two{animation:edsec-transition-orbit-b .95s linear both}
+.edsec-route-title{position:relative;z-index:2;margin-top:18px;color:white;font-size:24px;font-weight:900;letter-spacing:.3em}
+.edsec-route-subtitle{position:relative;z-index:2;margin-top:8px;color:#bae6fd;font-size:9px;letter-spacing:.14em}
+@keyframes edsec-transition-curtain{0%{opacity:0}18%{opacity:1}75%{opacity:1}100%{opacity:0}}
+@keyframes edsec-transition-spin{0%{opacity:0;transform:translateZ(-160px) rotateY(-180deg) scale(.4)}55%{opacity:1;transform:translateZ(65px) rotateY(20deg) scale(1.1)}100%{opacity:1;transform:translateZ(0) rotateY(360deg) scale(1)}}
+@keyframes edsec-transition-orbit-a{from{transform:rotateX(68deg) rotateZ(0)}to{transform:rotateX(68deg) rotateZ(420deg)}}
+@keyframes edsec-transition-orbit-b{from{transform:rotateY(68deg) rotateZ(0)}to{transform:rotateY(68deg) rotateZ(-420deg)}}
+@keyframes edsec-transition-glow{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:scale(1.2)}}
+@keyframes edsec-transition-stars{from{transform:scale(.7);opacity:0}to{transform:scale(1.4);opacity:.18}}
+@media(prefers-reduced-motion:reduce){.edsec-route-overlay{display:none}}
