@@ -147,3 +147,40 @@ button {
 @keyframes edsec-books-fly{0%{opacity:0;transform:translateY(180px) rotateY(-110deg)}55%{opacity:1;transform:translateY(-35px) rotateY(40deg)}100%{opacity:0;transform:translateY(-180px) rotateY(220deg)}}
 @keyframes edsec-rocket-flight{0%{opacity:0;transform:translate(-220px,220px) rotate(-35deg) scale(.4)}50%{opacity:1;transform:translate(0,0) rotate(25deg) scale(1)}100%{opacity:0;transform:translate(240px,-240px) rotate(45deg) scale(.6)}}
 @media(prefers-reduced-motion:reduce){.edsec-scene-campus,.edsec-scene-robot,.edsec-scene-portal,.edsec-scene-books,.edsec-scene-rocket{display:none}}
+
+/* EDSEC cinematic scene extensions: globe camera push, portal reveal, AI flight and circuit build. */
+.edsec-scene-globe .edsec-route-stage{animation:edsec-camera-globe 4s cubic-bezier(.3,.1,.5,1) both}
+.edsec-scene-globe .edsec-route-globe{background:radial-gradient(circle at 28% 24%,#c4f1ffbb,#38bdf866 35%,#1d4ed8aa 65%,#020617 92%);box-shadow:inset -25px -18px 40px #020617aa,0 0 65px #38bdf8aa,0 0 130px #2563eb66}
+.edsec-scene-globe .edsec-route-emblem{animation:edsec-logo-globe-emerge 4s ease both}
+.edsec-scene-globe .edsec-route-orbit{border-color:#7dd3fcaa}
+.edsec-transition-particles{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,#67e8f9 1.5px,transparent 2px),radial-gradient(circle,#a5b4fc 1px,transparent 2px);background-size:45px 55px,78px 66px;background-position:12px 20px,42px 38px;opacity:.1;animation:edsec-particle-field 4s ease both}
+.edsec-scene-portal .edsec-transition-particles{animation:edsec-portal-particles 4s ease both}
+.edsec-scene-portal .edsec-route-stage{animation:edsec-camera-portal 4s ease both}
+.edsec-scene-portal .edsec-route-overlay{background:radial-gradient(circle,#0891b2,#020617)}
+.edsec-scene-portal .edsec-route-orbit{box-shadow:0 0 35px #22d3ee,0 0 75px #2563eb99;border:3px solid #67e8f9}
+.edsec-scene-flying-robot .edsec-route-globe,.edsec-scene-flying-robot .edsec-route-satellite{display:none}
+.edsec-scene-flying-robot .edsec-route-emblem{animation:edsec-ai-draw-logo 4s ease both}
+.edsec-flying-robot{position:absolute;z-index:6;top:40px;left:80px;width:95px;height:120px;filter:drop-shadow(0 0 15px #38bdf8);animation:edsec-ai-flight 4s cubic-bezier(.3,.1,.7,1) both}
+.edsec-flying-head{position:absolute;top:0;left:14px;width:67px;height:53px;border:3px solid #bae6fd;border-radius:22px;background:linear-gradient(135deg,#60a5fa,#1d4ed8);box-shadow:inset 0 0 14px #e0f2fe77}
+.edsec-flying-head i{position:absolute;top:19px;left:13px;width:12px;height:9px;background:#e0f2fe;border-radius:50%;box-shadow:0 0 12px #e0f2fe}
+.edsec-flying-head i+i{left:39px}
+.edsec-flying-body{position:absolute;top:57px;left:24px;width:48px;height:43px;border:2px solid #bae6fd;border-radius:14px;background:linear-gradient(135deg,#94a3b8,#2563eb)}
+.edsec-flying-thruster{position:absolute;top:99px;left:33px;width:29px;height:32px;border-radius:0 0 50% 50%;background:linear-gradient(#e0f2fe,#38bdf8,transparent);filter:blur(3px);animation:edsec-ai-thruster .2s infinite alternate}
+.edsec-flying-trail{position:absolute;top:49px;left:-110px;width:115px;height:3px;background:linear-gradient(90deg,transparent,#67e8f9);box-shadow:0 0 18px #67e8f9;transform:rotate(-20deg)}
+.edsec-scene-circuit .edsec-route-globe,.edsec-scene-circuit .edsec-route-satellite{display:none}
+.edsec-scene-circuit .edsec-route-emblem{animation:edsec-chip-unfold 4s ease both}
+.edsec-circuit-board{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;background:linear-gradient(90deg,transparent 49.9%,#38bdf80d 50%),linear-gradient(transparent 49.9%,#38bdf80d 50%);background-size:45px 45px}
+.edsec-circuit-board span{position:absolute;top:50%;left:50%;width:45vw;height:3px;transform-origin:left center;background:linear-gradient(90deg,#67e8f9,#2563eb,transparent);box-shadow:0 0 18px #38bdf8;animation:edsec-circuit-grow 4s ease both}
+.edsec-circuit-board span:nth-child(1){transform:rotate(0deg)}.edsec-circuit-board span:nth-child(2){transform:rotate(60deg)}.edsec-circuit-board span:nth-child(3){transform:rotate(120deg)}.edsec-circuit-board span:nth-child(4){transform:rotate(180deg)}.edsec-circuit-board span:nth-child(5){transform:rotate(240deg)}.edsec-circuit-board span:nth-child(6){transform:rotate(300deg)}
+.edsec-circuit-board b{position:absolute;top:50%;left:50%;width:170px;height:170px;margin:-85px;border:5px solid #7dd3fc;border-radius:18px;background:repeating-linear-gradient(45deg,#0c4a6e,#0c4a6e 12px,#082f49 12px,#082f49 24px);box-shadow:0 0 80px #38bdf8aa,inset 0 0 40px #38bdf855;animation:edsec-chip-form 4s ease both}
+@keyframes edsec-camera-globe{0%,12%{transform:scale(.45);opacity:.3}38%,65%{transform:scale(1);opacity:1}86%{transform:scale(2.2);opacity:1}100%{transform:scale(7);opacity:0}}
+@keyframes edsec-logo-globe-emerge{0%,22%{opacity:0;transform:translateZ(-140px) scale(.25) rotateY(-90deg)}50%,75%{opacity:1;transform:translateZ(70px) scale(1.12) rotateY(360deg)}100%{opacity:1;transform:translateZ(0) scale(1)}}
+@keyframes edsec-particle-field{0%{opacity:0;transform:scale(.7)}45%{opacity:.2}100%{opacity:0;transform:scale(1.7)}}
+@keyframes edsec-portal-particles{0%{opacity:.02;transform:scale(.4) rotate(0)}55%{opacity:.6;transform:scale(1) rotate(30deg)}100%{opacity:0;transform:scale(2.2) rotate(90deg)}}
+@keyframes edsec-camera-portal{0%,30%{transform:scale(.6)}65%{transform:scale(1)}100%{transform:scale(6);opacity:0}}
+@keyframes edsec-ai-flight{0%{opacity:0;transform:translate(-75vw,32vh) rotate(-25deg) scale(.45)}25%{opacity:1;transform:translate(-60px,-20px) rotate(10deg) scale(1)}55%{opacity:1;transform:translate(75px,-45px) rotate(0) scale(1)}80%{opacity:1;transform:translate(125px,-115px) rotate(22deg) scale(.8)}100%{opacity:0;transform:translate(90vw,-75vh) rotate(30deg) scale(.5)}}
+@keyframes edsec-ai-draw-logo{0%,30%{opacity:0;transform:scale(.1) rotate(-150deg);filter:brightness(4)}58%{opacity:1;transform:scale(1.18) rotate(15deg);filter:brightness(3)}80%,100%{opacity:1;transform:scale(1) rotate(0);filter:brightness(1)}}
+@keyframes edsec-ai-thruster{from{height:16px;opacity:.6}to{height:33px;opacity:1}}
+@keyframes edsec-circuit-grow{0%,10%{opacity:0;scale:0 1}55%,80%{opacity:1;scale:1 1}100%{opacity:0;scale:1.5 1}}
+@keyframes edsec-chip-form{0%,25%{opacity:0;transform:rotateX(80deg) scale(.1)}55%{opacity:1;transform:rotateX(0) scale(1)}78%{opacity:1;transform:rotateY(180deg) scale(1.15)}100%{opacity:0;transform:rotateY(360deg) scale(5)}}
+@keyframes edsec-chip-unfold{0%,35%{opacity:0;transform:scale(.1)}60%{opacity:1;transform:scale(1) rotateY(180deg)}100%{opacity:1;transform:scale(1.2) rotateY(360deg)}}
