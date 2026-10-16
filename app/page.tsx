@@ -326,7 +326,7 @@ const heroSlides = [
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-white text-slate-950">
+    <main className="edsec-luxe-home min-h-screen overflow-hidden bg-white text-slate-950">
       <style>{`
         /* ============================================================
            HERO
