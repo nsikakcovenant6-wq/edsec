@@ -9,8 +9,9 @@ function sceneForPath(path: string) {
   if (path.startsWith("/courses") || path.startsWith("/certification")) return "campus";
   if (path.startsWith("/services") || path.startsWith("/school-management-system")) return "robot";
   if (path.startsWith("/gallery") || path.startsWith("/student-projects")) return "portal";
-  if (path.startsWith("/blog")) return "books";
-  if (path.startsWith("/contact")) return "rocket";
+  if (path.startsWith("/blog")) return "circuit";
+  if (path.startsWith("/contact")) return "flying-robot";
+  if (path.startsWith("/admin") || path.startsWith("/student")) return "circuit";
   return "globe";
 }
 
@@ -40,6 +41,8 @@ export default function EdsecPageTransition() {
   if (!active) return null;
   return (
     <div key={sequence} className={`edsec-route-overlay edsec-scene-${scene}`} role="status" aria-live="polite" aria-label="EDSEC page transition">
+      <div className="edsec-transition-particles" aria-hidden="true" />
+      {scene === "circuit" && <div className="edsec-circuit-board" aria-hidden="true"><span /><span /><span /><span /><span /><span /><b /></div>}
       <div className="edsec-route-aura" aria-hidden="true" />
       <div className="edsec-route-stars" aria-hidden="true" />
       <div className="edsec-route-stage">
@@ -47,6 +50,7 @@ export default function EdsecPageTransition() {
         {scene === "robot" && <div className="edsec-scene-robot" aria-hidden="true"><div className="edsec-robot-head"><i /><i /></div><div className="edsec-robot-body">EDSEC</div><div className="edsec-robot-arms" /><div className="edsec-robot-legs" /></div>}
         {scene === "portal" && <div className="edsec-scene-portal" aria-hidden="true"><span /><span /><span /></div>}
         {scene === "books" && <div className="edsec-scene-books" aria-hidden="true"><span /><span /><span /></div>}
+        {scene === "flying-robot" && <div className="edsec-flying-robot" aria-hidden="true"><div className="edsec-flying-head"><i /><i /></div><div className="edsec-flying-body" /><div className="edsec-flying-thruster" /><div className="edsec-flying-trail" /></div>}
         {scene === "rocket" && <div className="edsec-scene-rocket" aria-hidden="true">🚀</div>}
         <div className="edsec-route-globe" aria-hidden="true"><div className="edsec-route-globe-latitude" /><div className="edsec-route-globe-longitude" /><div className="edsec-route-globe-longitude edsec-route-globe-longitude-alt" /></div>
         <div className="edsec-route-satellite" aria-hidden="true"><span className="edsec-route-satellite-core" /><span className="edsec-route-satellite-wing" /></div>
