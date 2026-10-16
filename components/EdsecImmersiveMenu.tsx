@@ -15,7 +15,7 @@ export default function EdsecImmersiveMenu(){
  {open&&<div className={`edsec-immersive-menu edsec-menu-view-${mode}`} role="dialog" aria-modal="true" aria-label="EDSEC navigation">
  <div className="edsec-menu-glow" aria-hidden="true"/>
  <header className="edsec-menu-top"><div className="edsec-menu-brand"><Image src="/edsec-logo.png" width={48} height={48} alt="EDSEC logo"/><strong>EDSEC <small>INNOVATE · EDUCATE · ELEVATE</small></strong></div><button type="button" onClick={()=>setOpen(false)} className="edsec-menu-close" aria-label="Close menu">✕</button></header>
- <div className="edsec-menu-layouts">{[["globe","Holographic"],["sidebar","Glass sidebar"],["cards","Floating cards"],["phone","3D phone"]].map(([key,label])=><button key={key} type="button" aria-pressed={mode===key} className={mode===key?"selected":""} onClick={()=>setMode(key)}>{label}</button>)}</div>
+ <div className="edsec-menu-layouts">{[["sidebar","3D Glass Sidebar"],["phone","3D Smartphone"]].map(([key,label])=><button key={key} type="button" aria-pressed={mode===key} className={mode===key?"selected":""} onClick={()=>setMode(key)}>{label}</button>)}</div>
  <div className="edsec-menu-content">
  <div className="edsec-menu-visual" aria-hidden="true">
  {mode==="globe"&&<div className="edsec-menu-planet"><span className="edsec-menu-planet-ring"/><Image src="/edsec-logo.png" width={86} height={86} alt=""/></div>}
