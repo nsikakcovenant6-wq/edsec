@@ -289,3 +289,24 @@ button {
 @media(max-width:850px){.edsec-menu-view-sidebar .edsec-menu-links,.edsec-menu-view-phone .edsec-menu-links{padding:10px}.edsec-menu-view-phone .edsec-menu-phone{transform:scale(.8);animation:edsec-phone-mobile-enter 1.5s ease both}.edsec-menu-content{min-height:0}.edsec-menu-visual{min-height:240px}}
 @keyframes edsec-phone-mobile-enter{from{opacity:0;transform:scale(.4) rotateY(-180deg)}to{opacity:1;transform:scale(.8) rotateY(360deg)}}
 @media(prefers-reduced-motion:reduce){.edsec-menu-view-sidebar .edsec-menu-links,.edsec-menu-view-phone .edsec-menu-phone,.edsec-menu-glass-layers:after{animation:none!important}}
+
+/* Compact mobile header and right-side immersive 3D drawer */
+@media(max-width:1023px){
+ .edsec-menu-trigger{width:40px;height:40px;min-width:40px;padding:0;display:grid;place-items:center;border-radius:12px;font-size:22px}
+ .edsec-menu-trigger span{display:none}
+ .edsec-immersive-menu{inset:0 0 0 auto;width:min(390px,100vw);max-width:100vw;padding:16px 14px 25px;box-shadow:-25px 0 80px #020617aa;animation:edsec-mobile-drawer .45s cubic-bezier(.2,.8,.2,1) both}
+ .edsec-menu-brand{font-size:17px}.edsec-menu-brand small{font-size:7px}
+ .edsec-menu-brand img{width:36px;height:36px}
+ .edsec-menu-layouts{gap:6px;margin:18px 0 12px}
+ .edsec-menu-layouts button{padding:8px 11px;font-size:11px}
+ .edsec-menu-content{display:flex;flex-direction:column;gap:10px;min-height:0}
+ .edsec-menu-visual{width:100%;min-height:160px;max-height:185px;overflow:hidden}
+ .edsec-menu-view-sidebar .edsec-menu-glass-layers{transform:scale(.48);transform-origin:center;animation:none}
+ .edsec-menu-view-phone .edsec-menu-phone{transform:scale(.47);transform-origin:center;animation:none}
+ .edsec-menu-links{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .edsec-menu-link,.edsec-menu-feature{min-height:48px;font-size:12px;padding:9px 10px;border-radius:12px}
+ .edsec-menu-link span:first-child{font-size:17px}
+}
+@keyframes edsec-mobile-drawer{from{opacity:.4;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
+@media(max-width:380px){.edsec-menu-links{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.edsec-immersive-menu{animation:none!important}}
