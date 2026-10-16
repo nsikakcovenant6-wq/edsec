@@ -96,3 +96,54 @@ button {
 .edsec-route-satellite-wing{position:absolute;top:13px;left:96px;width:68px;height:11px;background:linear-gradient(90deg,#2563eb,#e0f2fe 30%,#2563eb 70%,#93c5fd);border:1px solid #bae6fd}
 @keyframes edsec-globe-turn{from{transform:rotateY(-35deg) rotateZ(-12deg) scale(.6);opacity:0}35%{opacity:1}to{transform:rotateY(200deg) rotateZ(8deg) scale(1);opacity:.9}}
 @keyframes edsec-satellite-flight{from{transform:rotate(-130deg) scale(.65);opacity:0}20%{opacity:1}80%{opacity:1}to{transform:rotate(320deg) scale(1);opacity:0}}
+
+/* Distinct destination-specific EDSEC cinematic scenes; logo remains visible throughout. */
+.edsec-scene-campus .edsec-route-globe,.edsec-scene-robot .edsec-route-globe,.edsec-scene-portal .edsec-route-globe,.edsec-scene-books .edsec-route-globe,.edsec-scene-rocket .edsec-route-globe,
+.edsec-scene-campus .edsec-route-satellite,.edsec-scene-robot .edsec-route-satellite,.edsec-scene-portal .edsec-route-satellite,.edsec-scene-books .edsec-route-satellite,.edsec-scene-rocket .edsec-route-satellite{display:none}
+.edsec-scene-campus .edsec-route-orbit,.edsec-scene-robot .edsec-route-orbit,.edsec-scene-books .edsec-route-orbit{opacity:.18}
+.edsec-scene-campus .edsec-route-emblem{animation:edsec-logo-campus 3.7s ease both}
+.edsec-scene-robot .edsec-route-emblem{animation:edsec-logo-robot 3.7s ease both}
+.edsec-scene-portal .edsec-route-emblem{animation:edsec-logo-portal 3.7s ease both}
+.edsec-scene-books .edsec-route-emblem{animation:edsec-logo-books 3.7s ease both}
+.edsec-scene-rocket .edsec-route-emblem{animation:edsec-logo-rocket 3.7s ease both}
+.edsec-scene-campus .edsec-route-stage{transform:translateY(-42px)}
+.edsec-scene-campus .edsec-route-title,.edsec-scene-campus .edsec-route-subtitle{transform:translateY(90px)}
+.edsec-scene-campus .edsec-route-emblem{width:92px;height:92px;border-radius:20px}
+.edsec-scene-campus .edsec-route-emblem img{width:76px;height:76px}
+.edsec-scene-campus .edsec-route-overlay{background:#020617}
+.edsec-scene-campus .edsec-scene-campus{position:absolute;top:30px;width:250px;height:215px;z-index:1;animation:edsec-building-enter 3.7s ease both}
+.edsec-campus-roof{position:absolute;top:12px;left:4px;width:242px;height:40px;background:linear-gradient(120deg,#60a5fa,#1d4ed8);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.edsec-campus-sign{position:absolute;top:52px;left:18px;width:214px;height:145px;border:2px solid #93c5fd;background:linear-gradient(140deg,#1e40af,#0f172a);border-radius:7px;color:#e0f2fe;text-align:center;padding-top:12px;font-size:17px;font-weight:900;letter-spacing:.2em;box-shadow:0 0 35px #38bdf855}
+.edsec-campus-door{position:absolute;top:130px;left:96px;width:58px;height:67px;background:linear-gradient(90deg,#020617,#2563eb,#020617);border:2px solid #7dd3fc;border-radius:22px 22px 0 0}
+.edsec-campus-windows{position:absolute;top:108px;left:33px;width:40px;height:42px;background:#7dd3fc77;border:3px solid #bae6fd;box-shadow:145px 0 #7dd3fc77}
+.edsec-campus-people{position:absolute;top:166px;left:-70px;display:flex;gap:13px;animation:edsec-students-run 3.6s ease-in both}
+.edsec-campus-people i{width:12px;height:26px;border-radius:8px 8px 3px 3px;background:#38bdf8;position:relative;animation:edsec-person-bounce .28s ease-in-out infinite alternate}
+.edsec-campus-people i:before{content:"";position:absolute;top:-11px;left:1px;width:10px;height:10px;border-radius:50%;background:#fde68a}
+.edsec-campus-people i:nth-child(2){background:#f472b6;animation-delay:.12s}.edsec-campus-people i:nth-child(3){background:#fbbf24;animation-delay:.2s}
+.edsec-scene-robot .edsec-scene-robot{position:absolute;top:55px;left:-135px;width:95px;height:140px;z-index:5;animation:edsec-robot-run 3.7s ease-in-out both}
+.edsec-robot-head{position:absolute;top:0;left:17px;width:65px;height:52px;border:3px solid #bae6fd;border-radius:18px;background:linear-gradient(130deg,#38bdf8,#1d4ed8);box-shadow:0 0 28px #38bdf899}
+.edsec-robot-head i{position:absolute;top:19px;left:14px;width:9px;height:9px;border-radius:50%;background:white;box-shadow:0 0 8px white}.edsec-robot-head i+ i{left:40px}
+.edsec-robot-body{position:absolute;top:55px;left:12px;width:76px;height:58px;border-radius:15px;background:linear-gradient(120deg,#cbd5e1,#64748b);text-align:center;padding-top:18px;color:#0f172a;font-size:11px;font-weight:900}
+.edsec-robot-arms{position:absolute;top:62px;left:0;width:99px;height:12px;border-left:9px solid #38bdf8;border-right:9px solid #38bdf8;animation:edsec-robot-wave .35s ease-in-out infinite alternate}
+.edsec-robot-legs{position:absolute;top:110px;left:27px;width:48px;height:22px;border-left:12px solid #93c5fd;border-right:12px solid #93c5fd;animation:edsec-robot-wave .3s ease-in-out infinite alternate}
+.edsec-scene-portal .edsec-scene-portal{position:absolute;inset:0;display:grid;place-items:center}
+.edsec-scene-portal .edsec-scene-portal span{position:absolute;width:210px;height:210px;border:4px solid #67e8f9;border-radius:50%;box-shadow:0 0 25px #22d3ee,inset 0 0 25px #22d3ee;animation:edsec-portal-pulse 3.7s ease both}
+.edsec-scene-portal .edsec-scene-portal span:nth-child(2){animation-delay:.25s}.edsec-scene-portal .edsec-scene-portal span:nth-child(3){animation-delay:.5s}
+.edsec-scene-books .edsec-scene-books{position:absolute;inset:0;perspective:800px}
+.edsec-scene-books .edsec-scene-books span{position:absolute;top:70px;left:22px;width:85px;height:120px;border:3px solid #bae6fd;border-radius:4px 14px 14px 4px;background:linear-gradient(120deg,#1d4ed8,#7dd3fc);box-shadow:9px 8px 0 #0f172a;animation:edsec-books-fly 3.7s ease both}
+.edsec-scene-books .edsec-scene-books span:nth-child(2){left:150px;background:linear-gradient(120deg,#7c3aed,#c4b5fd);animation-delay:.2s}.edsec-scene-books .edsec-scene-books span:nth-child(3){left:88px;top:25px;background:linear-gradient(120deg,#0891b2,#67e8f9);animation-delay:.4s}
+.edsec-scene-rocket .edsec-scene-rocket{position:absolute;top:20px;left:110px;font-size:76px;filter:drop-shadow(0 0 20px #38bdf8);animation:edsec-rocket-flight 3.7s ease both}
+@keyframes edsec-logo-campus{0%,22%{opacity:0;transform:translateY(-50px) scale(.2)}40%,85%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:1}}
+@keyframes edsec-logo-robot{0%,42%{opacity:.3;transform:scale(.55) rotate(-20deg)}65%,90%{opacity:1;transform:scale(1.2) rotate(360deg)}100%{opacity:1;transform:scale(1)}}
+@keyframes edsec-logo-portal{0%{opacity:0;transform:translateZ(-300px) rotateY(0)}60%{opacity:1;transform:translateZ(100px) rotateY(540deg)}100%{opacity:1;transform:translateZ(0) rotateY(720deg)}}
+@keyframes edsec-logo-books{0%{opacity:0;transform:rotateX(-90deg) scale(.3)}65%{opacity:1;transform:rotateX(25deg) scale(1.15)}100%{opacity:1;transform:rotateX(0) scale(1)}}
+@keyframes edsec-logo-rocket{0%{opacity:0;transform:translateY(140px) scale(.4)}65%{opacity:1;transform:translateY(-25px) scale(1.2)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes edsec-building-enter{0%{opacity:0;transform:scale(.4) translateY(80px)}45%{opacity:1;transform:scale(1) translateY(0)}100%{opacity:1}}
+@keyframes edsec-students-run{0%,20%{transform:translateX(-100px);opacity:0}30%{opacity:1}90%,100%{transform:translateX(162px);opacity:0}}
+@keyframes edsec-person-bounce{from{transform:translateY(0)}to{transform:translateY(-7px)}}
+@keyframes edsec-robot-run{0%{transform:translateX(-150px) rotate(-10deg);opacity:0}20%{opacity:1}60%{transform:translateX(220px) rotate(8deg);opacity:1}80%,100%{transform:translateX(265px) rotate(0);opacity:0}}
+@keyframes edsec-robot-wave{from{transform:rotate(-12deg)}to{transform:rotate(12deg)}}
+@keyframes edsec-portal-pulse{0%{opacity:0;transform:rotateX(75deg) scale(.2)}60%{opacity:1;transform:rotateX(65deg) scale(1.2)}100%{opacity:0;transform:rotateX(0) scale(1.7)}}
+@keyframes edsec-books-fly{0%{opacity:0;transform:translateY(180px) rotateY(-110deg)}55%{opacity:1;transform:translateY(-35px) rotateY(40deg)}100%{opacity:0;transform:translateY(-180px) rotateY(220deg)}}
+@keyframes edsec-rocket-flight{0%{opacity:0;transform:translate(-220px,220px) rotate(-35deg) scale(.4)}50%{opacity:1;transform:translate(0,0) rotate(25deg) scale(1)}100%{opacity:0;transform:translate(240px,-240px) rotate(45deg) scale(.6)}}
+@media(prefers-reduced-motion:reduce){.edsec-scene-campus,.edsec-scene-robot,.edsec-scene-portal,.edsec-scene-books,.edsec-scene-rocket{display:none}}
