@@ -22,7 +22,7 @@ export default function EdsecPageTransition() {
       setSequence(n => n + 1);
       setActive(true);
     }, 0);
-    const hide = window.setTimeout(() => setActive(false), 1050);
+    const hide = window.setTimeout(() => setActive(false), 1850);
     return () => {window.clearTimeout(show);window.clearTimeout(hide);};
   }, [pathname]);
 
@@ -32,6 +32,8 @@ export default function EdsecPageTransition() {
       <div className="edsec-route-aura" aria-hidden="true" />
       <div className="edsec-route-stars" aria-hidden="true" />
       <div className="edsec-route-stage">
+        <div className="edsec-route-globe" aria-hidden="true"><div className="edsec-route-globe-latitude" /><div className="edsec-route-globe-longitude" /><div className="edsec-route-globe-longitude edsec-route-globe-longitude-alt" /></div>
+        <div className="edsec-route-satellite" aria-hidden="true"><span className="edsec-route-satellite-core" /><span className="edsec-route-satellite-wing" /></div>
         <div className="edsec-route-orbit edsec-route-orbit-one" aria-hidden="true" />
         <div className="edsec-route-orbit edsec-route-orbit-two" aria-hidden="true" />
         <div className="edsec-route-emblem">
