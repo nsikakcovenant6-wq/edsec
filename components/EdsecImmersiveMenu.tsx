@@ -21,7 +21,7 @@ export default function EdsecImmersiveMenu(){
  {mode==="globe"&&<div className="edsec-menu-planet"><span className="edsec-menu-planet-ring"/><Image src="/edsec-logo.png" width={86} height={86} alt=""/></div>}
  {mode==="sidebar"&&<div className="edsec-menu-glass-layers"><i/><i/><i/></div>}
  {mode==="cards"&&<div className="edsec-menu-floating-shapes"><i/><i/><i/></div>}
- {mode==="phone"&&<div className="edsec-menu-phone"><div className="edsec-menu-phone-camera"/><Image src="/edsec-logo.png" width={70} height={70} alt=""/><strong>EDSEC</strong><span>Explore the future</span><div className="edsec-menu-phone-bars"><i/><i/><i/></div></div>}
+ {mode==="phone"&&<div className="edsec-menu-phone"><div className="edsec-menu-phone-camera"/><Image src="/edsec-logo.png" width={70} height={70} alt=""/><strong>EDSEC</strong><span>Explore the future</span><div className="edsec-menu-phone-bars"><i/><i/><i/></div><div className="edsec-menu-phone-actions"><Link href="/courses" onClick={()=>setOpen(false)}>Courses</Link><Link href="/services" onClick={()=>setOpen(false)}>Services</Link><Link href="/about" onClick={()=>setOpen(false)}>About</Link></div></div>}
  </div>
  <nav className="edsec-menu-links" aria-label="Site pages">{links.map(([title,href],i)=><Link key={href} href={href} onClick={()=>setOpen(false)} className={`edsec-menu-link ${i>0&&i<4?"edsec-menu-feature":""}`} aria-current={pathname===href?"page":undefined}><span aria-hidden="true">✧</span><span>{title}</span><span aria-hidden="true">↗</span></Link>)}</nav>
  </div></div>}
