@@ -273,3 +273,19 @@ button {
 @keyframes edsec-special-location{0%{opacity:0;transform:translateY(90px) scale(.4)}60%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:1}}
 @keyframes edsec-special-pin{0%,25%{opacity:0;transform:translateY(-170px) rotate(-45deg)}60%{opacity:1;transform:translateY(12px) rotate(-45deg)}100%{opacity:1;transform:translateY(0) rotate(-45deg)}}
 @media(max-width:600px){.edsec-special-laptop,.edsec-special-devices{transform:scale(.7);transform-origin:center}.edsec-special-timeline{left:-5vw;right:-5vw}.edsec-special-timeline span{font-size:8px;padding:5px}}
+
+/* Responsive glass sidebar and interactive rotating smartphone */
+.edsec-menu-view-sidebar .edsec-menu-links{padding:22px;border:1px solid #7dd3fc77;border-radius:28px;background:linear-gradient(135deg,#ffffff24,#38bdf811);box-shadow:0 20px 80px #02061777,inset 0 1px #ffffff55;backdrop-filter:blur(28px);animation:edsec-sidebar-slide .8s cubic-bezier(.2,.8,.2,1) both}
+.edsec-menu-view-sidebar .edsec-menu-link{border-color:#7dd3fc66}
+.edsec-menu-view-sidebar .edsec-menu-link span:first-child{animation:edsec-icon-hover 3s ease-in-out infinite}
+.edsec-menu-view-phone .edsec-menu-links{border:1px solid #93c5fd77;border-radius:24px;padding:18px;background:#ffffff12;box-shadow:0 0 50px #38bdf844}
+.edsec-menu-view-phone .edsec-menu-phone{height:370px;animation:edsec-menu-phone-spin 2s ease both}
+.edsec-menu-phone-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:100%;padding:0 7px;margin-top:4px}
+.edsec-menu-phone-actions a{display:grid;place-items:center;min-height:27px;border:1px solid #7dd3fcaa;border-radius:7px;background:#38bdf833;color:white;font-size:9px;font-weight:700;transform:translateZ(12px)}
+.edsec-menu-phone-actions a:hover,.edsec-menu-phone-actions a:focus-visible{background:#0284c7;outline:2px solid white}
+.edsec-menu-glass-layers:after{content:"✦    ◈    ⌘";white-space:pre;position:absolute;z-index:3;top:70px;left:38px;color:#e0f2fe;font-size:33px;letter-spacing:10px;text-shadow:0 0 25px #38bdf8;animation:edsec-icon-hover 3s ease-in-out infinite}
+@keyframes edsec-sidebar-slide{from{opacity:0;transform:translateX(-120px) rotateY(-15deg)}to{opacity:1;transform:translateX(0) rotateY(0)}}
+@keyframes edsec-icon-hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@media(max-width:850px){.edsec-menu-view-sidebar .edsec-menu-links,.edsec-menu-view-phone .edsec-menu-links{padding:10px}.edsec-menu-view-phone .edsec-menu-phone{transform:scale(.8);animation:edsec-phone-mobile-enter 1.5s ease both}.edsec-menu-content{min-height:0}.edsec-menu-visual{min-height:240px}}
+@keyframes edsec-phone-mobile-enter{from{opacity:0;transform:scale(.4) rotateY(-180deg)}to{opacity:1;transform:scale(.8) rotateY(360deg)}}
+@media(prefers-reduced-motion:reduce){.edsec-menu-view-sidebar .edsec-menu-links,.edsec-menu-view-phone .edsec-menu-phone,.edsec-menu-glass-layers:after{animation:none!important}}
