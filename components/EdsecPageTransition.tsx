@@ -4,7 +4,9 @@ import Image from "next/image";
 import {usePathname} from "next/navigation";
 import {useEffect, useRef, useState} from "react";
 
-function sceneForPath(path: string) {
+type EdsecScene = "globe" | "timeline" | "learning" | "laptop" | "school-devices" | "certificates" | "photo-wall" | "connections" | "location" | "portal" | "circuit" | "campus" | "robot" | "books" | "flying-robot" | "rocket";
+
+function sceneForPath(path: string): EdsecScene {
   if (path === "/") return "globe";
   if (path.startsWith("/about")) return "timeline";
   if (path.startsWith("/courses")) return "learning";
