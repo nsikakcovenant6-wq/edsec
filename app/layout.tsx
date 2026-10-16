@@ -3,6 +3,7 @@ import "./globals.css";
 
 import Navbar from "@/components/Navbar";
 import EdsecPageTransition from "@/components/EdsecPageTransition";
+import EdsecImmersiveMenu from "@/components/EdsecImmersiveMenu";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import EdsecAI from "@/components/EdsecAI";
@@ -42,6 +43,7 @@ export default function RootLayout({
       <body className="bg-slate-950 text-white antialiased">
         <EdsecPageTransition />
         <Navbar />
+        <EdsecImmersiveMenu />
 
 
         {children}
