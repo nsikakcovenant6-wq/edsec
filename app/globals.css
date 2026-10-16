@@ -32,3 +32,39 @@ a {
 button {
   font: inherit;
 }
+/* Premium homepage depth and motion. Respect reduced-motion preferences. */
+@keyframes edsec-luxe-reveal {
+  from { opacity: 0; transform: translate3d(0, 32px, 0) scale(.975); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes edsec-luxe-shimmer {
+  from { background-position: 160% 50%; }
+  to { background-position: -160% 50%; }
+}
+.edsec-luxe-home { isolation: isolate; }
+.edsec-luxe-home section { position: relative; }
+.edsec-luxe-home section > div {
+  animation: edsec-luxe-reveal 850ms cubic-bezier(.2,.8,.2,1) both;
+}
+.edsec-luxe-home section:nth-of-type(2) > div { animation-delay: 110ms; }
+.edsec-luxe-home section:nth-of-type(3) > div { animation-delay: 170ms; }
+.edsec-luxe-home section:nth-of-type(4) > div { animation-delay: 220ms; }
+.edsec-luxe-home .edsec-certificate-scene {
+  box-shadow: 0 30px 90px rgba(15,23,42,.24), inset 0 1px 0 rgba(255,255,255,.22);
+  transform-style: preserve-3d;
+}
+.edsec-luxe-home a[class*="rounded"], .edsec-luxe-home article, .edsec-luxe-home [class*="card"] {
+  transition: transform 420ms cubic-bezier(.2,.8,.2,1), box-shadow 420ms ease, border-color 420ms ease, background-color 420ms ease;
+}
+@media (hover:hover) and (pointer:fine) {
+  .edsec-luxe-home a[class*="rounded"]:hover { transform: translate3d(0,-3px,0); }
+  .edsec-luxe-home article:hover { transform: translate3d(0,-6px,0); box-shadow: 0 22px 55px rgba(15,23,42,.13); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .edsec-luxe-home *, .edsec-luxe-home *::before, .edsec-luxe-home *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
