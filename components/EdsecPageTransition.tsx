@@ -22,7 +22,7 @@ export default function EdsecPageTransition() {
       setSequence(n => n + 1);
       setActive(true);
     }, 0);
-    const hide = window.setTimeout(() => setActive(false), 1850);
+    const hide = window.setTimeout(() => setActive(false), 4000);
     return () => {window.clearTimeout(show);window.clearTimeout(hide);};
   }, [pathname]);
 
