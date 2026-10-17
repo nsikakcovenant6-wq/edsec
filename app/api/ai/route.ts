@@ -3,7 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 
 export const runtime = "nodejs";
 
-const MODEL = process.env.EDSEC_AI_MODEL || "gpt-5.4-mini";
+const MODEL = process.env.EDSEC_AI_MODEL || "gpt-4.1-mini";
 const MAX_MESSAGE_LENGTH = 600;
 const WHATSAPP_NUMBER = "2348142137101";
 
