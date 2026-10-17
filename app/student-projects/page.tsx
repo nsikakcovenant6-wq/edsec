@@ -201,7 +201,7 @@ export default async function StudentProjectsPage() {
                 return (
                   <article
                     key={project.id}
-                    className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-2xl hover:shadow-slate-200/60"
+                    className="edsec-showroom-project group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-2xl hover:shadow-slate-200/60"
                   >
                     <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
                       {image ? (
