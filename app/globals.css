@@ -341,3 +341,32 @@ button {
 }
 @media(max-width:380px){.edsec-menu-links{display:flex;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.edsec-immersive-menu,.edsec-menu-trigger{animation:none!important;transition:none!important}}
+
+/* EDSEC interactive experience: progressive enhancement, mobile-friendly and motion-safe */
+.edsec-experience-section{position:relative;overflow:hidden;background:radial-gradient(circle at 75% 22%,#1e40af 0%,transparent 36%),linear-gradient(135deg,#03071b,#102453 52%,#100d32);color:white;padding:clamp(65px,8vw,115px) 20px}
+.edsec-experience-inner{max-width:1200px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:35px;align-items:center}
+.edsec-experience-copy h2{font-size:clamp(35px,5vw,65px);line-height:1.08;font-weight:900;letter-spacing:-.04em;margin:15px 0 20px}
+.edsec-experience-copy h2 em{font-style:normal;background:linear-gradient(90deg,#67e8f9,#c4b5fd);background-clip:text;color:transparent}
+.edsec-experience-copy>p:not(.edsec-experience-eyebrow){color:#cbd5e1;font-size:17px;line-height:1.8;max-width:550px}
+.edsec-experience-eyebrow{display:flex;align-items:center;gap:9px;color:#67e8f9;font-size:12px;letter-spacing:.2em;font-weight:800}
+.edsec-experience-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:25px}
+.edsec-experience-actions a{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border:1px solid #7dd3fc77;border-radius:12px;background:#ffffff14;font-weight:700;font-size:13px}
+.edsec-experience-actions a:first-child{background:#0891b2}
+.edsec-experience-orbit{position:relative;display:grid;place-items:center;min-height:350px;perspective:900px}
+.edsec-experience-halo{position:absolute;width:290px;height:290px;border:1px solid #67e8f988;border-radius:50%;box-shadow:0 0 70px #38bdf855;transform:rotateX(68deg)}
+.edsec-experience-core{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:225px;height:225px;border:1px solid #7dd3fc88;border-radius:50%;background:radial-gradient(circle at 35% 25%,#60a5fa99,#1d4ed8 40%,#0f172a 85%);box-shadow:inset -20px -20px 50px #020617,0 0 60px #38bdf877;animation:edsec-experience-spin 16s ease-in-out infinite}
+.edsec-experience-core strong{letter-spacing:.3em}
+.edsec-experience-satellite{position:absolute;display:grid;place-items:center;width:56px;height:56px;border:1px solid #bae6fd88;border-radius:17px;background:#1e3a8acc;box-shadow:0 0 25px #38bdf888;animation:edsec-experience-hover 4s ease-in-out infinite}
+.edsec-experience-satellite.a{left:8%;top:22%}.edsec-experience-satellite.b{right:9%;top:20%;animation-delay:1s}.edsec-experience-satellite.c{right:15%;bottom:8%;animation-delay:2s}
+.edsec-experience-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:20px}
+.edsec-experience-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-height:165px;padding:24px;border:1px solid #93c5fd55;border-radius:23px;background:linear-gradient(130deg,#ffffff1c,#ffffff06);backdrop-filter:blur(18px);transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease}
+.edsec-experience-card>svg:first-child{color:#67e8f9}.edsec-experience-card strong{font-size:17px}.edsec-experience-card span{color:#cbd5e1;font-size:13px}.edsec-experience-arrow{position:absolute;right:20px;top:20px;color:#7dd3fc}
+.edsec-experience-card:hover,.edsec-experience-card:focus-visible{transform:translateY(-7px) rotateX(3deg);border-color:#67e8f9;box-shadow:0 18px 45px #0891b244;outline:0}
+.edsec-experience-section:not(.edsec-experience-visible) .edsec-experience-card{opacity:.85}
+.edsec-partner-globe{position:relative;display:grid;place-items:center;width:min(360px,80vw);height:min(360px,80vw);margin:auto;border:2px solid #67e8f9aa;border-radius:50%;background:radial-gradient(circle at 30% 25%,#67e8f988,#1d4ed8 40%,#020617 85%);box-shadow:inset -30px -20px 60px #020617,0 0 80px #38bdf866;animation:edsec-experience-spin 14s ease-in-out infinite}
+.edsec-partner-globe>span{position:absolute;width:16px;height:16px;border-radius:50%;background:#cffafe;box-shadow:0 0 22px 9px #22d3ee88}
+.edsec-partner-globe>span:nth-of-type(1){top:22%;left:28%}.edsec-partner-globe>span:nth-of-type(2){top:43%;right:16%}.edsec-partner-globe>span:nth-of-type(3){bottom:25%;left:35%}.edsec-partner-globe>span:nth-of-type(4){bottom:20%;right:23%}
+@keyframes edsec-experience-spin{0%,100%{transform:rotateY(-15deg)}50%{transform:rotateY(25deg)}}@keyframes edsec-experience-hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@media(max-width:750px){.edsec-experience-inner{grid-template-columns:1fr}.edsec-experience-orbit{min-height:275px}.edsec-experience-core{width:180px;height:180px}.edsec-experience-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.edsec-experience-card{padding:17px;min-height:145px}.edsec-experience-card strong{font-size:14px}}
+@media(max-width:430px){.edsec-experience-grid{grid-template-columns:1fr}.edsec-experience-card{min-height:120px}}
+@media(prefers-reduced-motion:reduce){.edsec-experience-core,.edsec-experience-satellite,.edsec-partner-globe{animation:none!important}.edsec-experience-card{transition:none!important}}
