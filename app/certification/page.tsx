@@ -189,6 +189,7 @@ export default async function CertificationPage() {
         </div>
       </section>
 
+      <section className="bg-gradient-to-r from-blue-950 to-slate-950 px-5 py-14 text-white"><div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 md:flex-row md:items-center"><div><p className="text-xs font-bold uppercase tracking-widest text-cyan-300">Public certificate verification</p><h2 className="mt-2 text-3xl font-bold">Check an EDSEC credential.</h2><p className="mt-3 max-w-xl text-slate-300">Use the certificate ID on an issued credential to check the official EDSEC record.</p></div><Link href="/verify" className="rounded-xl bg-cyan-400 px-6 py-3 font-bold text-slate-950">Verify a certificate →</Link></div></section>
       <section className="py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="max-w-2xl">
