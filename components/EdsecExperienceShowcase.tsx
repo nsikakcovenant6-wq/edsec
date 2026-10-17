@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import {useEffect,useRef,useState} from "react";
 import {BookOpen,GraduationCap,Globe2,Laptop2,ShieldCheck,Sparkles,ArrowUpRight,School,CalendarDays} from "lucide-react";
 const highlights=[
@@ -20,7 +21,7 @@ export default function EdsecExperienceShowcase(){
  <h2 id="edsec-experience-title">Technology you can <em>experience.</em></h2>
  <p>Discover practical training, real projects, school technology and professional services—all connected in one place.</p>
  <div className="edsec-experience-actions"><Link href="/courses">Explore courses <ArrowUpRight size={18}/></Link><Link href="/consultation">Talk to EDSEC <ArrowUpRight size={18}/></Link></div></div>
- <div className="edsec-experience-orbit" aria-hidden="true"><div className="edsec-experience-halo"/><div className="edsec-experience-core"><Globe2 size={100} strokeWidth={1}/><strong>EDSEC</strong></div><span className="edsec-experience-satellite a"><Laptop2/></span><span className="edsec-experience-satellite b"><GraduationCap/></span><span className="edsec-experience-satellite c"><ShieldCheck/></span></div>
+ <div className="edsec-experience-orbit" aria-hidden="true"><div className="edsec-cinematic-laptop"><div className="edsec-cinematic-screen"><Image src="/edsec-logo.png" alt="" width={80} height={80}/><span>EDSEC DIGITAL</span><small>Innovate · Educate · Elevate</small><div className="edsec-cinematic-screen-bars"><i/><i/><i/></div></div><div className="edsec-cinematic-keyboard"/></div><div className="edsec-cinematic-particles">{Array.from({length:18},(_,i)=><i key={i} style={{"--i":i} as React.CSSProperties}/>)}</div><div className="edsec-experience-halo"/><div className="edsec-experience-core"><Globe2 size={100} strokeWidth={1}/><strong>EDSEC</strong></div><span className="edsec-experience-satellite a"><Laptop2/></span><span className="edsec-experience-satellite b"><GraduationCap/></span><span className="edsec-experience-satellite c"><ShieldCheck/></span></div>
  <div className="edsec-experience-grid">{highlights.map(({title,detail,href,icon:Icon})=><Link key={href} href={href} className="edsec-experience-card"><Icon size={24}/><strong>{title}</strong><span>{detail}</span><ArrowUpRight className="edsec-experience-arrow" size={17}/></Link>)}</div>
  </div></section>;
 }
