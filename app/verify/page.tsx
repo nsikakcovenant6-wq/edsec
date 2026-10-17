@@ -44,17 +44,17 @@ export default async function VerifyCertificatePage({
           )}
 
           {certificate && (
-            <div className="mt-8 overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50">
-              <div className="flex items-center gap-3 border-b border-emerald-200 px-5 py-4">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-lg font-black text-white">✓</span>
+            <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+              <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-700 text-lg font-black text-white">✓</span>
                 <div>
-                  <p className="font-black text-emerald-900">{certificate.status === "VALID" ? "Certificate Verified" : "Certificate Revoked"}</p>
-                  <p className="text-xs text-emerald-700">Official EDSEC verification record</p>
+                  <p className="font-black text-slate-900">{certificate.status === "VALID" ? "Certificate Verified" : "Certificate Revoked"}</p>
+                  <p className="text-xs text-slate-600">Official EDSEC verification record</p>
                 </div>
               </div>
               <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-7">
                 <div><p className="text-xs font-bold uppercase tracking-wider text-slate-500">Certificate ID</p><p className="mt-1 font-black text-slate-950">{certificate.certificateId}</p></div>
-                <div><p className="text-xs font-bold uppercase tracking-wider text-slate-500">Status</p><p className="mt-1 font-black text-emerald-700">{certificate.status === "VALID" ? "✓ Verified" : "Revoked"}</p></div>
+                <div><p className="text-xs font-bold uppercase tracking-wider text-slate-500">Status</p><p className={certificate.status === "VALID" ? "mt-1 font-black text-emerald-700" : "mt-1 font-black text-red-700"}>{certificate.status === "VALID" ? "✓ Verified" : "Revoked"}</p></div>
                 <div><p className="text-xs font-bold uppercase tracking-wider text-slate-500">Student</p><p className="mt-1 font-bold text-slate-950">{certificate.studentName}</p></div>
                 <div><p className="text-xs font-bold uppercase tracking-wider text-slate-500">Course</p><p className="mt-1 font-bold text-slate-950">{certificate.courseName}</p></div>
                 <div><p className="text-xs font-bold uppercase tracking-wider text-slate-500">Issued</p><p className="mt-1 font-bold text-slate-950">{new Date(certificate.issuedAt).toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" })}</p></div>
