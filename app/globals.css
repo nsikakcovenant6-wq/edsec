@@ -372,3 +372,10 @@ button {
 @media(prefers-reduced-motion:reduce){.edsec-experience-core,.edsec-experience-satellite,.edsec-partner-globe{animation:none!important}.edsec-experience-card{transition:none!important}}
 
 @media(prefers-reduced-motion:no-preference){.edsec-experience-section .edsec-experience-card{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease,box-shadow .3s ease,border-color .3s ease}.edsec-experience-section.edsec-experience-visible .edsec-experience-card{opacity:1;transform:translateY(0)}.edsec-experience-section.edsec-experience-visible .edsec-experience-card:nth-child(2){transition-delay:.08s}.edsec-experience-section.edsec-experience-visible .edsec-experience-card:nth-child(3){transition-delay:.16s}.edsec-experience-section.edsec-experience-visible .edsec-experience-card:nth-child(4){transition-delay:.24s}.edsec-experience-section.edsec-experience-visible .edsec-experience-card:nth-child(5){transition-delay:.32s}.edsec-experience-section.edsec-experience-visible .edsec-experience-card:nth-child(6){transition-delay:.4s}.edsec-experience-section.edsec-experience-visible .edsec-experience-card:hover,.edsec-experience-section.edsec-experience-visible .edsec-experience-card:focus-visible{transform:translateY(-7px) rotateX(3deg)}}
+
+/* Published project showroom: device-inspired frames, real CMS data only */
+.edsec-showroom-project{transform-style:preserve-3d;perspective:950px}
+.edsec-showroom-project>div:first-child{margin:12px 12px 0;border:7px solid #0f172a;border-radius:15px 15px 6px 6px;box-shadow:0 12px 28px #0f172a44;transform-origin:bottom;transition:transform .45s ease,box-shadow .45s ease}
+.edsec-showroom-project>div:first-child:after{content:"";position:absolute;z-index:3;left:40%;right:40%;top:0;height:5px;border-radius:0 0 8px 8px;background:#94a3b8}
+.edsec-showroom-project:hover>div:first-child{transform:rotateY(-5deg) rotateX(3deg) translateY(-5px);box-shadow:0 25px 45px #2563eb44}
+@media(prefers-reduced-motion:reduce){.edsec-showroom-project>div:first-child{transition:none!important}.edsec-showroom-project:hover>div:first-child{transform:none!important}}
