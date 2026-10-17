@@ -3,7 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 
 export const runtime = "nodejs";
 
-const MODEL = process.env.EDSEC_AI_MODEL || "gpt-5.6-luna";
+const MODEL = process.env.EDSEC_AI_MODEL || "gpt-5.4-mini";
 const MAX_MESSAGE_LENGTH = 600;
 const WHATSAPP_NUMBER = "2348142137101";
 
@@ -73,7 +73,7 @@ async function getPublicContext() {
     loginUrl: "https://www.edsecict.com/login",
     verificationUrl: "https://www.edsecict.com/verify",
     launchPromo: {
-      active: true,
+      active: Date.now() <= new Date(process.env.NEXT_PUBLIC_EDSEC_PROMO_END_DATE || "2026-09-30T23:59:59+01:00").getTime(),
       message: "EDSEC Launch Promo — learn a professional digital skill from ₦20,000.",
       endDate: process.env.NEXT_PUBLIC_EDSEC_PROMO_END_DATE || "2026-09-30T23:59:59+01:00",
       prices: PROMO_PRICES,
@@ -83,9 +83,10 @@ async function getPublicContext() {
       verification:
         "Each issued certificate has a unique certificate ID and can be verified publicly through the EDSEC verification page without an account.",
     },
+    navigation: { projects: "/student-projects", schoolDemo: "/school-management-system/demo", schoolPlatform: "/school-management-system", consultation: "/consultation", partners: "/partnerships" },
     courses: courses.map((course) => ({
       ...course,
-      promoPrice: PROMO_PRICES[course.title] ? naira(PROMO_PRICES[course.title]) : null,
+      promoPrice: Date.now() <= new Date(process.env.NEXT_PUBLIC_EDSEC_PROMO_END_DATE || "2026-09-30T23:59:59+01:00").getTime() && PROMO_PRICES[course.title] ? naira(PROMO_PRICES[course.title]) : null,
     })),
   };
 }
@@ -141,20 +142,24 @@ You MAY answer:
 - Courses EDSEC offers
 - Course descriptions and what students learn, when supplied in context
 - Public course duration/format/requirements when supplied in context
-- Launch Promo information and supplied promo prices
+- Launch Promo information only when the context explicitly marks it active
 - Whether a course is suitable for beginners, when that can be answered from the supplied requirements/context
 - How to apply
 - How to log in
 - How to verify an EDSEC certificate
 - Basic public certificate information
 - Basic greetings and simple navigation questions about the website
+- Recommend published courses based on a visitor’s interests, using only published course descriptions and requirements
+- Explain the public school platform and demo navigation, and direct visitors to /school-management-system/demo
+- Guide visitors to published student projects and the consultation request form
+- Explain where to submit partnership enquiries without claiming any partnership exists
 
 You MUST NOT answer or guess about:
 - A person's application/admission status
 - A student's account, payment, balance, receipt, enrollment, progress, grades, attendance, lessons or class schedule
 - Refunds, payment plans, discounts or negotiated prices
 - Complaints, disputes or urgent issues
-- Corporate training, partnerships or custom programmes
+- Confirming specific corporate training arrangements, partnership agreements or custom programme prices
 - Technical support, coding/debugging or website problems
 - Internal EDSEC operations, staff decisions, policies not supplied in context, or anything private
 - Any complicated question outside normal public EDSEC information
