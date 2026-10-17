@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
+import EdsecExperienceShowcase from "@/components/EdsecExperienceShowcase";
 import {
   ArrowUpRight,
   Award,
@@ -2102,6 +2103,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      <EdsecExperienceShowcase />
     </main>
   );
 }
