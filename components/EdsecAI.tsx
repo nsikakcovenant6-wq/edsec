@@ -16,6 +16,9 @@ const starterQuestions = [
   "How much is Full-Stack?",
   "What is the Launch Promo?",
   "How do I verify an EDSEC certificate?",
+  "Which EDSEC course should I take as a beginner?",
+  "Can I see the school platform demo?",
+  "How do I book a consultation?",
 ];
 
 export default function EdsecAI() {
