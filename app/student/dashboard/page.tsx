@@ -1172,6 +1172,7 @@ export default async function StudentDashboardPage() {
           </div>
         </section>
 
+        <section className="mt-8 rounded-3xl border border-cyan-200 bg-gradient-to-r from-slate-950 to-blue-950 p-7 text-white shadow-xl sm:p-9"><p className="text-xs font-bold uppercase tracking-widest text-cyan-300">Keep moving forward</p><h2 className="mt-3 text-2xl font-extrabold">Your next learning milestone starts here.</h2><p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">Continue your enrolled courses, review assessments, and build practical projects.</p><div className="mt-6 flex flex-wrap gap-3"><Link href="/student/dashboard" className="rounded-xl bg-cyan-400 px-5 py-3 text-sm font-bold text-slate-950">Learning overview</Link><Link href="/student-projects" className="rounded-xl border border-white/40 px-5 py-3 text-sm font-bold text-white">Project showroom</Link><Link href="/verify" className="rounded-xl border border-white/40 px-5 py-3 text-sm font-bold text-white">Verify certificate</Link></div></section>
         {/* ======================================================
             LEARNING FEATURES
         ====================================================== */}
