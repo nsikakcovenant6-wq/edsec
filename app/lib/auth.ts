@@ -1,17 +1,10 @@
 import { cookies } from "next/headers";
 import crypto from "node:crypto";
+import { getSessionSecret } from "./auth-secret";
 
 import { prisma } from "@/app/lib/prisma";
 
 const SESSION_COOKIE = "edsec_session";
-
-function getSessionSecret(): string {
-  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
-  if (!secret && process.env.NODE_ENV === "production") {
-    throw new Error("AUTH_SECRET or NEXTAUTH_SECRET must be configured in production");
-  }
-  return secret || "edsec-development-secret-change-this";
-}
 
 export type UserRole = "ADMIN" | "STUDENT";
 

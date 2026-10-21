@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { AuthConfigurationError } from "@/app/lib/auth-secret";
 
 import { prisma } from "@/app/lib/prisma";
 import { createLoginSession } from "@/app/lib/auth";
@@ -62,6 +63,13 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof AuthConfigurationError) {
+      console.error("LOGIN_CONFIGURATION_ERROR:", error.message);
+      return NextResponse.json(
+        { message: "Sign-in is temporarily unavailable. Please contact EDSEC support.", code: "AUTH_NOT_CONFIGURED" },
+        { status: 503 },
+      );
+    }
     console.error("LOGIN_ERROR:", error);
     return NextResponse.json({ message: "Unable to sign in right now. Please try again." }, { status: 500 });
   }
