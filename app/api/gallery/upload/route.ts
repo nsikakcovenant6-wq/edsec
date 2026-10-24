@@ -15,8 +15,9 @@ const BUCKET_NAME = "edsec-gallery";
 
 function getSupabaseConfig() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const publishableKey =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const storageKey =
+    process.env.SUPABASE_SECRET_KEY?.trim() ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
   if (!supabaseUrl) {
     throw new Error(
@@ -24,15 +25,15 @@ function getSupabaseConfig() {
     );
   }
 
-  if (!publishableKey) {
+  if (!storageKey) {
     throw new Error(
-      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is not configured.",
+      "Gallery storage credentials are not configured. Set SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY on the server.",
     );
   }
 
   return {
     supabaseUrl: supabaseUrl.replace(/\/$/, ""),
-    publishableKey,
+    storageKey,
   };
 }
 
@@ -106,12 +107,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { supabaseUrl, publishableKey } =
-      getSupabaseConfig();
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!serviceRoleKey) {
-      return NextResponse.json({success:false,message:"Gallery storage credentials are not configured."},{status:503});
-    }
+    const { supabaseUrl, storageKey } = getSupabaseConfig();
 
     const extension = getExtension(file.name);
     const expectedExtensions: Record<string,string[]> = {
@@ -143,8 +139,12 @@ export async function POST(request: Request) {
     const uploadResponse = await fetch(uploadUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${serviceRoleKey}`,
-        apikey: publishableKey,
+        // New secret keys are API keys, not JWT bearer tokens.
+        // Legacy service-role JWTs still need bearer authentication.
+        ...(!storageKey.startsWith("sb_secret_")
+          ? { Authorization: `Bearer ${storageKey}` }
+          : {}),
+        apikey: storageKey,
         "Content-Type": file.type,
         "x-upsert": "false",
       },
